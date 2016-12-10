@@ -1,0 +1,14 @@
+*.pyc
+*~
+.*
+.*/
+*.txt
+*.bak
+dist/
+build/
+MANIFEST
+!.gitignore
+!requirements.txt
+home/
+.idea/
+
