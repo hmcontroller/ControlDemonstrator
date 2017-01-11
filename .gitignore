@@ -11,4 +11,5 @@ MANIFEST
 !requirements.txt
 home/
 .idea/
+.log
 

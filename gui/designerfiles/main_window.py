@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'main_window.ui'
 #
-# Created: Fri Dec 09 18:55:00 2016
+# Created: Fri Dec 30 14:04:08 2016
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -76,29 +76,6 @@ class Ui_MainWindow(object):
         self.pushButton_2.setObjectName(_fromUtf8("pushButton_2"))
         self.horizontalLayout.addWidget(self.pushButton_2)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.checkBox = QtGui.QCheckBox(self.frame)
-        font = QtGui.QFont()
-        font.setPointSize(8)
-        self.checkBox.setFont(font)
-        self.checkBox.setObjectName(_fromUtf8("checkBox"))
-        self.verticalLayout.addWidget(self.checkBox)
-        self.checkBox_2 = QtGui.QCheckBox(self.frame)
-        self.checkBox_2.setObjectName(_fromUtf8("checkBox_2"))
-        self.verticalLayout.addWidget(self.checkBox_2)
-        self.checkBox_3 = QtGui.QCheckBox(self.frame)
-        self.checkBox_3.setObjectName(_fromUtf8("checkBox_3"))
-        self.verticalLayout.addWidget(self.checkBox_3)
-        self.checkBox_4 = QtGui.QCheckBox(self.frame)
-        self.checkBox_4.setObjectName(_fromUtf8("checkBox_4"))
-        self.verticalLayout.addWidget(self.checkBox_4)
-        self.checkBox_5 = QtGui.QCheckBox(self.frame)
-        self.checkBox_5.setObjectName(_fromUtf8("checkBox_5"))
-        self.verticalLayout.addWidget(self.checkBox_5)
-        self.checkBox_6 = QtGui.QCheckBox(self.frame)
-        self.checkBox_6.setObjectName(_fromUtf8("checkBox_6"))
-        self.verticalLayout.addWidget(self.checkBox_6)
-        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
         self.horizontalLayout_2.addLayout(self.verticalLayout)
         self.horizontalLayout_3.addWidget(self.frame)
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
@@ -127,12 +104,6 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "ControlDemonstrator", None))
         self.pushButton.setText(_translate("MainWindow", "PushButton", None))
         self.pushButton_2.setText(_translate("MainWindow", "PushButton", None))
-        self.checkBox.setText(_translate("MainWindow", "Sollgröße", None))
-        self.checkBox_2.setText(_translate("MainWindow", "Stellgröße", None))
-        self.checkBox_3.setText(_translate("MainWindow", "Tank 1", None))
-        self.checkBox_4.setText(_translate("MainWindow", "Tank 2", None))
-        self.checkBox_5.setText(_translate("MainWindow", "Tank 3", None))
-        self.checkBox_6.setText(_translate("MainWindow", "Tank 4", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Regelung", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Streckenvermessung", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("MainWindow", "Kalibrierung", None))

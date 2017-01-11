@@ -1,15 +1,33 @@
 # -*- encoding: utf-8 -*-
 import sys
 import traceback
+import logging
 
 from PyQt4 import QtGui
 
 from gui.mainWindow import ControlDemonstratorMainWindow
+from commServers.udpServer import DataAquisitionServerUDP
+
+logging.basicConfig(filename='log.log',
+                    format='%(asctime)s %(levelname)-9s%(message)s',
+                    level=logging.INFO)
 
 
-class Framerack(QtGui.QApplication):
+# SERVER = DataAquisitionServerUDP()
+
+def myExcepthook(exc_type, exc_value, exc_traceback):
+    exc_string = ""
+    for line in traceback.format_exception(exc_type, exc_value, exc_traceback):
+        exc_string += line
+    logging.critical("uncaught exception:\n\n" + exc_string)
+    # SERVER.stop()
+
+
+class ControlDemonstrator(QtGui.QApplication):
     def __init__(self, args):
+        logging.info("application start")
         QtGui.QApplication.__init__(self, args)
+
         self.mainW = ControlDemonstratorMainWindow()
         self.mainW.show()
 
@@ -17,22 +35,27 @@ class Framerack(QtGui.QApplication):
         isex = False
         try:
             return QtGui.QApplication.notify(self, object, event)
-        except Exception:
+        except:
             isex = True
-            print "Unexpected Error"
-            print traceback.format_exception(*sys.exc_info())
+            logging.error("uncaught exception:")
+            logging.error(traceback.format_exc())
             return False
         finally:
             if isex:
                 self.quit()
 
-    # def my_excepthook(selftype, value, tback):
-    #     do stuff...
-    #     sys.__excepthook__(type, value, tback)
+    def stopServer(self):
+        self.mainW.stopServer()
 
 
 def run():
-    app = Framerack(sys.argv)
-    sys.exit(app.exec_())
+    # sys.excepthook = myExcepthook
 
-if __name__ == "__main__": run()
+    app = ControlDemonstrator(sys.argv)
+
+    exitCode = app.exec_()
+    app.stopServer()
+    sys.exit(exitCode)
+
+if __name__ == "__main__":
+    run()
