@@ -1,2 +1,2 @@
-cloghandler
+numpy
 PyQt4
