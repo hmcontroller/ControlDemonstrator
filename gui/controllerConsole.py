@@ -78,7 +78,7 @@ class MyController(QtGui.QGraphicsView):
         # self.gainProxy1 = self.scene.addItem(self.gain1)
         # self.gain1.setPos(200, 300)
 
-        self.gainWidget = gui.graphicItems.MyLineEditWidget(self.params["PWM_PERCENT"])
+        self.gainWidget = gui.graphicItems.MyLineEditWidget(self.params["SLOW_PWM_PERCENT"])
         self.gainProxy2 = self.scene.addWidget(self.gainWidget)
         self.gainProxy2.setPos(400, 300)
         self.gainWidget.valueChanged.connect(self.itemValueChanged)
@@ -86,7 +86,7 @@ class MyController(QtGui.QGraphicsView):
         self.scene.addLine(QtCore.QLineF(470, 330, 575, 330), cablePen)
 
 
-        self.switch = gui.graphicItems.MySwitch(self.params["PWM_ON"])
+        self.switch = gui.graphicItems.MySwitch(self.params["SLOW_PWM_ON"])
         self.scene.addItem(self.switch)
         self.switch.setPos(QtCore.QPointF(580, 330))
         self.switch.valueChanged.connect(self.itemValueChanged)

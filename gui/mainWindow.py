@@ -11,7 +11,6 @@ import errno
 import time
 
 from PyQt4 import QtCore, QtGui, QtSql
-import numpy
 import pyqtgraph
 
 from gui.designerfiles.main_window import Ui_MainWindow
@@ -139,9 +138,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         print self.params
         self.parameterCount = len(self.params)
 
-        #time.sleep(3)
 
-        splashScreen.finish(self)
 
 
         self.timeValues = collections.deque(maxlen=self.bufferLength)
@@ -249,21 +246,24 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.connect(self.loopReportTimer, QtCore.SIGNAL("timeout()"), self.printLoopPerformance)
         self.loopReportTimer.start(5000)
 
-    def curveHideShow(self, id, state, channelType):
+
+        splashScreen.finish(self)
+
+    def curveHideShow(self, number, state, channelType):
         # if state == 2:
         #     if channelType == ValueChannel.VALUE_TYPE:
-        #         self.valueChannels[id].curve.setVisible(True)
+        #         self.valueChannels[number].curve.setVisible(True)
         #     if channelType == ValueChannel.PARAMETER_TYPE:
-        #         self.parameterChannels[id].curve.setVisible(True)
+        #         self.parameterChannels[number].curve.setVisible(True)
         # else:
         #     if channelType == ValueChannel.VALUE_TYPE:
-        #         self.valueChannels[id].curve.setVisible(False)
+        #         self.valueChannels[number].curve.setVisible(False)
         #     if channelType == ValueChannel.PARAMETER_TYPE:
-        #         self.parameterChannels[id].curve.setVisible(False)
+        #         self.parameterChannels[number].curve.setVisible(False)
         if state == 2:
-            self.valueChannels[id].curve.setVisible(True)
+            self.valueChannels[number].curve.setVisible(True)
         else:
-            self.valueChannels[id].curve.setVisible(False)
+            self.valueChannels[number].curve.setVisible(False)
 
     def updatePlot(self):
         self.receive()
@@ -357,8 +357,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
                     if loopStartTimeInSec < self.timeValues[-1]:
                         # clear all values
                         self.timeValues.clear()
-                        for buffer in self.ringBuffers:
-                            buffer.clear()
+                        for aBuffer in self.ringBuffers:
+                            aBuffer.clear()
 
                 self.timeValues.append(loopStartTimeInSec)
                 for i in range(0, self.totalChannelCount):
@@ -373,8 +373,6 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 #print "received parameters", parameterNumber, parameterValue
 
                 self.parametersReceived[parameterNumber] = parameterValue
-
-                message = None
 
                 # send rotating parameters
                 # # packer = struct.Struct("i f")
