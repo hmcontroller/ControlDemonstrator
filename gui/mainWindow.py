@@ -1,10 +1,8 @@
 # -*- encoding: utf-8 -*-
 import os
 import logging
-from math import sin
 import collections
-import ConfigParser
-import json
+
 import struct
 import socket
 import errno
@@ -16,6 +14,9 @@ import pyqtgraph
 from gui.designerfiles.main_window import Ui_MainWindow
 import gui.graphicItems
 import gui.controllerConsole
+from gui.idCheckBox import IdCheckbox
+
+from core.modelMaker import ModelMaker
 
 class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -32,23 +33,17 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         time.sleep(1)
 
-        self.config = ConfigParser.SafeConfigParser(allow_no_value=True)
-        self.config.optionxform = str
-        self.config.read("config.txt")
 
-        mappingString = self.config.get("Sensors", "mapping")
-        mappingString = mappingString.replace("\n", "").replace(" ", "")
-        self.sensorMapping = json.loads(mappingString)
-
-
-
-        self.controllerLoopCycleTime = self.config.getint("misc", "loopCycleTimeUS")
+        thisDir = os.path.dirname(os.path.realpath(__file__))
+        configFilePath = os.path.join(thisDir, "config.txt")
+        modelMaker = ModelMaker(configFilePath)
+        self.sensorMapping = modelMaker.getSensorMapping()
+        self.settings = modelMaker.getMiscSettings()
 
 
         self.plotUpdateTimeSpanInMs = 50
         self.controlUpdateTimeSpanInMs = 50
 
-        self.bufferLength = self.config.getint("misc", "bufferSizePC")
 
 
         font = QtGui.QFont()
@@ -60,13 +55,12 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.colors.append((0, 153, 255))
         self.colors.append((255, 165, 0))
 
-
         colorStrings = list()
         for color in self.colors:
             colorStrings.append("{}, {}, {}".format(color[0], color[1], color[2]))
 
         self.plotWidget = pyqtgraph.PlotWidget()
-        self.plotWidget.setXRange(-float(self.bufferLength)*(self.controllerLoopCycleTime / float(1000000)), 0)
+        self.plotWidget.setXRange(-float(self.settings.bufferLength)*(self.settings.controllerLoopCycleTime / float(1000000)), 0)
         self.plotWidget.setYRange(0, 60000)
 
 
@@ -141,10 +135,10 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
 
 
-        self.timeValues = collections.deque(maxlen=self.bufferLength)
+        self.timeValues = collections.deque(maxlen=self.settings.bufferLength)
         self.ringBuffers = []
         for i in range(0, self.totalChannelCount):
-            self.ringBuffers.append(collections.deque(maxlen=self.bufferLength))
+            self.ringBuffers.append(collections.deque(maxlen=self.settings.bufferLength))
 
 
 
@@ -220,7 +214,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
 
         # self.testData = []
-        # for i in range(0, self.bufferLength):
+        # for i in range(0, self.settings.bufferLength):
         #     if i < 100:
         #         self.testData.append(3000)
         #     else:
@@ -249,17 +243,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         splashScreen.finish(self)
 
-    def curveHideShow(self, number, state, channelType):
-        # if state == 2:
-        #     if channelType == ValueChannel.VALUE_TYPE:
-        #         self.valueChannels[number].curve.setVisible(True)
-        #     if channelType == ValueChannel.PARAMETER_TYPE:
-        #         self.parameterChannels[number].curve.setVisible(True)
-        # else:
-        #     if channelType == ValueChannel.VALUE_TYPE:
-        #         self.valueChannels[number].curve.setVisible(False)
-        #     if channelType == ValueChannel.PARAMETER_TYPE:
-        #         self.parameterChannels[number].curve.setVisible(False)
+    def curveHideShow(self, number, state):
         if state == 2:
             self.valueChannels[number].curve.setVisible(True)
         else:
@@ -267,16 +251,6 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def updatePlot(self):
         self.receive()
-        # # calculate time axis
-        # newTimeValues = list()
-        # smallestTime = self.udpServer.timeValues[0]
-        # for i, value in enumerate(self.udpServer.timeValues):
-        #     # newTimeValues.append(value - biggestTime)
-        #     newTimeValues.append(value - smallestTime)
-
-        # a = (self.timeValues, self.ringBuffers[2])
-        # b = len(self.timeValues)
-        # c = len(self.ringBuffers[2])
 
         if self.movePlot is True and len(self.timeValues) > 0:
             # update all curves
@@ -284,7 +258,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
             for i, channel in enumerate(self.valueChannels):
                 # channel.curve.setData(self.ringBuffers[i])
                 channel.curve.setData(self.timeValues, self.ringBuffers[i])
-                # if len(self.ringBuffers[0]) < self.bufferLength:
+                # if len(self.ringBuffers[0]) < self.settings.bufferLength:
                     # channel.curve.setPos(-len(self.ringBuffers[0]), 0)
                 channel.curve.setPos(-biggestTime, 0)
 
@@ -314,11 +288,6 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
             except:
                 pass
             self.movePlot = not self.movePlot
-            # if self.plotTimer.isActive():
-            #     self.plotTimer.stop()
-            # else:
-            #     self.plotTimer.start(self.plotUpdateTimeSpanInMs)
-
 
     def parameterChangedFromController(self, parameterNumber, value):
         print "you are controlling nicely", parameterNumber, value
@@ -342,12 +311,10 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
                 loopStartTime = struct.unpack("<i", data[self.messageSize - 16:self.messageSize - 12])[0]
                 loopDuration = struct.unpack("<i", data[self.messageSize - 12:self.messageSize - 8])[0]
-                if loopDuration < self.loopDurationMin :
+                if loopDuration < self.loopDurationMin:
                     self.loopDurationMin = loopDuration
-                elif loopDuration > self.loopDurationMax :
+                elif loopDuration > self.loopDurationMax:
                     self.loopDurationMax = loopDuration
-
-
 
                 self.loopDurationSum += loopDuration
                 self.loopDurationCounter += 1
@@ -364,23 +331,12 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
                 for i in range(0, self.totalChannelCount):
                     self.ringBuffers[i].append(struct.unpack("<f", data[i*4:i*4+4])[0])
 
-                # print "times", self.timeValues
-                # print "values", self.ringBuffers[2]
-
                 parameterNumber = struct.unpack("<i", data[self.messageSize - 8:self.messageSize - 4])[0]
                 parameterValue = struct.unpack("<f", data[self.messageSize - 4:self.messageSize])[0]
 
-                #print "received parameters", parameterNumber, parameterValue
-
                 self.parametersReceived[parameterNumber] = parameterValue
 
-                # send rotating parameters
-                # # packer = struct.Struct("i f")
-                # packed_data = struct.pack("< i f", self.parameterCounter, self.parametersToSend[self.parameterCounter])
-                # self.sockTX.sendto(packed_data, (self.controllerIP, self.portTX))
-                # #print parameterCounter, self.parametersToSend[parameterCounter]
-
-                # send parameters in full
+                # send parameters
                 formatString = "<{}f".format(self.parameterCount)
                 packed_data = struct.pack(formatString, *self.parametersToSend)
                 self.sockTX.sendto(packed_data, (self.controllerIP, self.portTX))
@@ -390,87 +346,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
                     self.parameterCounter = 0
 
 
-class MyPlotter(QtGui.QGraphicsView):
 
-    clickPlot = QtCore.pyqtSignal(int, int)
-
-    def __init__(self, parent=None):
-        QtGui.QGraphicsView.__init__(self, parent)
-        #self.setHorizontalScrollBarPolicy(1)
-        #self.setVerticalScrollBarPolicy(1)
-        self.timer = QtCore.QTimer()
-        self.timer.setSingleShot(False)
-        self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.simulate)
-
-        self.setStyleSheet("""
-            .MyController {
-                border-style: none;
-                }
-            """)
-
-        self.scene = QtGui.QGraphicsScene()
-
-        points = []
-        for i in range(0, 360):
-            points.append(QtCore.QPointF(i, 100*sin(i*(3.14/180))))
-
-        self.myPlotGroup = gui.graphicItems.MyPlotGroup(points, QtGui.QColor(30, 80, 200))
-
-        # self.plotLine = gui.graphicItems.MyPlotLinePart(points, QtGui.QColor(30, 80, 200))
-        # self.plotLine1 = gui.graphicItems.MyPlotLinePart(points, QtGui.QColor(30, 80, 200))
-        # self.plotLine2 = gui.graphicItems.MyPlotLinePart(points, QtGui.QColor(30, 80, 200))
-        # self.plotLine3 = gui.graphicItems.MyPlotLinePart(points, QtGui.QColor(30, 80, 200))
-        # self.plotLine4 = gui.graphicItems.MyPlotLinePart(points, QtGui.QColor(30, 80, 200))
-        self.myPlotGroup.plotLines[0].setPos(1000, 150)
-        self.myPlotGroup.plotLines[1].setPos(1100, 200)
-        self.myPlotGroup.plotLines[2].setPos(900, 100)
-        self.myPlotGroup.plotLines[3].setPos(1050, 50)
-        self.myPlotGroup.plotLines[4].setPos(1300, 200)
-        self.scene.addItem(self.myPlotGroup)
-
-        #self.setViewportUpdateMode(QtGui.QGraphicsView.NoViewportUpdate)
-
-        self.scene.setSceneRect(0, 0, self.width(), self.height())
-        self.setScene(self.scene)
-        self.timePos = 0
-        self.timer.start(40)
-
-
-
-
-
-
-    def resizeEvent(self, QResizeEvent):
-        self.emit(QtCore.SIGNAL("resize()"))
-
-    def mousePressEvent(self, QMouseEvent):
-        self.clickPlot.emit(QMouseEvent.x(), QMouseEvent.y())
-
-    def simulate(self):
-        self.myPlotGroup.plotLines[0].moveBy(-1, 0)
-        self.myPlotGroup.plotLines[1].moveBy(-2, 0)
-        self.myPlotGroup.plotLines[2].moveBy(-1, 0)
-        self.myPlotGroup.plotLines[3].moveBy(-3, 0)
-        self.myPlotGroup.plotLines[4].moveBy(-0.3, 0)
-        self.scene.update(QtCore.QRectF(0, 0, self.width(), self.height()))
-        #self.shear(1,0)
-        # self.timePos += 10
-        # self.scale(1.01, 1.01)
-        # self.centerOn(0, 0)
-
-class IdCheckbox(QtGui.QCheckBox):
-
-    changed = QtCore.pyqtSignal(int, int, int)
-
-    def __init__(self, parent=None, id=None, channelType=None):
-        QtGui.QCheckBox.__init__(self, parent)
-        self.id = id
-        self.channelType = channelType
-        self.stateChanged.connect(self.statiChanged)
-
-    def statiChanged(self, state):
-        self.changed.emit(self.id, state, self.channelType)
-        #super(QtGui.QCheckBox, self).stateChanged(state)
 
 class ValueChannel(object):
     VALUE_TYPE = 1
