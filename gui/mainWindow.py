@@ -20,6 +20,7 @@ from gui.idCheckBox import IdColorLabelCheckbox
 from gui.constants import *
 
 from core.modelMaker import ModelMaker
+from core.communicator import UdpCommunicator
 
 class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, rootFolder):
@@ -47,25 +48,18 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.messageFormat = modelMaker.getMessageFormatList()
 
 
-        colorStrings = list()
-        for color in COLORS:
-            colorStrings.append("{}, {}, {}".format(color[0], color[1], color[2]))
 
-        self.plotWidget = pyqtgraph.PlotWidget()
-        self.plotWidget.setXRange(-float(self.settings.bufferLength)*(self.settings.controllerLoopCycleTime / float(1000000)), 0)
-        self.plotWidget.setYRange(0, 60000)
+
 
 
         # TODO - do not differentiate between analog channels and fastParameterChannels
         # TODO remove sensorMapping from the config file
-
-
         self.measurementData = modelMaker.getMeasurementDataModel()
 
+        self.plotWidget = pyqtgraph.PlotWidget()
+        self.plotWidget.setXRange(-float(self.settings.bufferLength)*(self.settings.controllerLoopCycleTime / float(1000000)), 0)
+        self.plotWidget.setYRange(0, 60000)
         self.plotCurves = list()
-
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
-
         for i, channel in enumerate(self.measurementData.channels):
             # create a plot curve
             colorTuple = COLORS[i % len(COLORS)]
@@ -80,10 +74,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
             # box.setStyleSheet("""border: 3px solid rgb({})""".format(colorStrings[i % len(colorStrings)]))
             box.setChecked(True)
             box.changed.connect(self.curveHideShow)
-            box.setSizePolicy(sizePolicy)
             self.verticalLayout.addWidget(box)
-
-
 
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
@@ -106,26 +97,16 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.horizontalLayout_3.insertWidget(0, self.plotWidget, 0)
 
         self.parameterCounter = 0
-        self.messageSize = self.totalChannelCount * 4 + 16
-        self.ip = '192.168.178.20'
-        # self.ip = '192.168.0.133'
-        # self.controllerIP = '192.168.178.59'
-        self.controllerIP = '192.168.0.10'
-        self.portRX = 10000
-        self.portTX = 10001
 
-        self.sockRX = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sockRX.bind((self.ip, self.portRX))
-        self.sockRX.setblocking(False)
-        self.sockRX.settimeout(0)
 
+        ownIP = '192.168.178.20'
+        remoteIP = '192.168.0.10'
+        portRX = 10000
+        portTX = 10001
+        messageSize = self.totalChannelCount * 4 + 16
+
+        self.communicator = UdpCommunicator(ownIP, remoteIP, portRX, portTX, messageSize)
         print 'UDP Server Running at ', self.sockRX.getsockname()# socket.gethostbyname(socket.gethostname())
-
-        self.sockTX = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sockTX.bind((self.ip, self.portTX))
-        self.sockTX.setblocking(False)
-        self.sockTX.settimeout(0)
-
 
         self.loopDurationMin = 1000000
         self.loopDurationMax = 0

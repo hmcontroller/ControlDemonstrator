@@ -20,12 +20,10 @@ class IdColorLabelCheckbox(QtGui.QWidget):
         self.colorBox = ColouredRectangle(self.color)
         self.label = QtGui.QLabel()
 
+        horizontalLayout.setAlignment(QtCore.Qt.AlignLeft)
         horizontalLayout.addWidget(self.checkBox)
         horizontalLayout.addWidget(self.colorBox)
         horizontalLayout.addWidget(self.label)
-
-        spacer = QtGui.QSpacerItem(0, 0, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        horizontalLayout.addItem(spacer)
 
         self.checkBox.stateChanged.connect(self.statiChanged)
 

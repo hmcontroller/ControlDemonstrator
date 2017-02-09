@@ -48,40 +48,51 @@ class ModelMaker():
     def getMessageFormatList(self):
         messagePartsList = list()
 
+        positionCounter = 0
         # value channels
         for i, channelName in enumerate(self.config.options('requestedFastParameters')):
             messageData = MessageData()
-            messageData.position = i
+            messageData.bitPosition = positionCounter
+            messageData.lengthInBits = 8
             messageData.dataType = float
             messageData.name = channelName
             messagePartsList.append(messageData)
+            positionCounter += messageData.lengthInBits
 
         # TODO dirty get the additional message stuff from some single source place
 
         # loopStartTime
         mData = MessageData()
-        mData.id = len(messagePartsList) + 1
+        mData.bitPosition = positionCounter
+        mData.lengthInBits = 4
+        positionCounter += mData.lengthInBits
         mData.dataType = int
         mData.name = "loopStartTime"
         messagePartsList.append(mData)
 
         # lastLoopDuration
         mData1 = MessageData()
-        mData1.id = len(messagePartsList) + 1
+        mData1.bitPosition = positionCounter
+        mData1.lengthInBits = 4
+        positionCounter += mData1.lengthInBits
         mData1.dataType = int
         mData1.name = "lastLoopDuration"
         messagePartsList.append(mData1)
 
         # parameterNumber
         mData2 = MessageData()
-        mData2.id = len(messagePartsList) + 1
+        mData2.bitPosition = positionCounter
+        mData2.lengthInBits = 4
+        positionCounter += mData2.lengthInBits
         mData2.dataType = int
         mData2.name = "parameterNumber"
         messagePartsList.append(mData2)
 
         # parameterValue
         mData3 = MessageData()
-        mData3.id = len(messagePartsList) + 1
+        mData3.bitPosition = positionCounter
+        mData3.lengthInBits = 8
+        positionCounter += mData3.lengthInBits
         mData3.dataType = float
         mData3.name = "parameterValue"
         messagePartsList.append(mData3)
