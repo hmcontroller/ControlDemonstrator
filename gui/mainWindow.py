@@ -40,7 +40,11 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.sensorMapping = modelMaker.getSensorMapping()
         self.settings = modelMaker.getMiscSettings()
 
+        # TODO it is dirty how the messageData list will be generated in model maker - check single source problem
+        self.messageFormat = modelMaker.getMessageFormatList()
 
+
+        # TODO move these values in the config file
         self.plotUpdateTimeSpanInMs = 50
         self.controlUpdateTimeSpanInMs = 50
 
@@ -49,6 +53,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         font = QtGui.QFont()
         font.setPointSize(8)
 
+        # TODO - move these values in a file with other constant values
         self.colors = list()
         self.colors.append((230, 0, 0))
         self.colors.append((0, 150, 0))
@@ -64,6 +69,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.plotWidget.setYRange(0, 60000)
 
 
+        # TODO - do not differentiate between analog channels and fastParameterChannels
+        # TODO remove sensorMapping from the config file
         self.valueChannels = list()
 
         for channelMap in self.sensorMapping:
