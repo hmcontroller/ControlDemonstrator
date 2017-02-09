@@ -2,6 +2,7 @@
 import sys
 import traceback
 import logging
+import os
 
 from PyQt4 import QtGui
 
@@ -12,6 +13,7 @@ logging.basicConfig(filename='log.log',
                     format='%(asctime)s %(levelname)-9s%(message)s',
                     level=logging.INFO)
 
+ABSOLUTE_PROGRAM_ROOT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 
 # SERVER = DataAquisitionServerUDP()
 
@@ -28,7 +30,7 @@ class ControlDemonstrator(QtGui.QApplication):
         logging.info("application start")
         QtGui.QApplication.__init__(self, args)
 
-        self.mainW = ControlDemonstratorMainWindow()
+        self.mainW = ControlDemonstratorMainWindow(ABSOLUTE_PROGRAM_ROOT_FOLDER)
         self.mainW.show()
 
     def notify(self, object, event):

@@ -1,10 +1,13 @@
 # -*- encoding: utf-8 -*-
 import ConfigParser
 import json
+import collections
 
 from core.settingsModel import Settings
 from core.command import Command
 from core.messageData import MessageData
+from core.measurementData import MeasurementData
+from core.valueChannel import ValueChannel
 
 
 class ModelMaker():
@@ -25,10 +28,25 @@ class ModelMaker():
         return commands
 
     def getMeasurementDataModel(self):
-        pass
+        model = MeasurementData()
+
+        bufferLength = self.config.getint("misc", "bufferSizePC")
+        for i, channelName in enumerate(self.config.options('requestedFastParameters')):
+            channel = ValueChannel()
+            channel.id = i
+            channel.name = channelName
+            channel.values = collections.deque(maxlen=bufferLength)
+            channel.timeValues = collections.deque(maxlen=bufferLength)
+            model.channels.append(channel)
+            for i in range(0, bufferLength):
+                channel.values.append(0.0)
+                channel.timeValues.append(0)
+        model.timeValues = collections.deque(maxlen=bufferLength)
+
+        return model
 
     def getMessageFormatList(self):
-        messageDataList = list()
+        messagePartsList = list()
 
         # value channels
         for i, channelName in enumerate(self.config.options('requestedFastParameters')):
@@ -36,39 +54,39 @@ class ModelMaker():
             messageData.position = i
             messageData.dataType = float
             messageData.name = channelName
-            messageDataList.append(messageData)
+            messagePartsList.append(messageData)
 
-        # TODO dirty get the additional message stuff from some single source
+        # TODO dirty get the additional message stuff from some single source place
 
         # loopStartTime
         mData = MessageData()
-        mData.id = len(messageDataList) + 1
+        mData.id = len(messagePartsList) + 1
         mData.dataType = int
         mData.name = "loopStartTime"
-        messageDataList.append(mData)
+        messagePartsList.append(mData)
 
         # lastLoopDuration
         mData1 = MessageData()
-        mData1.id = len(messageDataList) + 2
+        mData1.id = len(messagePartsList) + 1
         mData1.dataType = int
         mData1.name = "lastLoopDuration"
-        messageDataList.append(mData1)
+        messagePartsList.append(mData1)
 
         # parameterNumber
         mData2 = MessageData()
-        mData2.id = len(messageDataList) + 3
+        mData2.id = len(messagePartsList) + 1
         mData2.dataType = int
         mData2.name = "parameterNumber"
-        messageDataList.append(mData2)
+        messagePartsList.append(mData2)
 
         # parameterValue
         mData3 = MessageData()
-        mData3.id = len(messageDataList) + 4
+        mData3.id = len(messagePartsList) + 1
         mData3.dataType = float
         mData3.name = "parameterValue"
-        messageDataList.append(mData3)
+        messagePartsList.append(mData3)
 
-        return messageDataList
+        return messagePartsList
 
     def getSensorMapping(self):
         mappingString = self.config.get("Sensors", "mapping")
@@ -79,5 +97,7 @@ class ModelMaker():
         settingsModel = Settings()
         settingsModel.controllerLoopCycleTime = self.config.getint("misc", "loopCycleTimeUS")
         settingsModel.bufferLength = self.config.getint("misc", "bufferSizePC")
+        settingsModel.plotUpdateTimeSpanInMs = self.config.getint("misc", "plotUpdateTimeSpanInMs")
+        settingsModel.controlUpdateTimeSpanInMs = self.config.getint("misc", "controlUpdateTimeSpanInMs")
         return settingsModel
 

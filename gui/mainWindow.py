@@ -11,18 +11,22 @@ import time
 from PyQt4 import QtCore, QtGui, QtSql
 import pyqtgraph
 
+
 from gui.designerfiles.main_window import Ui_MainWindow
 import gui.graphicItems
 import gui.controllerConsole
-from gui.idCheckBox import IdCheckbox
+from gui.idCheckBox import IdColorLabelCheckbox
+
+from gui.constants import *
 
 from core.modelMaker import ModelMaker
 
 class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
-    def __init__(self):
+    def __init__(self, rootFolder):
         QtGui.QMainWindow.__init__(self)
         self.setupUi(self)
 
+        # show a splash image
         splashImagePath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Regelkreis.gif")
         splashMap = QtGui.QPixmap(splashImagePath)
         splashScreen = QtGui.QSplashScreen(splashMap)
@@ -31,11 +35,10 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         splashScreen.showMessage(u"Regulator wird geladen...", QtCore.Qt.AlignCenter)
         QtGui.qApp.processEvents()
 
-        time.sleep(1)
+        # time.sleep(1)
 
-
-        thisDir = os.path.dirname(os.path.realpath(__file__))
-        configFilePath = os.path.join(thisDir, "config.txt")
+        # generate model objects according to the config file
+        configFilePath = os.path.join(rootFolder, "config.txt")
         modelMaker = ModelMaker(configFilePath)
         self.sensorMapping = modelMaker.getSensorMapping()
         self.settings = modelMaker.getMiscSettings()
@@ -44,24 +47,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.messageFormat = modelMaker.getMessageFormatList()
 
 
-        # TODO move these values in the config file
-        self.plotUpdateTimeSpanInMs = 50
-        self.controlUpdateTimeSpanInMs = 50
-
-
-
-        font = QtGui.QFont()
-        font.setPointSize(8)
-
-        # TODO - move these values in a file with other constant values
-        self.colors = list()
-        self.colors.append((230, 0, 0))
-        self.colors.append((0, 150, 0))
-        self.colors.append((0, 153, 255))
-        self.colors.append((255, 165, 0))
-
         colorStrings = list()
-        for color in self.colors:
+        for color in COLORS:
             colorStrings.append("{}, {}, {}".format(color[0], color[1], color[2]))
 
         self.plotWidget = pyqtgraph.PlotWidget()
@@ -71,116 +58,57 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
         # TODO - do not differentiate between analog channels and fastParameterChannels
         # TODO remove sensorMapping from the config file
-        self.valueChannels = list()
 
-        for channelMap in self.sensorMapping:
-            if channelMap[2] == 1:
-                self.valueChannels.append(ValueChannel())
 
-        for i, channel in enumerate(self.valueChannels):
-            channel.curve = self.plotWidget.plot(pen=self.colors[i % len(self.colors)])
-            channel.name = "Analog {}".format(i)
-            channel.show = True
-            channel.id = i
-            box = IdCheckbox(parent=self.frame, id=i, channelType=ValueChannel.VALUE_TYPE)
-            box.setFont(font)
+        self.measurementData = modelMaker.getMeasurementDataModel()
+
+        self.plotCurves = list()
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+
+        for i, channel in enumerate(self.measurementData.channels):
+            # create a plot curve
+            colorTuple = COLORS[i % len(COLORS)]
+            color = QtGui.QColor(colorTuple[0], colorTuple[1], colorTuple[2])
+            self.plotCurves.append(self.plotWidget.plot(pen=color))
+
+            # add a check box to show/hide the curve next to the plot window
+            box = IdColorLabelCheckbox(parent=self.frame, id=i, color=color)
+            box.setFont(CHECK_BOX_FONT)
             box.setObjectName("checkBox{}".format(i))
             box.setText(channel.name)
-            box.setStyleSheet("""border: 3px solid rgb({})""".format(colorStrings[i % len(colorStrings)]))
+            # box.setStyleSheet("""border: 3px solid rgb({})""".format(colorStrings[i % len(colorStrings)]))
             box.setChecked(True)
             box.changed.connect(self.curveHideShow)
-            channel.checkBox = box
-            self.verticalLayout.addWidget(channel.checkBox)
+            box.setSizePolicy(sizePolicy)
+            self.verticalLayout.addWidget(box)
 
-
-
-        #self.parameterChannels = list()
-
-        alreadyThereChannelsCount = len(self.valueChannels)
-
-        for i, section in enumerate(self.config.options('requestedFastParameters')):
-            self.valueChannels.append(ValueChannel())
-            chan = self.valueChannels[alreadyThereChannelsCount + i]
-            chan.curve = self.plotWidget.plot(pen=self.colors[(alreadyThereChannelsCount + i) % len(self.colors)], connect='all')
-            # chan.curve = self.plotWidget.plot(pen=None,
-            #                                   symbol='o',
-            #                                   symbolPen=None,
-            #                                   symbolSize=1,
-            #                                   symbolBrush=QtGui.QBrush(self.colors[(alreadyThereChannelsCount + i) % len(self.colors)]))
-            channel.name = section
-            channel.show = True
-            channel.id = alreadyThereChannelsCount + i
-            box = IdCheckbox(parent=self.frame, id=alreadyThereChannelsCount + i, channelType=ValueChannel.PARAMETER_TYPE)
-            box.setFont(font)
-            box.setObjectName("checkBox{}".format(alreadyThereChannelsCount + i))
-            box.setText(channel.name)
-            box.setStyleSheet("""border: 3px solid rgb({})""".format(colorStrings[(alreadyThereChannelsCount + i) % len(colorStrings)]))
-            box.setChecked(True)
-            box.changed.connect(self.curveHideShow)
-            channel.checkBox = box
-            self.verticalLayout.addWidget(channel.checkBox)
 
 
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
 
+        self.totalChannelCount = len(self.measurementData.channels)
 
+        self.commands = modelMaker.getCommands()
+        self.parameterCount = len(self.commands)
 
-
-        self.totalChannelCount = len(self.valueChannels) # + len(self.parameterChannels)
-
-
-
-
-        self.params = dict()
-        for i, section in enumerate(self.config.options('requestedControlledParameters')):
-            self.params[section] = i
-
-        print self.params
-        self.parameterCount = len(self.params)
-
-
-
-
-        self.timeValues = collections.deque(maxlen=self.settings.bufferLength)
-        self.ringBuffers = []
-        for i in range(0, self.totalChannelCount):
-            self.ringBuffers.append(collections.deque(maxlen=self.settings.bufferLength))
-
-
-
-        # self.udpServer = udpServer
-        # self.udpServer.configure(self.ringBuffers, self.totalChannelCount, self.paramCount, self.timeValues)
-        # #self.udpServer = DataAquisitionServerUDP(self.ringBuffers)
-        # self.udpServer.start()
-
-
-        self.myControllerClass = gui.controllerConsole.MyController(self.params)
+        self.myControllerClass = gui.controllerConsole.MyController(self.commands)
         self.verticalLayout_2.insertWidget(0, self.myControllerClass, 0)
 
         self.myControllerClass.parameterChanged.connect(self.parameterChangedFromController)
 
-        # self.myPlotterClass = MyPlotter()
-        # self.horizontalLayout_3.insertWidget(0, self.myPlotterClass, 0)
-
         logging.info("GUI load complete")
-
-        # self.plotView = pyqtgraph.GraphicsView(useOpenGL=True)
-
-
-        # self.plotView.addItem(self.plotWidget)
 
         # Enable antialiasing for prettier plots or not
         pyqtgraph.setConfigOptions(antialias=False)
 
-
         self.horizontalLayout_3.insertWidget(0, self.plotWidget, 0)
 
-
         self.parameterCounter = 0
-        # messageSize = (channelCount + fastParameterCount) * 4 + 16
         self.messageSize = self.totalChannelCount * 4 + 16
-        self.ip = '192.168.0.133'
+        self.ip = '192.168.178.20'
+        # self.ip = '192.168.0.133'
         # self.controllerIP = '192.168.178.59'
         self.controllerIP = '192.168.0.10'
         self.portRX = 10000
@@ -214,36 +142,22 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
 
 
-        for channel in self.valueChannels:
-            channel.curve.setPos(-len(self.ringBuffers[0]), 0)
-        # for channel in self.parameterChannels:
-        #     channel.curve.setPos(-len(self.ringBuffers[0]), 0)
-
-
-        # self.testData = []
-        # for i in range(0, self.settings.bufferLength):
-        #     if i < 100:
-        #         self.testData.append(3000)
-        #     else:
-        #         self.testData.append(10000)
-
+        for curve in self.plotCurves:
+            curve.setPos(-self.settings.bufferLength, 0)
 
         self.movePlot = True
         self.plotTimer = QtCore.QTimer()
         self.plotTimer.setSingleShot(False)
-        #self.timer.setTimerType(QtCore.QTimer.PreciseTimer)
         self.connect(self.plotTimer, QtCore.SIGNAL("timeout()"), self.updatePlot)
-        self.plotTimer.start(self.plotUpdateTimeSpanInMs)
+        self.plotTimer.start(self.settings.plotUpdateTimeSpanInMs)
 
         self.controllerTimer = QtCore.QTimer()
         self.controllerTimer.setSingleShot(False)
-        #self.timer.setTimerType(QtCore.QTimer.PreciseTimer)
         self.connect(self.controllerTimer, QtCore.SIGNAL("timeout()"), self.updateController)
-        self.controllerTimer.start(self.controlUpdateTimeSpanInMs)
+        self.controllerTimer.start(self.settings.controlUpdateTimeSpanInMs)
 
         self.loopReportTimer = QtCore.QTimer()
         self.loopReportTimer.setSingleShot(False)
-        #self.timer.setTimerType(QtCore.QTimer.PreciseTimer)
         self.connect(self.loopReportTimer, QtCore.SIGNAL("timeout()"), self.printLoopPerformance)
         self.loopReportTimer.start(5000)
 
@@ -252,30 +166,25 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def curveHideShow(self, number, state):
         if state == 2:
-            self.valueChannels[number].curve.setVisible(True)
+            self.plotCurves[number].setVisible(True)
         else:
-            self.valueChannels[number].curve.setVisible(False)
+            self.plotCurves[number].setVisible(False)
 
     def updatePlot(self):
         self.receive()
 
-        if self.movePlot is True and len(self.timeValues) > 0:
+        if self.movePlot is True and len(self.measurementData.channels) > 0:
             # update all curves
-            biggestTime = self.timeValues[len(self.timeValues) - 1]
-            for i, channel in enumerate(self.valueChannels):
-                # channel.curve.setData(self.ringBuffers[i])
-                channel.curve.setData(self.timeValues, self.ringBuffers[i])
-                # if len(self.ringBuffers[0]) < self.settings.bufferLength:
-                    # channel.curve.setPos(-len(self.ringBuffers[0]), 0)
-                channel.curve.setPos(-biggestTime, 0)
+            biggestTime = self.measurementData.channels[0].timeValues[self.settings.bufferLength - 1]
+            for i, curve in enumerate(self.plotCurves):
+                curve.setData(self.measurementData.channels[i].timeValues,
+                              self.measurementData.channels[i].values)
+                curve.setPos(-biggestTime, 0)
 
     def updateController(self):
-        lengthRingBuffer = len(self.ringBuffers[0])
-        if lengthRingBuffer > 0:
-            self.myControllerClass.tankWidget0.setLevel((self.ringBuffers[0][lengthRingBuffer-1]/65536.0)*100)
-            self.myControllerClass.tankWidget1.setLevel((self.ringBuffers[1][lengthRingBuffer-1]/65536.0)*100)
-            self.myControllerClass.tankWidget2.setLevel((self.ringBuffers[2][lengthRingBuffer-1]/65536.0)*100)
-            #self.myControllerClass.tankWidget3.setLevel((self.ringBuffers[3][lengthRingBuffer-1]/65536.0)*100)
+        self.myControllerClass.tankWidget0.setLevel((self.measurementData.channels[0].values[self.settings.bufferLength-1]/65536.0)*100)
+        self.myControllerClass.tankWidget1.setLevel((self.measurementData.channels[1].values[self.settings.bufferLength-1]/65536.0)*100)
+        self.myControllerClass.tankWidget2.setLevel((self.measurementData.channels[2].values[self.settings.bufferLength-1]/65536.0)*100)
         self.myControllerClass.scene.update()
 
     def printLoopPerformance(self):
