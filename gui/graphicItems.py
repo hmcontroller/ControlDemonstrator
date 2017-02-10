@@ -54,12 +54,10 @@ class MySumCircle(QtGui.QGraphicsItem):
 
 class MySwitch(QtGui.QGraphicsObject):
 
-    valueChanged = QtCore.pyqtSignal(int, float)
+    valueChanged = QtCore.pyqtSignal(float)
 
-    def __init__(self, command=None):
+    def __init__(self):
         QtGui.QGraphicsObject.__init__(self)
-
-        self.command = command
 
         self.setAcceptHoverEvents(True)
         self.showBoundingRect = False
@@ -132,7 +130,7 @@ class MySwitch(QtGui.QGraphicsObject):
         else:
             self.setOn(True)
         QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
-        self.valueChanged.emit(self.command.id, self.isOn)
+        self.valueChanged.emit(self.isOn)
 
     def hoverEnterEvent(self, QGraphicsSceneMouseEvent):
         self.showBoundingRect = True
@@ -141,6 +139,10 @@ class MySwitch(QtGui.QGraphicsObject):
     def hoverLeaveEvent(self, QGraphicsSceneMouseEvent):
         self.showBoundingRect = False
         QtGui.QGraphicsItem.hoverLeaveEvent(self, QGraphicsSceneMouseEvent)
+
+    @QtCore.pyqtSlot()
+    def confirmationTimeOut(self):
+        print "hello switch timeOut"
 
 
 class MyGain(QtGui.QGraphicsItem):
@@ -329,13 +331,10 @@ class MyPlotGroup(QtGui.QGraphicsObject):
 
 class MyLineEditWidget(QtGui.QWidget):
 
-    valueChanged = QtCore.pyqtSignal(int, float)
+    valueChanged = QtCore.pyqtSignal(float)
 
-    def __init__(self, command):
+    def __init__(self):
         QtGui.QWidget.__init__(self)
-
-        self.command = command
-
 
         self.cablePen = QtGui.QPen()
         self.cablePen.setColor(QtGui.QColor(0, 0, 0))
@@ -390,7 +389,10 @@ class MyLineEditWidget(QtGui.QWidget):
         self.setFocus()
         self.editor.setText(str(self.value))
         self.update()
-        self.valueChanged.emit(self.command.id, self.value)
+        self.valueChanged.emit(self.value)
+
+    def confirmationTimeOut(self):
+        print "hello gainWidget timeOut"
 
 
 

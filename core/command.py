@@ -3,11 +3,12 @@
 from PyQt4 import QtCore
 
 
-class Command():
+class Command(QtCore.QObject):
 
     confirmationTimeOut = QtCore.pyqtSignal(object)
 
     def __init__(self):
+        super(Command, self).__init__()
         self.id = None
         self._value = 0.0
         self.isConfirmed = False
@@ -26,6 +27,11 @@ class Command():
         self._value = value
         self.isConfirmed = False
         self.confirmationTimer.start(1000)
+        print "Command change", self.id, self.value
+
+    @QtCore.pyqtSlot(object)
+    def setValue(self, value):
+        self.value = value
 
     def checkConfirmation(self, commandConfirmation):
         if abs(commandConfirmation.returnValue - self._value) < self.smallNumber:

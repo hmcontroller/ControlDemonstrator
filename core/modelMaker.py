@@ -40,7 +40,6 @@ class ModelMaker():
             model.channels.append(channel)
             for n in range(0, bufferLength):
                 channel.values.append(0.0)
-                # channel.timeValues.append(0)
 
         model.timeValues = collections.deque(maxlen=bufferLength)
         for i in range(0, bufferLength):

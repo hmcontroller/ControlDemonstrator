@@ -83,10 +83,11 @@ class MyController(QtGui.QGraphicsView):
             if cmd.name == "SLOW_PWM_PERCENT":
                 gainCommand = cmd
 
-        self.gainWidget = gui.graphicItems.MyLineEditWidget(gainCommand)
+        self.gainWidget = gui.graphicItems.MyLineEditWidget()
         self.gainProxy2 = self.scene.addWidget(self.gainWidget)
         self.gainProxy2.setPos(400, 300)
-        self.gainWidget.valueChanged.connect(self.itemValueChanged)
+        self.gainWidget.valueChanged.connect(gainCommand.setValue)
+        gainCommand.confirmationTimeOut.connect(self.gainWidget.confirmationTimeOut)
 
         self.scene.addLine(QtCore.QLineF(470, 330, 575, 330), cablePen)
 
@@ -95,10 +96,11 @@ class MyController(QtGui.QGraphicsView):
             if cmd.name == "SLOW_PWM_ON":
                 switchCommand = cmd
 
-        self.switch = gui.graphicItems.MySwitch(switchCommand)
+        self.switch = gui.graphicItems.MySwitch()
         self.scene.addItem(self.switch)
         self.switch.setPos(QtCore.QPointF(580, 330))
-        self.switch.valueChanged.connect(self.itemValueChanged)
+        self.switch.valueChanged.connect(switchCommand.setValue)
+        switchCommand.confirmationTimeOut.connect(self.switch.confirmationTimeOut)
 
         self.scene.setSceneRect(0, 0, self.width(), self.height())
         self.setScene(self.scene)

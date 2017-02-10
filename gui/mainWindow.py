@@ -48,7 +48,6 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         # TODO it is dirty how the messageData list will be generated in model maker - check single source problem
         self.messageFormat = modelMaker.getMessageFormatList()
 
-        self.interpreter = MessageInterpreter()
 
 
 
@@ -182,8 +181,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def printLoopPerformance(self):
         print "min", self.loopDurationMin, "max", self.loopDurationMax, "avg", self.loopDurationAverage
 
-        print self.measurementData.timeValues
-        print self.measurementData.channels[0].values
+        # for command in self.commands:
+        #     print command.value
 
     def stopServer(self):
         pass
@@ -191,10 +190,6 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def keyPressEvent(self, QKeyEvent):
         if QKeyEvent.key() == QtCore.Qt.Key_Space:
-            try:
-                print self.ringBuffers[0]
-            except:
-                pass
             self.movePlot = not self.movePlot
 
     def parameterChangedFromController(self, parameterNumber, value):
@@ -203,15 +198,13 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def receive(self):
         messages = self.communicator.receive()
-        self.interpreter.mapUserChannels(self.measurementData, messages)
-        loopCycleDuration = self.interpreter.getLoopCycleDuration(messages)
-        commandConfirmation = self.interpreter.getCommandConfirmation(messages)
+        MessageInterpreter.mapUserChannels(self.measurementData, messages)
+        loopCycleDuration = MessageInterpreter.getLoopCycleDuration(messages)
+        commandConfirmation = MessageInterpreter.getCommandConfirmation(messages)
 
         self.commands[commandConfirmation.id].checkConfirmation(commandConfirmation)
 
         self.communicator.send(self.commands)
-
-
 
         # calculate some statistics
         if loopCycleDuration < self.loopDurationMin:
@@ -222,10 +215,4 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.loopDurationSum += loopCycleDuration
         self.loopDurationCounter += 1
         self.loopDurationAverage = self.loopDurationSum / float(self.loopDurationCounter)
-        loopStartTimeInSec = loopCycleDuration / 1000000.0
 
-        # on controller reset, the incoming time values start from 0 -> clear all plots
-        if len(self.measurementData.timeValues) > 0:
-            if loopStartTimeInSec < self.measurementData.timeValues[-1]:
-                # clear all values
-                self.measurementData.clear()
