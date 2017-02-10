@@ -56,10 +56,10 @@ class MySwitch(QtGui.QGraphicsObject):
 
     valueChanged = QtCore.pyqtSignal(int, float)
 
-    def __init__(self, parameterNumber=None):
+    def __init__(self, command=None):
         QtGui.QGraphicsObject.__init__(self)
 
-        self.parameterNumber = parameterNumber
+        self.command = command
 
         self.setAcceptHoverEvents(True)
         self.showBoundingRect = False
@@ -132,7 +132,7 @@ class MySwitch(QtGui.QGraphicsObject):
         else:
             self.setOn(True)
         QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
-        self.valueChanged.emit(self.parameterNumber, self.isOn)
+        self.valueChanged.emit(self.command.id, self.isOn)
 
     def hoverEnterEvent(self, QGraphicsSceneMouseEvent):
         self.showBoundingRect = True
@@ -242,10 +242,7 @@ class MyTankGauge(QtGui.QGraphicsItem):
         self.digitBorder.closeSubpath()
 
         self.black = QtGui.QBrush(QtGui.QColor(0, 0, 0))
-        #self.tankColor = QtGui.QBrush(QtGui.QColor(230, 0, 0))
-        #self.tankColor = QtGui.QBrush(QtGui.QColor(0, 150, 0))
         self.tankColor = QtGui.QBrush(QtGui.QColor(0, 153, 255))
-        #self.tankColor = QtGui.QBrush(QtGui.QColor(255, 165, 0))
 
         self.textRect = QtCore.QRectF(self.width + 10, self.level + 10, self.width + 40, self.level - 10)
 
@@ -334,10 +331,10 @@ class MyLineEditWidget(QtGui.QWidget):
 
     valueChanged = QtCore.pyqtSignal(int, float)
 
-    def __init__(self, parameterNumber):
+    def __init__(self, command):
         QtGui.QWidget.__init__(self)
 
-        self.parameterNumber = parameterNumber
+        self.command = command
 
 
         self.cablePen = QtGui.QPen()
@@ -393,7 +390,7 @@ class MyLineEditWidget(QtGui.QWidget):
         self.setFocus()
         self.editor.setText(str(self.value))
         self.update()
-        self.valueChanged.emit(self.parameterNumber, self.value)
+        self.valueChanged.emit(self.command.id, self.value)
 
 
 

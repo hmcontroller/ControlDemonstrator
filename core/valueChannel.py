@@ -6,5 +6,4 @@ class ValueChannel():
         self.id = 0
         self.name = ""
         self.values = None
-        self.timeValues = None
         self.show = True

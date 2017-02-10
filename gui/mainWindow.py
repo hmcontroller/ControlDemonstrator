@@ -21,6 +21,7 @@ from gui.constants import *
 
 from core.modelMaker import ModelMaker
 from core.communicator import UdpCommunicator
+from core.messageInterpreter import MessageInterpreter
 
 class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, rootFolder):
@@ -47,6 +48,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         # TODO it is dirty how the messageData list will be generated in model maker - check single source problem
         self.messageFormat = modelMaker.getMessageFormatList()
 
+        self.interpreter = MessageInterpreter()
 
 
 
@@ -99,14 +101,17 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.parameterCounter = 0
 
 
-        ownIP = '192.168.178.20'
+        # ownIP = '192.168.178.20'
+        ownIP = '192.168.0.133'
         remoteIP = '192.168.0.10'
         portRX = 10000
         portTX = 10001
         messageSize = self.totalChannelCount * 4 + 16
 
-        self.communicator = UdpCommunicator(ownIP, remoteIP, portRX, portTX, messageSize)
-        print 'UDP Server Running at ', self.sockRX.getsockname()# socket.gethostbyname(socket.gethostname())
+        self.communicator = UdpCommunicator(ownIP, remoteIP, portRX, portTX)
+        self.communicator.setMessageMap(self.messageFormat)
+
+        # print 'UDP Server Running at ', self.sockRX.getsockname()# socket.gethostbyname(socket.gethostname())
 
         self.loopDurationMin = 1000000
         self.loopDurationMax = 0
@@ -154,25 +159,31 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
     def updatePlot(self):
         self.receive()
 
-        if self.movePlot is True and len(self.measurementData.channels) > 0:
+        if self.movePlot is True:
             # update all curves
-            biggestTime = self.measurementData.channels[0].timeValues[self.settings.bufferLength - 1]
+            biggestTime = self.measurementData.timeValues[self.settings.bufferLength - 1]
             for i, curve in enumerate(self.plotCurves):
-                curve.setData(self.measurementData.channels[i].timeValues,
+                curve.setData(self.measurementData.timeValues,
                               self.measurementData.channels[i].values)
                 curve.setPos(-biggestTime, 0)
 
     def updateController(self):
-        self.myControllerClass.tankWidget0.setLevel((self.measurementData.channels[0].values[self.settings.bufferLength-1]/65536.0)*100)
-        self.myControllerClass.tankWidget1.setLevel((self.measurementData.channels[1].values[self.settings.bufferLength-1]/65536.0)*100)
-        self.myControllerClass.tankWidget2.setLevel((self.measurementData.channels[2].values[self.settings.bufferLength-1]/65536.0)*100)
+        tankLevel0 = (self.measurementData.channels[0].values[self.settings.bufferLength-1]/65536.0) * 100
+        self.myControllerClass.tankWidget0.setLevel(tankLevel0)
+
+        tankLevel1 = (self.measurementData.channels[1].values[self.settings.bufferLength-1]/65536.0) * 100
+        self.myControllerClass.tankWidget1.setLevel(tankLevel1)
+
+        tankLevel2 = (self.measurementData.channels[2].values[self.settings.bufferLength-1]/65536.0) * 100
+        self.myControllerClass.tankWidget2.setLevel(tankLevel2)
+
         self.myControllerClass.scene.update()
 
     def printLoopPerformance(self):
         print "min", self.loopDurationMin, "max", self.loopDurationMax, "avg", self.loopDurationAverage
-        print "rec:", self.parametersReceived
-        print "snd:", self.parametersToSend
 
+        print self.measurementData.timeValues
+        print self.measurementData.channels[0].values
 
     def stopServer(self):
         pass
@@ -188,69 +199,33 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def parameterChangedFromController(self, parameterNumber, value):
         print "you are controlling nicely", parameterNumber, value
-        self.parametersToSend[parameterNumber] = value
+        self.commands[parameterNumber].value = value
 
     def receive(self):
-        # print "waiting for UDP data packet..."
-        bufferContainsData = True
-        while bufferContainsData is True:
-            try:
-                data, address = self.sockRX.recvfrom(self.messageSize)
-            except socket.timeout:
-                bufferContainsData = False
-            except socket.error, e:
-                if e.args[0] == errno.EWOULDBLOCK:
-                    bufferContainsData = False
-                else:
-                    raise
-            else:
+        messages = self.communicator.receive()
+        self.interpreter.mapUserChannels(self.measurementData, messages)
+        loopCycleDuration = self.interpreter.getLoopCycleDuration(messages)
+        commandConfirmation = self.interpreter.getCommandConfirmation(messages)
 
+        self.commands[commandConfirmation.id].checkConfirmation(commandConfirmation)
 
-                loopStartTime = struct.unpack("<i", data[self.messageSize - 16:self.messageSize - 12])[0]
-                loopDuration = struct.unpack("<i", data[self.messageSize - 12:self.messageSize - 8])[0]
-                if loopDuration < self.loopDurationMin:
-                    self.loopDurationMin = loopDuration
-                elif loopDuration > self.loopDurationMax:
-                    self.loopDurationMax = loopDuration
-
-                self.loopDurationSum += loopDuration
-                self.loopDurationCounter += 1
-                self.loopDurationAverage = self.loopDurationSum / float(self.loopDurationCounter)
-                loopStartTimeInSec = loopStartTime / 1000000.0
-                if len(self.timeValues) > 0:
-                    if loopStartTimeInSec < self.timeValues[-1]:
-                        # clear all values
-                        self.timeValues.clear()
-                        for aBuffer in self.ringBuffers:
-                            aBuffer.clear()
-
-                self.timeValues.append(loopStartTimeInSec)
-                for i in range(0, self.totalChannelCount):
-                    self.ringBuffers[i].append(struct.unpack("<f", data[i*4:i*4+4])[0])
-
-                parameterNumber = struct.unpack("<i", data[self.messageSize - 8:self.messageSize - 4])[0]
-                parameterValue = struct.unpack("<f", data[self.messageSize - 4:self.messageSize])[0]
-
-                self.parametersReceived[parameterNumber] = parameterValue
-
-                # send parameters
-                formatString = "<{}f".format(self.parameterCount)
-                packed_data = struct.pack(formatString, *self.parametersToSend)
-                self.sockTX.sendto(packed_data, (self.controllerIP, self.portTX))
-
-                self.parameterCounter += 1
-                if self.parameterCounter >= len(self.parametersToSend):
-                    self.parameterCounter = 0
+        self.communicator.send(self.commands)
 
 
 
+        # calculate some statistics
+        if loopCycleDuration < self.loopDurationMin:
+            self.loopDurationMin = loopCycleDuration
+        elif loopCycleDuration > self.loopDurationMax:
+            self.loopDurationMax = loopCycleDuration
 
-class ValueChannel(object):
-    VALUE_TYPE = 1
-    PARAMETER_TYPE = 2
+        self.loopDurationSum += loopCycleDuration
+        self.loopDurationCounter += 1
+        self.loopDurationAverage = self.loopDurationSum / float(self.loopDurationCounter)
+        loopStartTimeInSec = loopCycleDuration / 1000000.0
 
-    def __init__(self):
-        self.curve = None
-        self.name = None
-        self.show = False
-        self.checkBox = None
+        # on controller reset, the incoming time values start from 0 -> clear all plots
+        if len(self.measurementData.timeValues) > 0:
+            if loopStartTimeInSec < self.measurementData.timeValues[-1]:
+                # clear all values
+                self.measurementData.clear()

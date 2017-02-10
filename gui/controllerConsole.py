@@ -9,12 +9,12 @@ class MyController(QtGui.QGraphicsView):
 
     parameterChanged = QtCore.pyqtSignal(int, float)
 
-    def __init__(self, parameterDict, parent=None):
+    def __init__(self, commandList, parent=None):
         QtGui.QGraphicsView.__init__(self, parent)
         self.setHorizontalScrollBarPolicy(1)
         self.setVerticalScrollBarPolicy(1)
 
-        self.params = parameterDict
+        self.commands = commandList
 
         self.timer = QtCore.QTimer()
         self.timer.setSingleShot(False)
@@ -78,33 +78,27 @@ class MyController(QtGui.QGraphicsView):
         # self.gainProxy1 = self.scene.addItem(self.gain1)
         # self.gain1.setPos(200, 300)
 
-        self.gainWidget = gui.graphicItems.MyLineEditWidget(self.params["SLOW_PWM_PERCENT"])
+        gainCommand = None
+        for cmd in self.commands:
+            if cmd.name == "SLOW_PWM_PERCENT":
+                gainCommand = cmd
+
+        self.gainWidget = gui.graphicItems.MyLineEditWidget(gainCommand)
         self.gainProxy2 = self.scene.addWidget(self.gainWidget)
         self.gainProxy2.setPos(400, 300)
         self.gainWidget.valueChanged.connect(self.itemValueChanged)
 
         self.scene.addLine(QtCore.QLineF(470, 330, 575, 330), cablePen)
 
+        switchCommand = None
+        for cmd in self.commands:
+            if cmd.name == "SLOW_PWM_ON":
+                switchCommand = cmd
 
-        self.switch = gui.graphicItems.MySwitch(self.params["SLOW_PWM_ON"])
+        self.switch = gui.graphicItems.MySwitch(switchCommand)
         self.scene.addItem(self.switch)
         self.switch.setPos(QtCore.QPointF(580, 330))
         self.switch.valueChanged.connect(self.itemValueChanged)
-
-
-        # QtGui.QColor(230, 0, 0)
-        # QtGui.QColor(0, 150, 0)
-        # QtGui.QColor(0, 153, 255)
-        # QtGui.QColor(255, 165, 0)
-
-
-        #### for simulation
-        # self.tankLevel = 0
-        # self.levelRising = True
-        # # self.timer.start(20)
-
-        #box = self.scene.addWidget(QtGui.QComboBox())
-        #box.setPos(100,100)
 
         self.scene.setSceneRect(0, 0, self.width(), self.height())
         self.setScene(self.scene)
