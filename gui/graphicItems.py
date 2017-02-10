@@ -122,7 +122,13 @@ class MySwitch(QtGui.QGraphicsObject):
         self.height = height
 
     def setOn(self, on):
+        # TODO irgendwie hier mal checken ob float oder boolean hier ankommt oder ganzes Teil auf float umbauen
         self.isOn = on
+        self.valueChanged.emit(self.isOn)
+
+    @QtCore.pyqtSlot()
+    def confirmationTimeOut(self):
+        print "hello switch timeOut"
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         if self.isOn is True:
@@ -130,7 +136,6 @@ class MySwitch(QtGui.QGraphicsObject):
         else:
             self.setOn(True)
         QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
-        self.valueChanged.emit(self.isOn)
 
     def hoverEnterEvent(self, QGraphicsSceneMouseEvent):
         self.showBoundingRect = True
@@ -140,9 +145,6 @@ class MySwitch(QtGui.QGraphicsObject):
         self.showBoundingRect = False
         QtGui.QGraphicsItem.hoverLeaveEvent(self, QGraphicsSceneMouseEvent)
 
-    @QtCore.pyqtSlot()
-    def confirmationTimeOut(self):
-        print "hello switch timeOut"
 
 
 class MyGain(QtGui.QGraphicsItem):
@@ -393,6 +395,9 @@ class MyLineEditWidget(QtGui.QWidget):
 
     def confirmationTimeOut(self):
         print "hello gainWidget timeOut"
+
+    def setValue(self, value):
+        self.editor.setText(str(value))
 
 
 

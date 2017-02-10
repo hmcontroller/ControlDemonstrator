@@ -21,7 +21,7 @@ class ModelMaker():
         commands = list()
         for i, name in enumerate(self.config.options('requestedControlledParameters')):
             cmd = Command()
-            cmd.value = 0
+            cmd.value = 0.0
             cmd.id = i
             cmd.name = name
             commands.append(cmd)

@@ -84,6 +84,7 @@ class MyController(QtGui.QGraphicsView):
                 gainCommand = cmd
 
         self.gainWidget = gui.graphicItems.MyLineEditWidget()
+        self.gainWidget.setValue(gainCommand.value)
         self.gainProxy2 = self.scene.addWidget(self.gainWidget)
         self.gainProxy2.setPos(400, 300)
         self.gainWidget.valueChanged.connect(gainCommand.setValue)
@@ -97,6 +98,7 @@ class MyController(QtGui.QGraphicsView):
                 switchCommand = cmd
 
         self.switch = gui.graphicItems.MySwitch()
+        self.switch.setOn(gainCommand.value)
         self.scene.addItem(self.switch)
         self.switch.setPos(QtCore.QPointF(580, 330))
         self.switch.valueChanged.connect(switchCommand.setValue)
