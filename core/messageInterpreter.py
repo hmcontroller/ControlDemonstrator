@@ -20,14 +20,9 @@ class MessageInterpreter():
 
         lastTime = measurementDataModel.timeValues[len(measurementDataModel.timeValues) - 1]
 
-        if measurementDataModel.isEmpty is True or newestTimeInSec < lastTime:
+        if measurementDataModel.isEmpty or newestTimeInSec < lastTime:
             measurementDataModel.clear(newestTimeInSec)
             measurementDataModel.isEmpty = False
-
-
-        # if newestTimeInSec < lastTime:
-        #
-        #     measurementDataModel.clear(newestTimeInSec)
 
         # append incoming values to buffers
         for i in range(0, len(messages)):

@@ -3,14 +3,14 @@
 """
 Procedure for unit-testing with images:
 
-1. Run unit tests at least once; this initializes a git clone of
+1. Run unit testSnippets at least once; this initializes a git clone of
    pyqtgraph/test-data in ~/.pyqtgraph.
 
 2. Run individual test scripts with the PYQTGRAPH_AUDIT environment variable set:
 
-       $ PYQTGRAPH_AUDIT=1 python pyqtgraph/graphicsItems/tests/test_PlotCurveItem.py
+       $ PYQTGRAPH_AUDIT=1 python pyqtgraph/graphicsItems/testSnippets/test_PlotCurveItem.py
 
-   Any failing tests will
+   Any failing testSnippets will
    display the test results, standard image, and the differences between the
    two. If the test result is bad, then press (f)ail. If the test result is
    good, then press (p)ass and the new image will be saved to the test-data
@@ -32,7 +32,7 @@ Procedure for unit-testing with images:
     This tag is used to ensure that each pyqtgraph commit is linked to a specific
     commit in the test-data repository. This makes it possible to push new
     commits to the test-data repository without interfering with existing
-    tests, and also allows unit tests to continue working on older pyqtgraph
+    testSnippets, and also allows unit testSnippets to continue working on older pyqtgraph
     versions.
 
 """
@@ -217,7 +217,7 @@ def assertImageMatch(im1, im2, minCorr=None, pxThreshold=50.,
     """Check that two images match.
 
     Images that differ in shape or dtype will fail unconditionally.
-    Further tests for similarity depend on the arguments supplied.
+    Further testSnippets for similarity depend on the arguments supplied.
 
     By default, images may have no pixels that gave a value difference greater
     than 50.
@@ -336,7 +336,7 @@ def makeDiffImage(im1, im2):
 
 
 class ImageTester(QtGui.QWidget):
-    """Graphical interface for auditing image comparison tests.
+    """Graphical interface for auditing image comparison testSnippets.
     """
     def __init__(self):
         self.lastKey = None

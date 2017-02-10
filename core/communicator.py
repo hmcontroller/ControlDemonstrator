@@ -45,9 +45,11 @@ class UdpCommunicator():
     def receive(self):
         bufferContainsData = True
         packets = list()
+        isPacketReceived = False
         while bufferContainsData is True:
             try:
                 data, address = self.sockRX.recvfrom(self.messageSize)
+                isPacketReceived = True
             except socket.timeout:
                 bufferContainsData = False
             except socket.error, e:
@@ -57,9 +59,11 @@ class UdpCommunicator():
                     raise
             else:
                 packets.append(data)
-        self._unpack(packets)
-
-        return self.messageMap
+        if isPacketReceived:
+            self._unpack(packets)
+            return self.messageMap
+        else:
+            return None
 
     def getData(self):
         pass

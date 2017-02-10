@@ -1371,7 +1371,7 @@ if __name__ == '__main__':
     #### Tests follow:
     
     
-    #### Index/slice tests: check that all values and meta info are correct after slice
+    #### Index/slice testSnippets: check that all values and meta info are correct after slice
     print("\n -- normal integer indexing\n")
     
     print("\n  ma[1]")
@@ -1463,7 +1463,7 @@ if __name__ == '__main__':
     
     
     
-    #### File I/O tests
+    #### File I/O testSnippets
     
     print("\n================  File I/O Tests  ===================\n")
     import tempfile

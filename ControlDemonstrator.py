@@ -7,7 +7,6 @@ import os
 from PyQt4 import QtGui
 
 from gui.mainWindow import ControlDemonstratorMainWindow
-from commServers.udpServer import DataAquisitionServerUDP
 
 logging.basicConfig(filename='log.log',
                     format='%(asctime)s %(levelname)-9s%(message)s',

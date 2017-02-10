@@ -124,7 +124,7 @@ def test_ImageItem(transpose=False):
     view.hide()
 
 def test_ImageItem_axisorder():
-    # All image tests pass again using the opposite axis order
+    # All image testSnippets pass again using the opposite axis order
     origMode = pg.getConfigOption('imageAxisOrder')
     altMode = 'row-major' if origMode == 'col-major' else 'col-major'
     pg.setConfigOptions(imageAxisOrder=altMode)

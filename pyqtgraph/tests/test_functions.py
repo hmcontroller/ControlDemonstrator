@@ -174,7 +174,7 @@ def test_makeARGB():
         else:
             raise Exception('invalid check array ndim')
         
-    # uint8 data tests
+    # uint8 data testSnippets
     
     im1 = np.arange(256).astype('ubyte').reshape(256, 1)
     im2, alpha = pg.makeARGB(im1, levels=(0, 255))
@@ -241,7 +241,7 @@ def test_makeARGB():
     checkImage(im2, lut[:,None,:], alpha, False)
 
     
-    # uint16 data tests
+    # uint16 data testSnippets
     im1 = np.arange(0, 2**16, 256).astype('uint16')[:, None]
     im2, alpha = pg.makeARGB(im1, levels=(512, 2**16))
     checkImage(im2, np.clip(np.linspace(-2, 253, 256), 0, 255).astype('ubyte'), alpha, False)
@@ -259,7 +259,7 @@ def test_makeARGB():
     
     
     
-    # float data tests
+    # float data testSnippets
     im1 = np.linspace(1.0, 17.0, 256)[:, None]
     im2, alpha = pg.makeARGB(im1, levels=(5.0, 13.0))
     checkImage(im2, np.clip(np.linspace(-128, 383, 256), 0, 255).astype('ubyte'), alpha, False)

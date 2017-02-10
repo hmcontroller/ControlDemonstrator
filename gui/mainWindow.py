@@ -198,6 +198,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def receive(self):
         messages = self.communicator.receive()
+        if messages is None:
+            return
         MessageInterpreter.mapUserChannels(self.measurementData, messages)
         loopCycleDuration = MessageInterpreter.getLoopCycleDuration(messages)
         commandConfirmation = MessageInterpreter.getCommandConfirmation(messages)

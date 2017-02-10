@@ -158,7 +158,7 @@ if __version__ is None and not hasattr(sys, 'frozen') and sys.version_info[0] ==
     #d = os.path.join(os.path.split(globals['__file__'])[0], path)
     #files = set()
     #for f in frozenSupport.listdir(d):
-        #if frozenSupport.isdir(os.path.join(d, f)) and f not in ['__pycache__', 'tests']:
+        #if frozenSupport.isdir(os.path.join(d, f)) and f not in ['__pycache__', 'testSnippets']:
             #files.add(f)
         #elif f[-3:] == '.py' and f != '__init__.py':
             #files.add(f[:-3])

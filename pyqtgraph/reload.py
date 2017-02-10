@@ -250,7 +250,7 @@ if __name__ == '__main__':
         btn = Btn()
     except:
         raise
-        print("Error; skipping Qt tests")
+        print("Error; skipping Qt testSnippets")
         doQtTest = False
 
 
