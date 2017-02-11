@@ -131,8 +131,8 @@ class PlotItem(GraphicsWidget):
         
         ## Set up control buttons
         path = os.path.dirname(__file__)
-        #self.autoImageFile = os.path.join(path, 'auto.png')
-        #self.lockImageFile = os.path.join(path, 'lock.png')
+        #self.autoImageFile = os.boundingRectPath.join(boundingRectPath, 'auto.png')
+        #self.lockImageFile = os.boundingRectPath.join(boundingRectPath, 'lock.png')
         self.autoBtn = ButtonItem(pixmaps.getPixmap('auto'), 14, self)
         self.autoBtn.mode = 'auto'
         self.autoBtn.clicked.connect(self.autoBtnClicked)

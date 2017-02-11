@@ -1635,9 +1635,9 @@ class ViewBox(GraphicsWidget):
             p.drawPath(bounds)
             
         #p.setPen(fn.mkPen('r'))
-        #path = QtGui.QPainterPath()
-        #path.addRect(self.targetRect())
-        #tr = self.mapFromView(path)
+        #boundingRectPath = QtGui.QPainterPath()
+        #boundingRectPath.addRect(self.targetRect())
+        #tr = self.mapFromView(boundingRectPath)
         #p.drawPath(tr)
 
     def updateBackground(self):

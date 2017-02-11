@@ -105,15 +105,15 @@ def _generateItemSvg(item, nodes=None, root=None):
     ##    
     ##    <g>
     ##        <g transform="matrix(...)">
-    ##            one or more of: <path/> or <polyline/> or <text/>
+    ##            one or more of: <boundingRectPath/> or <polyline/> or <text/>
     ##        </g>
     ##        <g transform="matrix(...)">
-    ##            one or more of: <path/> or <polyline/> or <text/>
+    ##            one or more of: <boundingRectPath/> or <polyline/> or <text/>
     ##        </g>
     ##        . . .
     ##    </g>
     ##    
-    ## 2) There seems to be wide disagreement over whether path strokes
+    ## 2) There seems to be wide disagreement over whether boundingRectPath strokes
     ##    should be scaled anisotropically. 
     ##      see: http://web.mit.edu/jonas/www/anisotropy/
     ##    Given that both inkscape and illustrator seem to prefer isotropic
@@ -238,17 +238,17 @@ def _generateItemSvg(item, nodes=None, root=None):
     if not isinstance(item, QtGui.QGraphicsScene):
         ## See if this item clips its children
         if int(item.flags() & item.ItemClipsChildrenToShape) > 0:
-            ## Generate svg for just the path
+            ## Generate svg for just the boundingRectPath
             #if isinstance(root, QtGui.QGraphicsScene):
-                #path = QtGui.QGraphicsPathItem(item.mapToScene(item.shape()))
+                #boundingRectPath = QtGui.QGraphicsPathItem(item.mapToScene(item.shape()))
             #else:
-                #path = QtGui.QGraphicsPathItem(root.mapToParent(item.mapToItem(root, item.shape())))
+                #boundingRectPath = QtGui.QGraphicsPathItem(root.mapToParent(item.mapToItem(root, item.shape())))
             path = QtGui.QGraphicsPathItem(item.mapToScene(item.shape()))
             item.scene().addItem(path)
             try:
-                #pathNode = _generateItemSvg(path, root=root).getElementsByTagName('path')[0]
+                #pathNode = _generateItemSvg(boundingRectPath, root=root).getElementsByTagName('boundingRectPath')[0]
                 pathNode = _generateItemSvg(path, root=root)[0].getElementsByTagName('path')[0]
-                # assume <defs> for this path is empty.. possibly problematic.
+                # assume <defs> for this boundingRectPath is empty.. possibly problematic.
             finally:
                 item.scene().removeItem(path)
             

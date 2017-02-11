@@ -150,15 +150,15 @@ if __version__ is None and not hasattr(sys, 'frozen') and sys.version_info[0] ==
 ## don't import the more complex systems--canvas, parametertree, flowchart, dockarea
 ## these must be imported separately.
 #from . import frozenSupport
-#def importModules(path, globals, locals, excludes=()):
-    #"""Import all modules residing within *path*, return a dict of name: module pairs.
+#def importModules(boundingRectPath, globals, locals, excludes=()):
+    #"""Import all modules residing within *boundingRectPath*, return a dict of name: module pairs.
     
-    #Note that *path* MUST be relative to the module doing the import.    
+    #Note that *boundingRectPath* MUST be relative to the module doing the import.
     #"""
-    #d = os.path.join(os.path.split(globals['__file__'])[0], path)
+    #d = os.boundingRectPath.join(os.boundingRectPath.split(globals['__file__'])[0], boundingRectPath)
     #files = set()
     #for f in frozenSupport.listdir(d):
-        #if frozenSupport.isdir(os.path.join(d, f)) and f not in ['__pycache__', 'testSnippets']:
+        #if frozenSupport.isdir(os.boundingRectPath.join(d, f)) and f not in ['__pycache__', 'testSnippets']:
             #files.add(f)
         #elif f[-3:] == '.py' and f != '__init__.py':
             #files.add(f[:-3])
@@ -166,13 +166,13 @@ if __version__ is None and not hasattr(sys, 'frozen') and sys.version_info[0] ==
             #files.add(f[:-4])
         
     #mods = {}
-    #path = path.replace(os.sep, '.')
+    #boundingRectPath = boundingRectPath.replace(os.sep, '.')
     #for modName in files:
         #if modName in excludes:
             #continue
         #try:
-            #if len(path) > 0:
-                #modName = path + '.' + modName
+            #if len(boundingRectPath) > 0:
+                #modName = boundingRectPath + '.' + modName
             #print( "from .%s import * " % modName)
             #mod = __import__(modName, globals, locals, ['*'], 1)
             #mods[modName] = mod
@@ -184,9 +184,9 @@ if __version__ is None and not hasattr(sys, 'frozen') and sys.version_info[0] ==
             
     #return mods
 
-#def importAll(path, globals, locals, excludes=()):
+#def importAll(boundingRectPath, globals, locals, excludes=()):
     #"""Given a list of modules, import all names from each module into the global namespace."""
-    #mods = importModules(path, globals, locals, excludes)
+    #mods = importModules(boundingRectPath, globals, locals, excludes)
     #for mod in mods.values():
         #if hasattr(mod, '__all__'):
             #names = mod.__all__

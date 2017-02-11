@@ -5,15 +5,15 @@ if __name__ == '__main__':
     if hasattr(os, 'setpgrp'):
         os.setpgrp()  ## prevents signals (notably keyboard interrupt) being forwarded from parent to this process
     if sys.version[0] == '3':
-        #name, port, authkey, ppid, targetStr, path, pyside = pickle.load(sys.stdin.buffer)
+        #name, port, authkey, ppid, targetStr, boundingRectPath, pyside = pickle.load(sys.stdin.buffer)
         opts = pickle.load(sys.stdin.buffer)
     else:
-        #name, port, authkey, ppid, targetStr, path, pyside = pickle.load(sys.stdin)
+        #name, port, authkey, ppid, targetStr, boundingRectPath, pyside = pickle.load(sys.stdin)
         opts = pickle.load(sys.stdin)
     #print "key:",  ' '.join([str(ord(x)) for x in authkey])
     path = opts.pop('path', None)
     if path is not None:
-        ## rewrite sys.path without assigning a new object--no idea who already has a reference to the existing list.
+        ## rewrite sys.boundingRectPath without assigning a new object--no idea who already has a reference to the existing list.
         while len(sys.path) > 0:
             sys.path.pop()
         sys.path.extend(path)

@@ -110,7 +110,7 @@ class Process(RemoteEventHandler):
             self.proc = subprocess.Popen((executable, bootstrap), stdin=subprocess.PIPE)
 
         targetStr = pickle.dumps(target)  ## double-pickle target so that child has a chance to 
-                                          ## set its sys.path properly before unpickling the target
+                                          ## set its sys.boundingRectPath properly before unpickling the target
         pid = os.getpid() # we must send pid to child because windows does not have getppid
         
         ## Send everything the remote process needs to start correctly

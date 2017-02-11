@@ -1437,7 +1437,7 @@ class Handle(UIGraphicsItem):
         p.setPen(self.currentPen)
         
         #p.rotate(va * 180. / 3.1415926)
-        #p.drawPath(self.path)        
+        #p.drawPath(self.boundingRectPath)
         p.drawPath(self.shape())
         #ang = self.startAng + va
         #dt = 2*np.pi / self.sides
@@ -2221,7 +2221,7 @@ class SpiralROI(ROI):
     
     def paint(self, p, *args):
         p.setRenderHint(QtGui.QPainter.Antialiasing)
-        #path = self.shape()
+        #boundingRectPath = self.shape()
         p.setPen(self.currentPen)
         p.drawPath(self.path)
         p.setPen(QtGui.QPen(QtGui.QColor(255,0,0)))

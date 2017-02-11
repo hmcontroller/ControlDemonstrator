@@ -172,7 +172,7 @@ def findRefPath(startObj, endObj, maxLen=8, restart=True, seen={}, path=None, ig
     ignore[id(path)] = None
     ignore[id(seen)] = None
     prefix = " "*(8-maxLen)
-    #print prefix + str(map(type, path))
+    #print prefix + str(map(type, boundingRectPath))
     prefix += " "
     if restart:
         #gc.collect()
@@ -196,7 +196,7 @@ def findRefPath(startObj, endObj, maxLen=8, restart=True, seen={}, path=None, ig
             continue
         try:
             if any([r is x for x in  path]):
-                #print prefix+"  LOOP", objChainString([r]+path)
+                #print prefix+"  LOOP", objChainString([r]+boundingRectPath)
                 continue
         except:
             print(r)
@@ -207,7 +207,7 @@ def findRefPath(startObj, endObj, maxLen=8, restart=True, seen={}, path=None, ig
             print(refPathString([startObj]+path))
             continue
         if maxLen == 0:
-            #print prefix+"  END:", objChainString([r]+path)
+            #print prefix+"  END:", objChainString([r]+boundingRectPath)
             continue
         ## See if we have already searched this node.
         ## If not, recurse.

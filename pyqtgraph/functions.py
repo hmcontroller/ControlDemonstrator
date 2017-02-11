@@ -1329,25 +1329,25 @@ def arrayToQPath(x, y, connect='all'):
     connections.
     """
 
-    ## Create all vertices in path. The method used below creates a binary format so that all
+    ## Create all vertices in boundingRectPath. The method used below creates a binary format so that all
     ## vertices can be read in at once. This binary format may change in future versions of Qt,
     ## so the original (slower) method is left here for emergencies:
-        #path.moveTo(x[0], y[0])
+        #boundingRectPath.moveTo(x[0], y[0])
         #if connect == 'all':
             #for i in range(1, y.shape[0]):
-                #path.lineTo(x[i], y[i])
+                #boundingRectPath.lineTo(x[i], y[i])
         #elif connect == 'pairs':
             #for i in range(1, y.shape[0]):
                 #if i%2 == 0:
-                    #path.lineTo(x[i], y[i])
+                    #boundingRectPath.lineTo(x[i], y[i])
                 #else:
-                    #path.moveTo(x[i], y[i])
+                    #boundingRectPath.moveTo(x[i], y[i])
         #elif isinstance(connect, np.ndarray):
             #for i in range(1, y.shape[0]):
                 #if connect[i] == 1:
-                    #path.lineTo(x[i], y[i])
+                    #boundingRectPath.lineTo(x[i], y[i])
                 #else:
-                    #path.moveTo(x[i], y[i])
+                    #boundingRectPath.moveTo(x[i], y[i])
         #else:
             #raise Exception('connect argument must be "all", "pairs", or array')
 
@@ -1395,7 +1395,7 @@ def arrayToQPath(x, y, connect='all'):
     lastInd = 20*(n+1)
     byteview.data[lastInd:lastInd+4] = struct.pack('>i', 0)
     #profiler('footer')
-    # create datastream object and stream into path
+    # create datastream object and stream into boundingRectPath
 
     ## Avoiding this method because QByteArray(str) leaks memory in PySide
     #buf = QtCore.QByteArray(arr.data[12:lastInd+4])  # I think one unnecessary copy happens here

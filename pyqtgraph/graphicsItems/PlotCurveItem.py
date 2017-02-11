@@ -551,7 +551,7 @@ class PlotCurveItem(GraphicsObject):
         self._mouseShape = None
         self._mouseBounds = None
         self._boundsCache = [None, None]
-        #del self.xData, self.yData, self.xDisp, self.yDisp, self.path
+        #del self.xData, self.yData, self.xDisp, self.yDisp, self.boundingRectPath
 
     def mouseShape(self):
         """

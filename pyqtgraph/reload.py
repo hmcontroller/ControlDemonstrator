@@ -444,14 +444,14 @@ Hooks into import system to
     #def __init__(self):
         #self.depth = 0
         
-    #def find_module(self, name, path):
-        #print "  "*self.depth + "find: ", name, path
-        ##if name == 'PyQt4' and path is None:
+    #def find_module(self, name, boundingRectPath):
+        #print "  "*self.depth + "find: ", name, boundingRectPath
+        ##if name == 'PyQt4' and boundingRectPath is None:
             ##print "PyQt4 -> PySide"
             ##self.modData = imp.find_module('PySide')
             ##return self
         ##return None ## return none to allow the import to proceed normally; return self to intercept with load_module
-        #self.modData = imp.find_module(name, path)
+        #self.modData = imp.find_module(name, boundingRectPath)
         #self.depth += 1
         ##sys.path_importer_cache = {}
         #return self
@@ -462,8 +462,8 @@ Hooks into import system to
         #print "  "*self.depth + "load: ", name
         #return mod
 
-#def pathHook(path):
-    #print "path hook:", path
+#def pathHook(boundingRectPath):
+    #print "boundingRectPath hook:", boundingRectPath
     #raise ImportError
 #sys.path_hooks.append(pathHook)
 

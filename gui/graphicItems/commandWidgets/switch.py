@@ -54,6 +54,8 @@ class Switch(QtGui.QGraphicsObject):
         self.boundingRectPath.lineTo(self.bounds[0], self.bounds[3])
         self.boundingRectPath.closeSubpath()
 
+        self.boundingRectBrush = QtGui.QBrush(QtGui.QColor(200, 200, 200))
+
     def getSwitchInCoordinates(self):
         return self.mapToScene(QtCore.QPointF(-10, 0))
 
@@ -62,6 +64,11 @@ class Switch(QtGui.QGraphicsObject):
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+        if self.showBoundingRect is True:
+            QPainter.setPen(self.dottedPen)
+            QPainter.drawPath(self.boundingRectPath)
+            QPainter.fillPath(self.boundingRectPath, self.boundingRectBrush)
 
         QPainter.fillPath(self.dotsPath, self.brush)
 
@@ -73,9 +80,6 @@ class Switch(QtGui.QGraphicsObject):
         else:
             QPainter.drawPath(self.switchClosedPath)
 
-        if self.showBoundingRect is True:
-            QPainter.setPen(self.dottedPen)
-            QPainter.drawPath(self.boundingRectPath)
 
     def boundingRect(self):
         return QtCore.QRectF(self.bounds[0], self.bounds[1], self.bounds[2] - self.bounds[0], self.bounds[3] - self.bounds[1])
