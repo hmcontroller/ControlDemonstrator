@@ -12,16 +12,15 @@ logging.basicConfig(filename='log.log',
                     format='%(asctime)s %(levelname)-9s%(message)s',
                     level=logging.INFO)
 
+
 ABSOLUTE_PROGRAM_ROOT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 
-# SERVER = DataAquisitionServerUDP()
 
 def myExcepthook(exc_type, exc_value, exc_traceback):
     exc_string = ""
     for line in traceback.format_exception(exc_type, exc_value, exc_traceback):
         exc_string += line
     logging.critical("uncaught exception:\n\n" + exc_string)
-    # SERVER.stop()
 
 
 class ControlDemonstrator(QtGui.QApplication):
@@ -45,9 +44,6 @@ class ControlDemonstrator(QtGui.QApplication):
             if isex:
                 self.quit()
 
-    def stopServer(self):
-        self.mainW.stopServer()
-
 
 def run():
     # sys.excepthook = myExcepthook
@@ -55,7 +51,6 @@ def run():
     app = ControlDemonstrator(sys.argv)
 
     exitCode = app.exec_()
-    app.stopServer()
     sys.exit(exitCode)
 
 if __name__ == "__main__":

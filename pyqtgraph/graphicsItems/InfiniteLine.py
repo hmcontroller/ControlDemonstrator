@@ -312,7 +312,7 @@ class InfLineLabel(TextItem):
                     along the line.
     anchors         List of (x,y) pairs giving the text anchor positions that should
                     be used when the line is moved to one side of the view or the
-                    other. This allows text to switch to the opposite side of the line
+                    other. This allows text to proportionalSwitch to the opposite side of the line
                     as it approaches the edge of the view. These are automatically
                     selected for some common cases, but may be specified if the 
                     default values give unexpected results.

@@ -63,7 +63,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.plotCurves = list()
         for i, channel in enumerate(self.measurementData.channels):
             # create a plot curve
-            colorTuple = COLORS[i % len(COLORS)]
+            colorTuple = CHANNEL_COLORS[i % len(CHANNEL_COLORS)]
             color = QtGui.QColor(colorTuple[0], colorTuple[1], colorTuple[2])
             self.plotCurves.append(self.plotWidget.plot(pen=color))
 
@@ -85,10 +85,10 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.commands = modelMaker.getCommands()
         self.parameterCount = len(self.commands)
 
-        self.myControllerClass = gui.controllerConsole.MyController(self.commands)
+        self.myControllerClass = gui.controllerConsole.MyController(self.commands, self.measurementData)
         self.verticalLayout_2.insertWidget(0, self.myControllerClass, 0)
 
-        self.myControllerClass.parameterChanged.connect(self.parameterChangedFromController)
+        # self.myControllerClass.parameterChanged.connect(self.parameterChangedFromController)
 
         logging.info("GUI load complete")
 
@@ -163,48 +163,33 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
             biggestTime = self.measurementData.timeValues[self.settings.bufferLength - 1]
             for i, curve in enumerate(self.plotCurves):
                 curve.setData(self.measurementData.timeValues,
-                              self.measurementData.channels[i].values)
+                              self.measurementData.channels[i])
                 curve.setPos(-biggestTime, 0)
 
     def updateController(self):
-        tankLevel0 = (self.measurementData.channels[0].values[self.settings.bufferLength-1]/65536.0) * 100
-        self.myControllerClass.tankWidget0.setLevel(tankLevel0)
-
-        tankLevel1 = (self.measurementData.channels[1].values[self.settings.bufferLength-1]/65536.0) * 100
-        self.myControllerClass.tankWidget1.setLevel(tankLevel1)
-
-        tankLevel2 = (self.measurementData.channels[2].values[self.settings.bufferLength-1]/65536.0) * 100
-        self.myControllerClass.tankWidget2.setLevel(tankLevel2)
-
+        # tankLevel0 = (self.measurementData.channels[0][self.settings.bufferLength-1]/65536.0) * 100
+        # self.myControllerClass.tankGauge.setValue(tankLevel0)
         self.myControllerClass.scene.update()
 
     def printLoopPerformance(self):
         print "min", self.loopDurationMin, "max", self.loopDurationMax, "avg", self.loopDurationAverage
 
-        # for command in self.commands:
-        #     print command.value
-
-    def stopServer(self):
-        pass
-        # self.udpServer.stop()
-
     def keyPressEvent(self, QKeyEvent):
         if QKeyEvent.key() == QtCore.Qt.Key_Space:
             self.movePlot = not self.movePlot
 
-    def parameterChangedFromController(self, parameterNumber, value):
-        print "you are controlling nicely", parameterNumber, value
-        self.commands[parameterNumber].value = value
 
     def receive(self):
         messages = self.communicator.receive()
         if messages is None:
             return
-        MessageInterpreter.mapUserChannels(self.measurementData, messages)
-        loopCycleDuration = MessageInterpreter.getLoopCycleDuration(messages)
-        commandConfirmation = MessageInterpreter.getCommandConfirmation(messages)
 
-        self.commands[commandConfirmation.id].checkConfirmation(commandConfirmation)
+        MessageInterpreter.mapUserChannels(self.measurementData, messages)
+
+        loopCycleDuration = MessageInterpreter.getLoopCycleDuration(messages[-1])
+        for message in messages:
+            commandConfirmation = MessageInterpreter.getCommandConfirmation(message)
+            self.commands[commandConfirmation.id].checkConfirmation(commandConfirmation)
 
         self.communicator.send(self.commands)
 

@@ -4,6 +4,8 @@ import socket
 import errno
 import struct
 
+from core.messageData import MessageData
+
 class UdpCommunicator():
     def __init__(self, ownIp, remoteIp, rxPort, txPort):
         # TODO - check remotePort against txPort or what is more clear
@@ -26,9 +28,8 @@ class UdpCommunicator():
 
     def setMessageMap(self, formatList):
         self.messageMap = formatList
-        self.messageSize = self.messageMap[-1].bitPosition + self.messageMap[-1].lengthInBytes
+        self.messageSize = self.messageMap[-1].positionInBytes + self.messageMap[-1].lengthInBytes
         # print "size", self.messageSize
-
 
     def send(self, commandList):
         packedData = self._packCommandList(commandList)
@@ -41,7 +42,6 @@ class UdpCommunicator():
             parameterValues.append(command.value)
         return struct.pack(formatString, *parameterValues)
 
-
     def receive(self):
         bufferContainsData = True
         packets = list()
@@ -50,6 +50,7 @@ class UdpCommunicator():
             try:
                 data, address = self.sockRX.recvfrom(self.messageSize)
                 isPacketReceived = True
+                packets.append(data)
             except socket.timeout:
                 bufferContainsData = False
             except socket.error, e:
@@ -57,11 +58,9 @@ class UdpCommunicator():
                     bufferContainsData = False
                 else:
                     raise
-            else:
-                packets.append(data)
+
         if isPacketReceived:
-            self._unpack(packets)
-            return self.messageMap
+            return self._unpack(packets)
         else:
             return None
 
@@ -72,9 +71,29 @@ class UdpCommunicator():
         # TODO - think about how to single source the packet configuration
         # TODO at the time being the source is in types.h -> messageOut in the microcontroller code
 
-        for rawPacket in rawPackets:
-            for mData in self.messageMap:
-                rawPart = rawPacket[mData.bitPosition : mData.bitPosition + mData.lengthInBytes]
-                mData.value = struct.unpack(mData.unpackString, rawPart)[0]
+        unpackedMessages = list()
 
+        for rawPacket in rawPackets:
+            message = list()
+            for messagePartInfo in self.messageMap:
+                messagePart = MessageData()
+                rawPart = rawPacket[messagePartInfo.positionInBytes : messagePartInfo.positionInBytes + messagePartInfo.lengthInBytes]
+
+                # only these values are changed, the others are just copied
+                messagePart.value = struct.unpack(messagePartInfo.unpackString, rawPart)[0]
+
+                messagePart.positionInBytes = messagePartInfo.positionInBytes
+                messagePart.lengthInBytes = messagePartInfo.lengthInBytes
+                messagePart.dataType = messagePartInfo.dataType
+                messagePart.unpackString = messagePartInfo.unpackString
+                messagePart.name = messagePartInfo.name
+                messagePart.isUserChannel = messagePartInfo.isUserChannel
+
+                message.append(messagePart)
+
+
+
+            unpackedMessages.append(message)
+
+        return unpackedMessages
 

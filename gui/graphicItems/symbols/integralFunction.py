@@ -42,3 +42,19 @@ class IntegralFunctionBlock(QtGui.QGraphicsItem):
 
     def boundingRect(self):
         return QtCore.QRectF(0, 0, 25, 10)
+
+    @property
+    def northCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(25, 0))
+
+    @property
+    def westCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(0, 25))
+
+    @property
+    def southCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(25, 50))
+
+    @property
+    def eastCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(50, 25))

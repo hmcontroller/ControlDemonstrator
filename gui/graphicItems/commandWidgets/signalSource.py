@@ -4,12 +4,24 @@ import os
 
 from PyQt4 import QtGui, QtCore
 
+from gui.constants import *
+
+
 class SignalSource(QtGui.QGraphicsObject):
 
     # valueChanged = QtCore.pyqtSignal(float)
 
     def __init__(self):
         super(SignalSource, self).__init__()
+
+        self.showConfirmationFailure = False
+
+        self.isCommandConfirmed = False
+
+        self.warningPath = QtGui.QPainterPath()
+        self.warningPath.addRect(100, 5, 20, 20)
+
+        self.warningBrush = QtGui.QBrush(CONFIRMATION_WARNING_COLOR)
 
         self.upButton = UpButton(self)
         self.upButton.setPos(125, 0)
@@ -53,6 +65,12 @@ class SignalSource(QtGui.QGraphicsObject):
 
         self.constantShape = SignalSourceConstantShape(self)
 
+        self.confirmationWarningTimer = QtCore.QTimer()
+        self.confirmationWarningTimer.setSingleShot(False)
+        self.confirmationWarningTimer.timeout.connect(self.toggleConfirmationFailureIndication)
+        self.confirmationWarningBlinkInterval = 200
+        self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
+
     def oneSignalUp(self):
         self.currentSignalNumber += 1
         if self.currentSignalNumber >= len(self.signalSymbols):
@@ -70,11 +88,40 @@ class SignalSource(QtGui.QGraphicsObject):
             sig.hide()
         self.signalSymbols[self.currentSignalNumber].show()
 
-    def boundingRect(self):
-        return QtCore.QRectF(0, 0, 25, 25)
+    @property
+    def northCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(75, 0))
+
+    @property
+    def westCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(0, 50))
+
+    @property
+    def southCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(75, 100))
+
+    @property
+    def eastCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(150, 50))
+
+    def confirmationTimeOut(self):
+        self.isCommandConfirmed = False
+        self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
+
+    def confirmation(self):
+        self.confirmationWarningTimer.stop()
+        self.isCommandConfirmed = True
+        self.showConfirmationFailure = False
+
+    def toggleConfirmationFailureIndication(self):
+        self.showConfirmationFailure = not self.showConfirmationFailure
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        pass
+        if self.showConfirmationFailure is True:
+            QPainter.fillPath(self.warningPath, self.warningBrush)
+
+    def boundingRect(self):
+        return QtCore.QRectF(0, 0, 150, 100)
 
 
 class SignalSourceConstantShape(QtGui.QGraphicsItem):
@@ -151,6 +198,7 @@ class SignalSourceConstantShape(QtGui.QGraphicsItem):
         return QtCore.QRectF(0, 0, 151, 101)
 
 
+
 class LittleButton(QtGui.QGraphicsObject):
 
     clicked = QtCore.pyqtSignal()
@@ -169,8 +217,8 @@ class LittleButton(QtGui.QGraphicsObject):
         self.backgroundPath.closeSubpath()
 
         self.normalBackgroundBrush = QtGui.QBrush(QtGui.QColor(200, 200, 200, 0))
-        self.hoverBackgroundBrush = QtGui.QBrush(QtGui.QColor(200, 200, 200))
-        self.clickBackgroundBrush = QtGui.QBrush(QtGui.QColor(150, 150, 150))
+        self.hoverBackgroundBrush = QtGui.QBrush(HOVER_COLOR)
+        self.clickBackgroundBrush = QtGui.QBrush(MOUSE_DOWN_COLOR)
 
         self.currentBackgroundBrush = self.normalBackgroundBrush
 

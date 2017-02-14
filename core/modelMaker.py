@@ -5,6 +5,7 @@ import collections
 
 from core.settingsModel import Settings
 from core.command import Command
+from core.command import CommandList
 from core.messageData import MessageData
 from core.measurementData import MeasurementData
 from core.valueChannel import ValueChannel
@@ -18,12 +19,12 @@ class ModelMaker():
         self.config.read(self.configFilePath)
 
     def getCommands(self):
-        commands = list()
+        commands = CommandList()
         for i, name in enumerate(self.config.options('requestedControlledParameters')):
             cmd = Command()
-            cmd.value = 0.0
             cmd.id = i
             cmd.name = name
+            cmd.value = 0.0
             commands.append(cmd)
         return commands
 
@@ -32,16 +33,14 @@ class ModelMaker():
 
         bufferLength = self.config.getint("misc", "bufferSizePC")
         for i, channelName in enumerate(self.config.options('requestedFastParameters')):
-            channel = ValueChannel()
+            channel = ValueChannel(bufferLength)
             channel.id = i
             channel.name = channelName
-            channel.values = collections.deque(maxlen=bufferLength)
-            # channel.timeValues = collections.deque(maxlen=bufferLength)
             model.channels.append(channel)
             for n in range(0, bufferLength):
-                channel.values.append(0.0)
+                channel.append(0.0, suppressSignal=True)
 
-        model.timeValues = collections.deque(maxlen=bufferLength)
+        model.timeValues = ValueChannel(bufferLength)
         for i in range(0, bufferLength):
             model.timeValues.append(0.0)
 
@@ -57,7 +56,7 @@ class ModelMaker():
         for i, channelName in enumerate(self.config.options('requestedFastParameters')):
             messageData = MessageData()
             # messageData.id = i
-            messageData.bitPosition = positionCounter
+            messageData.positionInBytes = positionCounter
             messageData.lengthInBytes = 4
             messageData.dataType = float
             messageData.unpackString = "<f"
@@ -73,7 +72,7 @@ class ModelMaker():
         mData = MessageData()
         # mData.id = channelCounter
         channelCounter += 1
-        mData.bitPosition = positionCounter
+        mData.positionInBytes = positionCounter
         mData.lengthInBytes = 4
         positionCounter += mData.lengthInBytes
         mData.dataType = int
@@ -85,7 +84,7 @@ class ModelMaker():
         mData1 = MessageData()
         # mData1.id = channelCounter
         channelCounter += 1
-        mData1.bitPosition = positionCounter
+        mData1.positionInBytes = positionCounter
         mData1.lengthInBytes = 4
         positionCounter += mData1.lengthInBytes
         mData1.dataType = int
@@ -97,7 +96,7 @@ class ModelMaker():
         mData2 = MessageData()
         # mData2.id = channelCounter
         channelCounter += 1
-        mData2.bitPosition = positionCounter
+        mData2.positionInBytes = positionCounter
         mData2.lengthInBytes = 4
         positionCounter += mData2.lengthInBytes
         mData2.dataType = int
@@ -109,7 +108,7 @@ class ModelMaker():
         mData3 = MessageData()
         # mData3.id = channelCounter
         channelCounter += 1
-        mData3.bitPosition = positionCounter
+        mData3.positionInBytes = positionCounter
         mData3.lengthInBytes = 4
         positionCounter += mData3.lengthInBytes
         mData3.dataType = float

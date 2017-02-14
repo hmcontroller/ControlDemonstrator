@@ -3,7 +3,7 @@
 
 class MessageData():
     def __init__(self):
-        self.bitPosition = 0
+        self.positionInBytes = 0
         self.lengthInBytes = 4
         self.dataType = float
         self.unpackString = "<i"

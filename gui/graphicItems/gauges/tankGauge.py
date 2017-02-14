@@ -11,8 +11,27 @@ class TankGauge(QtGui.QGraphicsItem):
         self.width = 20
         self.height = -100
 
+        self.symbolBorder = QtGui.QPainterPath()
+        self.symbolBorder.addRect(-10, self.height - 20, self.width + 60, -self.height + 40)
+
+        self.symbolBorderPen = QtGui.QPen()
+        self.symbolBorderPen.setColor(QtGui.QColor(0, 0, 0))
+        self.symbolBorderPen.setCosmetic(True)
+        self.symbolBorderPen.setWidth(2)
+
+
         self.tankBorder = QtGui.QPainterPath()
         self.tankBorder.addRect(0, 0, self.width, self.height)
+
+        self.tankBorderPen = QtGui.QPen()
+        self.tankBorderPen.setColor(QtGui.QColor(100, 100, 100))
+        self.tankBorderPen.setCosmetic(True)
+        self.tankBorderPen.setWidth(1)
+
+        self.blackPen = QtGui.QPen()
+        self.blackPen.setColor(QtGui.QColor(0, 0, 0))
+        self.blackPen.setCosmetic(True)
+        self.blackPen.setWidth(1)
 
         self.fillRect = QtGui.QPainterPath()
         self.fillRect.moveTo(0, 0)
@@ -29,7 +48,6 @@ class TankGauge(QtGui.QGraphicsItem):
         self.digitBorder.lineTo(self.width + 10, self.level + 10)
         self.digitBorder.closeSubpath()
 
-        self.black = QtGui.QBrush(QtGui.QColor(0, 0, 0))
         self.tankColor = QtGui.QBrush(QtGui.QColor(0, 153, 255))
 
         self.textRect = QtCore.QRectF(self.width + 10, self.level + 10, self.width + 40, self.level - 10)
@@ -49,6 +67,10 @@ class TankGauge(QtGui.QGraphicsItem):
         self.reposition()
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
+        painter.setPen(self.symbolBorderPen)
+        painter.drawPath(self.symbolBorder)
+
+        painter.setPen(self.tankBorderPen)
         painter.drawPath(self.tankBorder)
         painter.fillPath(self.tankBorder, QtGui.QColor(240, 240, 240))
 
@@ -56,19 +78,38 @@ class TankGauge(QtGui.QGraphicsItem):
 
         painter.drawPath(self.digitBorder)
         painter.fillPath(self.digitBorder, QtGui.QColor(240, 240, 240))
+
+        painter.setPen(self.blackPen)
         painter.setFont(QtGui.QFont("Sans Serif", 12))
         painter.drawText(self.textRect,
                          QtCore.Qt.AlignRight or QtCore.Qt.AlignVCenter,
                          QtCore.QString(str(self.level * -1)))
 
     def boundingRect(self):
-        return QtCore.QRectF(0, 0, 70, 110)
+        return QtCore.QRectF(-10, -120, 70, 20)
 
     def setColor(self, color):
         self.tankColor = color
         self.update()
 
-    def setLevel(self, value):
+    def setValue(self, value):
         self.level = int(value * -1)
         self.reposition()
         self.update()
+
+    @property
+    def northCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(30, -120))
+
+    @property
+    def westCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(-10, -50))
+
+    @property
+    def southCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(30, 20))
+
+    @property
+    def eastCoordinates(self):
+        return self.mapToScene(QtCore.QPoint(70, -50))
+
