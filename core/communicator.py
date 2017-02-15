@@ -7,22 +7,19 @@ import struct
 from core.messageData import MessageData
 
 class UdpCommunicator():
-    def __init__(self, ownIp, remoteIp, rxPort, txPort):
+    def __init__(self, settings):
         # TODO - check remotePort against txPort or what is more clear
-        self.ownIp = ownIp
-        self.remoteIp = remoteIp
-        self.rxPort = rxPort
-        self.txPort = txPort
+        self.settings = settings
         self.messageSize = None
         self.messageMap = None
 
         self.sockRX = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sockRX.bind((self.ownIp, self.rxPort))
+        self.sockRX.bind((self.settings.computerIP, self.settings.computerRxPort))
         self.sockRX.setblocking(False)
         self.sockRX.settimeout(0)
 
         self.sockTX = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sockTX.bind((self.ownIp, self.txPort))
+        self.sockTX.bind((self.settings.computerIP, self.settings.controllerRxPort))
         self.sockTX.setblocking(False)
         self.sockTX.settimeout(0)
 
@@ -33,7 +30,7 @@ class UdpCommunicator():
 
     def send(self, commandList):
         packedData = self._packCommandList(commandList)
-        self.sockTX.sendto(packedData, (self.remoteIp, self.txPort))
+        self.sockTX.sendto(packedData, (self.settings.controllerIP, self.settings.controllerRxPort))
 
     def _packCommandList(self, commandList):
         formatString = "<{}f".format(len(commandList))

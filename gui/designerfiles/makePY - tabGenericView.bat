@@ -1,0 +1,1 @@
+pyuic4 -o tabGenericView.py tabGenericView.ui

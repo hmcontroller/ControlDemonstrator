@@ -1,0 +1,1 @@
+pyuic4 -o tabWaterLineExperiment.py tabWaterLineExperiment.ui

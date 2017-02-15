@@ -9,6 +9,7 @@ from core.command import CommandList
 from core.messageData import MessageData
 from core.measurementData import MeasurementData
 from core.valueChannel import ValueChannel
+from core.constants import *
 
 
 class ModelMaker():
@@ -36,6 +37,7 @@ class ModelMaker():
             channel = ValueChannel(bufferLength)
             channel.id = i
             channel.name = channelName
+            channel.colorRgbTuple = CHANNEL_COLORS[i % len(CHANNEL_COLORS)]
             model.channels.append(channel)
             for n in range(0, bufferLength):
                 channel.append(0.0, suppressSignal=True)
@@ -129,5 +131,9 @@ class ModelMaker():
         settingsModel.bufferLength = self.config.getint("misc", "bufferSizePC")
         settingsModel.plotUpdateTimeSpanInMs = self.config.getint("misc", "plotUpdateTimeSpanInMs")
         settingsModel.controlUpdateTimeSpanInMs = self.config.getint("misc", "controlUpdateTimeSpanInMs")
+        settingsModel.computerIP = self.config.get("misc", "computerIP")
+        settingsModel.controllerIP = self.config.get("misc", "controllerIP")
+        settingsModel.computerRxPort = self.config.getint("misc", "computerRxPort")
+        settingsModel.controllerRxPort = self.config.getint("misc", "controllerRxPort")
         return settingsModel
 

@@ -14,6 +14,7 @@ class ValueChannel(QtCore.QObject):
         self.name = ""
         self._values = deque(maxlen=bufferLength)
         self.show = True
+        self.colorRgbTuple = (0, 0, 0)
 
     def append(self, value, suppressSignal=False):
         self._values.append(value)

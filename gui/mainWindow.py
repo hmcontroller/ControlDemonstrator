@@ -1,32 +1,25 @@
 # -*- encoding: utf-8 -*-
 import os
 import logging
-import collections
 
-import struct
-import socket
-import errno
-import time
-
-from PyQt4 import QtCore, QtGui, QtSql
-import pyqtgraph
-
-
-from gui.designerfiles.main_window import Ui_MainWindow
-import gui.graphicItems
-import gui.controllerConsole
-from gui.idCheckBox import IdColorLabelCheckbox
-
-from gui.constants import *
+from PyQt4 import QtCore, QtGui
 
 from core.modelMaker import ModelMaker
 from core.communicator import UdpCommunicator
 from core.messageInterpreter import MessageInterpreter
 
-class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
+from gui.constants import *
+from gui.tabWaterLineExperiment import TabWaterLineExperiment
+from gui.tabGenericView import TabGenericView
+
+class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def __init__(self, rootFolder):
         QtGui.QMainWindow.__init__(self)
-        self.setupUi(self)
+        self.setupUi()
+
+        self.screenRect = QtGui.QApplication.desktop().screenGeometry()
+        self.setGeometry(self.screenRect.width() * 0.05, self.screenRect.height() * 0.05,
+                         self.screenRect.width() * 0.9, self.screenRect.height() * 0.9)
 
         # show a splash image
         splashImagePath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Regelkreis.gif")
@@ -37,8 +30,6 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         splashScreen.showMessage(u"Regulator wird geladen...", QtCore.Qt.AlignCenter)
         QtGui.qApp.processEvents()
 
-        # time.sleep(1)
-
         # generate model objects according to the config file
         configFilePath = os.path.join(rootFolder, "config.txt")
         modelMaker = ModelMaker(configFilePath)
@@ -48,151 +39,112 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         # TODO it is dirty how the messageData list will be generated in model maker - check single source problem
         self.messageFormat = modelMaker.getMessageFormatList()
 
-
-
-
-
-
         # TODO - do not differentiate between analog channels and fastParameterChannels
         # TODO remove sensorMapping from the config file
-        self.measurementData = modelMaker.getMeasurementDataModel()
-
-        self.plotWidget = pyqtgraph.PlotWidget()
-        self.plotWidget.setXRange(-float(self.settings.bufferLength)*(self.settings.controllerLoopCycleTime / float(1000000)), 0)
-        self.plotWidget.setYRange(0, 60000)
-        self.plotCurves = list()
-        for i, channel in enumerate(self.measurementData.channels):
-            # create a plot curve
-            colorTuple = CHANNEL_COLORS[i % len(CHANNEL_COLORS)]
-            color = QtGui.QColor(colorTuple[0], colorTuple[1], colorTuple[2])
-            self.plotCurves.append(self.plotWidget.plot(pen=color))
-
-            # add a check box to show/hide the curve next to the plot window
-            box = IdColorLabelCheckbox(parent=self.frame, id=i, color=color)
-            box.setFont(CHECK_BOX_FONT)
-            box.setObjectName("checkBox{}".format(i))
-            box.setText(channel.name)
-            # box.setStyleSheet("""border: 3px solid rgb({})""".format(colorStrings[i % len(colorStrings)]))
-            box.setChecked(True)
-            box.changed.connect(self.curveHideShow)
-            self.verticalLayout.addWidget(box)
-
-        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
-
-        self.totalChannelCount = len(self.measurementData.channels)
+        self.channels = modelMaker.getMeasurementDataModel()
 
         self.commands = modelMaker.getCommands()
-        self.parameterCount = len(self.commands)
 
-        self.myControllerClass = gui.controllerConsole.MyController(self.commands, self.measurementData)
-        self.verticalLayout_2.insertWidget(0, self.myControllerClass, 0)
-
-        # self.myControllerClass.parameterChanged.connect(self.parameterChangedFromController)
-
-        logging.info("GUI load complete")
-
-        # Enable antialiasing for prettier plots or not
-        pyqtgraph.setConfigOptions(antialias=False)
-
-        self.horizontalLayout_3.insertWidget(0, self.plotWidget, 0)
-
-        self.parameterCounter = 0
-
-
-        # ownIP = '192.168.178.20'
-        ownIP = '192.168.0.133'
-        remoteIP = '192.168.0.10'
-        portRX = 10000
-        portTX = 10001
-        messageSize = self.totalChannelCount * 4 + 16
-
-        self.communicator = UdpCommunicator(ownIP, remoteIP, portRX, portTX)
+        self.communicator = UdpCommunicator(self.settings)
         self.communicator.setMessageMap(self.messageFormat)
 
-        # print 'UDP Server Running at ', self.sockRX.getsockname()# socket.gethostbyname(socket.gethostname())
+        # add a tab for the waterLineExperiment
+        self.tabWaterLineExperiment = TabWaterLineExperiment(self.commands, self.channels, self.settings)
+        self.tabWaterLineExperimentLayout.addWidget(self.tabWaterLineExperiment)
 
+        # add a tab for generic control
+        self.tabGeneric = TabGenericView(self.commands, self.channels, self.settings)
+        self.tabGenericViewLayout.addWidget(self.tabGeneric)
+
+
+        # setup a timer, that runs a loop to communicate with the controller and update all graphic elements
+        self.loopCycleTimer = QtCore.QTimer()
+        self.loopCycleTimer.setSingleShot(False)
+        self.connect(self.loopCycleTimer, QtCore.SIGNAL("timeout()"), self.loop)
+        self.loopCycleTimer.start(self.settings.plotUpdateTimeSpanInMs)
+
+
+        # for debugging purpose
+        self.loopReportTimer = QtCore.QTimer()
+        self.loopReportTimer.setSingleShot(False)
+        self.connect(self.loopReportTimer, QtCore.SIGNAL("timeout()"), self.printLoopPerformance)
+        self.loopReportTimer.start(5000)
+
+        # some calculations for debugging purpose
         self.loopDurationMin = 1000000
         self.loopDurationMax = 0
         self.loopDurationAverage = 0
         self.loopDurationSum = 0
         self.loopDurationCounter = 0
 
-        self.parametersReceived = list()
-        self.parametersToSend = list()
-
-        self.parametersReceived = [0.0] * self.parameterCount
-        self.parametersToSend = range(0, self.parameterCount)
-
-
-
-
-        for curve in self.plotCurves:
-            curve.setPos(-self.settings.bufferLength, 0)
-
-        self.movePlot = True
-        self.plotTimer = QtCore.QTimer()
-        self.plotTimer.setSingleShot(False)
-        self.connect(self.plotTimer, QtCore.SIGNAL("timeout()"), self.updatePlot)
-        self.plotTimer.start(self.settings.plotUpdateTimeSpanInMs)
-
-        self.controllerTimer = QtCore.QTimer()
-        self.controllerTimer.setSingleShot(False)
-        self.connect(self.controllerTimer, QtCore.SIGNAL("timeout()"), self.updateController)
-        self.controllerTimer.start(self.settings.controlUpdateTimeSpanInMs)
-
-        self.loopReportTimer = QtCore.QTimer()
-        self.loopReportTimer.setSingleShot(False)
-        self.connect(self.loopReportTimer, QtCore.SIGNAL("timeout()"), self.printLoopPerformance)
-        self.loopReportTimer.start(5000)
-
-
         splashScreen.finish(self)
+        logging.info("GUI load complete")
 
-    def curveHideShow(self, number, state):
-        if state == 2:
-            self.plotCurves[number].setVisible(True)
-        else:
-            self.plotCurves[number].setVisible(False)
+    def setupUi(self):
+        self.centralwidget = QtGui.QWidget(self)
+        self.centralwidget.setEnabled(True)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
+        self.centralwidget.setSizePolicy(sizePolicy)
+        self.centralwidget.setObjectName("centralwidget")
 
-    def updatePlot(self):
-        self.receive()
+        self.centralWidgetLayout = QtGui.QHBoxLayout(self.centralwidget)
+        self.centralWidgetLayout.setMargin(0)
 
-        if self.movePlot is True:
-            # update all curves
-            biggestTime = self.measurementData.timeValues[self.settings.bufferLength - 1]
-            for i, curve in enumerate(self.plotCurves):
-                curve.setData(self.measurementData.timeValues,
-                              self.measurementData.channels[i])
-                curve.setPos(-biggestTime, 0)
+        self.tabWidget = QtGui.QTabWidget(self.centralwidget)
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        font.setPointSize(8)
+        self.tabWidget.setFont(font)
+        self.tabWidget.setAutoFillBackground(False)
+        self.tabWidget.setObjectName("tabWidget")
 
-    def updateController(self):
-        # tankLevel0 = (self.measurementData.channels[0][self.settings.bufferLength-1]/65536.0) * 100
-        # self.myControllerClass.tankGauge.setValue(tankLevel0)
-        self.myControllerClass.scene.update()
+        self.tab = QtGui.QWidget()
+        self.tab.setObjectName("tab")
+        self.tabWaterLineExperimentLayout = QtGui.QHBoxLayout(self.tab)
+        self.tabWaterLineExperimentLayout.setSpacing(0)
+        self.tabWaterLineExperimentLayout.setMargin(0)
+        self.tabWaterLineExperimentLayout.setObjectName("tabWaterLineExperimentLayout")
+        self.tabWidget.addTab(self.tab, "Wasserstandexperiment")
 
-    def printLoopPerformance(self):
-        print "min", self.loopDurationMin, "max", self.loopDurationMax, "avg", self.loopDurationAverage
+        self.tab_1 = QtGui.QWidget()
+        self.tab_1.setObjectName("tab_1")
+        self.tabGenericViewLayout = QtGui.QHBoxLayout(self.tab_1)
+        self.tabGenericViewLayout.setSpacing(0)
+        self.tabGenericViewLayout.setMargin(0)
+        self.tabGenericViewLayout.setObjectName("tabGenericView")
+        self.tabWidget.addTab(self.tab_1, "generische Ansicht")
 
-    def keyPressEvent(self, QKeyEvent):
-        if QKeyEvent.key() == QtCore.Qt.Key_Space:
-            self.movePlot = not self.movePlot
+        self.centralWidgetLayout.addWidget(self.tabWidget)
+        self.setCentralWidget(self.centralwidget)
 
+    def loop(self):
+        messages = self.receive()
+        if messages is None:
+            self.updateGraphicElements()
+            return
+        self.handleNewData(messages)
+        self.send()
+        self.updateGraphicElements()
+        self.calculateSomeStuff(messages)
 
     def receive(self):
-        messages = self.communicator.receive()
-        if messages is None:
-            return
+        return self.communicator.receive()
 
-        MessageInterpreter.mapUserChannels(self.measurementData, messages)
+    def handleNewData(self, messages):
+        MessageInterpreter.mapUserChannels(self.channels, messages)
 
-        loopCycleDuration = MessageInterpreter.getLoopCycleDuration(messages[-1])
         for message in messages:
             commandConfirmation = MessageInterpreter.getCommandConfirmation(message)
             self.commands[commandConfirmation.id].checkConfirmation(commandConfirmation)
 
+    def send(self):
         self.communicator.send(self.commands)
 
+    def calculateSomeStuff(self, messages):
+        loopCycleDuration = MessageInterpreter.getLoopCycleDuration(messages[-1])
         # calculate some statistics
         if loopCycleDuration < self.loopDurationMin:
             self.loopDurationMin = loopCycleDuration
@@ -202,4 +154,11 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.loopDurationSum += loopCycleDuration
         self.loopDurationCounter += 1
         self.loopDurationAverage = self.loopDurationSum / float(self.loopDurationCounter)
+
+    def updateGraphicElements(self):
+        self.tabWaterLineExperiment.updateTab(self.channels)
+        self.tabGeneric.updateTab(self.channels)
+
+    def printLoopPerformance(self):
+        print "min", self.loopDurationMin, "max", self.loopDurationMax, "avg", self.loopDurationAverage
 

@@ -89,7 +89,11 @@ class TankGauge(QtGui.QGraphicsItem):
         return QtCore.QRectF(-10, -120, 70, 20)
 
     def setColor(self, color):
-        self.tankColor = color
+        # accepts a tuple with three int values or a QtGui.QColor
+        if isinstance(color, tuple):
+            self.tankColor = QtGui.QColor(color[0], color[1], color[2])
+        else:
+            self.tankColor = color
         self.update()
 
     def setValue(self, value):

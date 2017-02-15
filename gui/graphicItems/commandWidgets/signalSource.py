@@ -182,10 +182,10 @@ class SignalSourceConstantShape(QtGui.QGraphicsItem):
         QPainter.drawPath(self.cSysPath)
 
         QPainter.drawText(self.uRect,
-                         QtCore.Qt.AlignLeft or QtCore.Qt.AlignVCenter,
+                         QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                          QtCore.QString("u"))
         QPainter.drawText(self.tRect,
-                         QtCore.Qt.AlignLeft or QtCore.Qt.AlignVCenter,
+                         QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                          QtCore.QString("t"))
 
     def mouseDoubleClickEvent(self, QMouseEvent):

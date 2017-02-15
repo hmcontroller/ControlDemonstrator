@@ -1,33 +1,22 @@
 # -*- encoding: utf-8 -*-
-import re
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtCore
 
+from baseCommand import BaseCommand
+from gui.graphicItems.floatValidator import FloatValidator
 from gui.constants import *
+from gui.graphicItems.lineEditDoubleClickSpecial import LineEditDoubleClickSpecial
 
 
-class Gain(QtGui.QGraphicsObject):
+class Gain(BaseCommand):
 
     valueChanged = QtCore.pyqtSignal(float)
 
     def __init__(self, command):
-        super(Gain, self).__init__()
-
-        self.command = command
-
-        self.lowerLimit = self.command.lowerLimit
-        self.upperLimit = self.command.upperLimit
-
-
-        self.showWrongUserInputWarning = False
-        self.showHoverIndication = False
-        self.showConfirmationFailure = False
-
-        self.isCommandConfirmed = False
+        self.lineEdit = LineEditDoubleClickSpecial()
+        super(Gain, self).__init__(command)
 
         self.setAcceptHoverEvents(True)
 
-
-        self.lineEdit = MyLineEdit()
         self.lineEdit.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.lineEdit.setFixedSize(50, 40)
         p = QtGui.QPalette()
@@ -40,7 +29,7 @@ class Gain(QtGui.QGraphicsObject):
         self.lineEdit.setFont(QtGui.QFont("sans-serif", 10))
 
 
-        self.valli = MyFloatValidator(ur"\A[-]{0,1}\d{0,}[\.,]{0,1}\d{0,}\Z", self.lowerLimit, self.upperLimit)
+        self.valli = FloatValidator()
         self.lineEdit.setValidator(self.valli)
 
         self.lineEdit.editingFinished.connect(self.editFinished)
@@ -49,36 +38,16 @@ class Gain(QtGui.QGraphicsObject):
         self.lineEditProxy.setWidget(self.lineEdit)
 
 
-        self.pen = QtGui.QPen()
-        self.pen.setColor(QtGui.QColor(0, 0, 0))
-        self.pen.setWidth(2)
-        self.pen.setCosmetic(True)
-
-        self.warningBrush = QtGui.QBrush(USER_INPUT_WARNING_COLOR)
-        self.hoverBrush = QtGui.QBrush(HOVER_COLOR)
-        self.unconfirmedBrush = QtGui.QBrush(CONFIRMATION_WARNING_COLOR)
+        # self.pen = QtGui.QPen()
+        # self.pen.setColor(QtGui.QColor(0, 0, 0))
+        # self.pen.setWidth(2)
+        # self.pen.setCosmetic(True)
 
         self.path = QtGui.QPainterPath()
         self.path.moveTo(0, 0)
         self.path.lineTo(0, 60)
         self.path.lineTo(70, 30)
         self.path.closeSubpath()
-
-        self.clearWarningTimer = QtCore.QTimer()
-        self.clearWarningTimer.setSingleShot(True)
-        self.clearWarningTimer.timeout.connect(self.clearUserInputWarning)
-
-        self.confirmationWarningTimer = QtCore.QTimer()
-        self.confirmationWarningTimer.setSingleShot(False)
-        self.confirmationWarningTimer.timeout.connect(self.toggleConfirmationFailureIndication)
-        self.confirmationWarningBlinkInterval = 200
-        self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
-
-        self.setValue(self.command.value)
-        self.valueChanged.connect(self.command.setValue)
-        self.command.confirmationTimeOut.connect(self.confirmationTimeOut)
-        self.command.confirmation.connect(self.confirmation)
-
 
     def editFinished(self):
         self.lineEditProxy.clearFocus()
@@ -87,21 +56,21 @@ class Gain(QtGui.QGraphicsObject):
         print "Editfinished", text
 
         if text == "":
-            self.lineEdit.setText(str(self.lowerLimit))
-            self.valueChanged.emit(self.lowerLimit)
+            self.lineEdit.setText(str(self.command.lowerLimit))
+            self.valueChanged.emit(self.command.lowerLimit)
             self.showUserInputWarning()
             return
 
         text = text.replace(",", ".")
 
         number = float(text)
-        if number < self.lowerLimit:
-            self.lineEdit.setText(str(self.lowerLimit))
-            self.valueChanged.emit(self.lowerLimit)
+        if number < self.command.lowerLimit:
+            self.lineEdit.setText(str(self.command.lowerLimit))
+            self.valueChanged.emit(self.command.lowerLimit)
             self.showUserInputWarning()
-        elif number > self.upperLimit:
-            self.valueChanged.emit(self.upperLimit)
-            self.lineEdit.setText(str(self.upperLimit))
+        elif number > self.command.upperLimit:
+            self.valueChanged.emit(self.command.upperLimit)
+            self.lineEdit.setText(str(self.command.upperLimit))
             self.showUserInputWarning()
         else:
             self.valueChanged.emit(number)
@@ -114,18 +83,6 @@ class Gain(QtGui.QGraphicsObject):
     def clearUserInputWarning(self):
         self.showWrongUserInputWarning = False
         self.update()
-
-    def confirmationTimeOut(self):
-        self.isCommandConfirmed = False
-        self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
-
-    def confirmation(self):
-        self.confirmationWarningTimer.stop()
-        self.isCommandConfirmed = True
-        self.showConfirmationFailure = False
-
-    def toggleConfirmationFailureIndication(self):
-        self.showConfirmationFailure = not self.showConfirmationFailure
 
     def setValue(self, value):
         self.lineEdit.setText(str(value))
@@ -153,7 +110,7 @@ class Gain(QtGui.QGraphicsObject):
             QPainter.fillPath(self.path, self.unconfirmedBrush)
 
         # draw the triangle
-        QPainter.setPen(self.pen)
+        QPainter.setPen(self.cablePen)
         QPainter.drawPath(self.path)
 
     def boundingRect(self):
@@ -179,33 +136,7 @@ class Gain(QtGui.QGraphicsObject):
         self.lineEdit.selectAll()
 
 
-class MyFloatValidator(QtGui.QDoubleValidator):
-
-    valueAboveLimit = QtCore.pyqtSignal(float)
-    valueBelowLimit = QtCore.pyqtSignal(float)
-
-    def __init__(self, expression, bottom, top):
-        super(MyFloatValidator, self).__init__()
-        self.expression = re.compile(expression)
-
-    def validate(self, qString, p_int):
-        text = str(qString)
-        # print "in Validator", text
-
-        if text == "":
-            return QtGui.QValidator.Acceptable, p_int
-
-        if self.expression.search(text):
-            return QtGui.QValidator.Acceptable, p_int
-        else:
-            return QtGui.QValidator.Invalid, p_int
 
 
 
 
-class MyLineEdit(QtGui.QLineEdit):
-    def __init__(self, parent=None):
-        super(MyLineEdit, self).__init__(parent)
-
-    def mouseDoubleClickEvent(self, QMouseEvent):
-        self.selectAll()

@@ -8,8 +8,6 @@ from gui.graphicItems.commandWidgets.switch import Switch
 from gui.graphicItems.gauges.tankGauge import TankGauge
 from gui.graphicItems.symbols.arrow import Arrow
 
-
-
 from gui.graphicItems.symbols.sumCircle import SumCircle
 from gui.graphicItems.commandWidgets.signalSource import SignalSource
 from gui.graphicItems.symbols.derivativeFunction import DerivativeFunctionBlock
@@ -18,19 +16,19 @@ from gui.graphicItems.symbols.distributionNode import DistributionNode
 from gui.graphicItems.symbols.corner import Corner
 
 
+from gui.graphicItems.commandWidgets.genericCommand import GenericCommand
 
 
-
-class MyController(QtGui.QGraphicsView):
+class ControllerWaterLineExperiment(QtGui.QGraphicsView):
 
     parameterChanged = QtCore.pyqtSignal(int, float)
 
-    def __init__(self, commandList, channels, parent=None):
+    def __init__(self, commands, channels, parent=None):
         QtGui.QGraphicsView.__init__(self, parent)
         self.setHorizontalScrollBarPolicy(1)
         self.setVerticalScrollBarPolicy(1)
 
-        self.commands = commandList
+        self.commands = commands
         self.channels = channels
 
         self.timer = QtCore.QTimer()
@@ -38,7 +36,7 @@ class MyController(QtGui.QGraphicsView):
         self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.simulate)
 
         self.setStyleSheet("""
-            .MyController {
+            .ControllerWaterLineExperiment {
                 border-style: none;
                 }
             """)
@@ -49,7 +47,6 @@ class MyController(QtGui.QGraphicsView):
         self.cablePen.setColor(QtGui.QColor(0, 0, 0))
         self.cablePen.setWidth(2)
         self.cablePen.setCosmetic(True)
-
 
 
         signalGenerator = SignalSource()
@@ -143,7 +140,7 @@ class MyController(QtGui.QGraphicsView):
         self.scene.addItem(self.tankGauge)
         self.tankGauge.setPos(800, 350)
         self.tankGauge.setValue(0)
-        self.tankGauge.setColor(QtGui.QBrush(QtGui.QColor(230, 0, 0)))
+        self.tankGauge.setColor(tankGaugeChannel.colorRgbTuple)
         tankGaugeChannel.newValueArrived.connect(self.tankGauge.setValue)
 
 
@@ -156,7 +153,7 @@ class MyController(QtGui.QGraphicsView):
         cornerPointIntegralGain = self.addCorner(300, 300)
         cornerPointPropSwitch = self.addCorner(650, 100)
         cornerPointIntegralSwitch = self.addCorner(650, 300)
-        cornerPointSumOneIn = self.addCorner(235, 400)
+        cornerPointSumControllerIn = self.addCorner(235, 400)
         cornerPointSensorOut = self.addCorner(830, 400)
         cornerDisturber = self.addCorner(725, 60)
 
@@ -201,8 +198,8 @@ class MyController(QtGui.QGraphicsView):
 
         self.drawArrow(signalGenerator.eastCoordinates, sumCircleControllerIn.westCoordinates)
 
-        self.drawArrow(cornerPointSumOneIn.coordinates, sumCircleControllerIn.southCoordinates)
-        self.drawLine(cornerPointSumOneIn.coordinates, cornerPointSensorOut.coordinates)
+        self.drawArrow(cornerPointSumControllerIn.coordinates, sumCircleControllerIn.southCoordinates)
+        self.drawLine(cornerPointSumControllerIn.coordinates, cornerPointSensorOut.coordinates)
 
         self.drawLine(cornerPointSensorOut.coordinates, self.tankGauge.southCoordinates)
 
@@ -258,9 +255,9 @@ class MyController(QtGui.QGraphicsView):
         self.tankWidget.setValue(self.tankLevel)
         self.scene.update()
 
+    def updateSymbols(self):
+        self.scene.update()
+
     def resizeEvent(self, QResizeEvent):
         self.emit(QtCore.SIGNAL("resize()"))
         self.scene.setSceneRect(0, 0, self.width(), self.height())
-
-    def itemValueChanged(self, parameterNumber, value):
-        self.parameterChanged.emit(parameterNumber, value)
