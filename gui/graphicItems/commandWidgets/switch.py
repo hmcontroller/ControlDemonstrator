@@ -1,22 +1,23 @@
 # -*- encoding: utf-8 -*-
 from PyQt4 import QtGui, QtCore
 
+from baseCommand import BaseCommand
 from gui.constants import *
 
-class Switch(QtGui.QGraphicsObject):
+class Switch(BaseCommand):
+    """
+    This class uses some variables of the super class, therefore they are not instantiated here.
+    The checks whether the microcontroller receives a given command or not are all done in the super class.
+    In this class, concerning the mentioned checks, only the relevant visualisation is implemented.
+    """
 
     valueChanged = QtCore.pyqtSignal(float)
 
     def __init__(self, command):
-        QtGui.QGraphicsObject.__init__(self)
-
-        self.command = command
+        super(Switch, self).__init__(command)
 
         self.setAcceptHoverEvents(True)
         self.showBoundingRect = False
-
-        self.showConfirmationFailure = True
-        self.warningBrush = QtGui.QBrush(CONFIRMATION_WARNING_COLOR)
 
         # TODO use Qt standard coordinates
         self.bounds = [-20, -20, 50, 20]
@@ -60,20 +61,6 @@ class Switch(QtGui.QGraphicsObject):
         self.boundingRectPath.lineTo(self.bounds[0], self.bounds[3])
         self.boundingRectPath.closeSubpath()
 
-        self.boundingRectBrush = QtGui.QBrush(HOVER_COLOR)
-
-        self.confirmationWarningTimer = QtCore.QTimer()
-        self.confirmationWarningTimer.setSingleShot(False)
-        self.confirmationWarningTimer.timeout.connect(self.toggleConfirmationFailureIndication)
-        self.confirmationWarningBlinkInterval = 200
-        self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
-
-        self.setValue(self.command.value)
-        self.valueChanged.connect(self.command.setValue)
-        self.command.confirmationTimeOut.connect(self.confirmationTimeOut)
-        self.command.confirmation.connect(self.confirmation)
-
-
     @property
     def inCoordinates(self):
         return self.mapToScene(QtCore.QPointF(-10, 0))
@@ -82,32 +69,31 @@ class Switch(QtGui.QGraphicsObject):
     def outCoordinates(self):
         return self.mapToScene(QtCore.QPointF(40, 0))
 
-    def confirmationTimeOut(self):
-        self.isCommandConfirmed = False
-        self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
-
-    def confirmation(self):
-        self.confirmationWarningTimer.stop()
-        self.isCommandConfirmed = True
-        self.showConfirmationFailure = False
-
-    def toggleConfirmationFailureIndication(self):
-        self.showConfirmationFailure = not self.showConfirmationFailure
+    # # overwrites method of super class
+    # def negativeConfirmation(self):
+    #     self.negativeConfirmationWarningBlinkTimer.start(self.negativeConfirmationBlinkInterval)
+    #     self.setValue(self.command.value)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
 
-        if self.showBoundingRect is True:
+        if self.showHoverIndication is True:
             QPainter.setPen(self.dottedPen)
             QPainter.drawPath(self.boundingRectPath)
-            QPainter.fillPath(self.boundingRectPath, self.boundingRectBrush)
+            QPainter.fillPath(self.boundingRectPath, self.hoverBrush)
 
-        if self.showConfirmationFailure is True:
-            QPainter.fillPath(self.boundingRectPath, self.warningBrush)
+        # wrong user input warning is not possible with the switch
+
+        # draw confirmation timeout warning
+        if self.showConfirmationTimeoutWarning is True:
+            QPainter.fillPath(self.boundingRectPath, self.unconfirmedWarningBrush)
+
+        # draw negative confirmation warning in front of all other colors
+        if self.showNegativeConfirmationWarning is True:
+            QPainter.fillPath(self.boundingRectPath, self.negativeConfirmedWarningBrush)
 
         # draw dots
         QPainter.fillPath(self.dotsPath, self.brush)
-
 
         QPainter.setPen(self.normalPen)
         QPainter.drawPath(self.fixedLines)
@@ -117,7 +103,6 @@ class Switch(QtGui.QGraphicsObject):
         else:
             QPainter.drawPath(self.switchClosedPath)
 
-
     def boundingRect(self):
         return QtCore.QRectF(self.bounds[0], self.bounds[1], self.bounds[2] - self.bounds[0], self.bounds[3] - self.bounds[1])
 
@@ -125,9 +110,10 @@ class Switch(QtGui.QGraphicsObject):
         self.width = width
         self.height = height
 
-    def setValue(self, value):
-        self.value = value
-        self.valueChanged.emit(self.value)
+    # # using method of base command here
+    # def setValue(self, value):
+    #     self.value = value
+    #     self.valueChanged.emit(self.value)
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         if self.value > 0.5:

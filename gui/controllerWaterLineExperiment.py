@@ -16,17 +16,16 @@ from gui.graphicItems.symbols.distributionNode import DistributionNode
 from gui.graphicItems.symbols.corner import Corner
 
 
-from gui.graphicItems.commandWidgets.genericCommand import GenericCommand
-
-
 class ControllerWaterLineExperiment(QtGui.QGraphicsView):
 
     parameterChanged = QtCore.pyqtSignal(int, float)
 
     def __init__(self, commands, channels, parent=None):
         QtGui.QGraphicsView.__init__(self, parent)
-        self.setHorizontalScrollBarPolicy(1)
-        self.setVerticalScrollBarPolicy(1)
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+
+        self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
         self.commands = commands
         self.channels = channels
@@ -224,7 +223,7 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
 
 
 
-        self.scene.setSceneRect(0, 0, self.width(), self.height())
+        # self.scene.setSceneRect(0, 0, self.width(), self.height())
         self.setScene(self.scene)
 
     def addCorner(self, x, y):
@@ -259,5 +258,5 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         self.scene.update()
 
     def resizeEvent(self, QResizeEvent):
-        self.emit(QtCore.SIGNAL("resize()"))
-        self.scene.setSceneRect(0, 0, self.width(), self.height())
+        super(ControllerWaterLineExperiment, self).resizeEvent(QResizeEvent)
+        # self.scene.setSceneRect(0, 0, self.width(), self.height())

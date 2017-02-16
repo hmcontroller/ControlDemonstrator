@@ -157,12 +157,12 @@ class GenericCommand(BaseCommand):
         QPainter.fillPath(self.editAreaPath, self.editAreaBrush)
 
         # draw red in front of gray
-        if self.showWrongUserInputWarning is True:
-            QPainter.fillPath(self.editAreaPath, self.warningBrush)
+        if self.showUserInputWarning is True:
+            QPainter.fillPath(self.editAreaPath, self.userInputWarningBrush)
 
         # draw confirmation warning in front of all other colors
-        if self.showConfirmationFailure is True:
-            QPainter.fillPath(self.editAreaPath, self.unconfirmedBrush)
+        if self.showConfirmationTimeoutWarning is True:
+            QPainter.fillPath(self.editAreaPath, self.unconfirmedWarningBrush)
 
         QPainter.setPen(self.blackPen)
 

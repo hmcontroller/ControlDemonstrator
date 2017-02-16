@@ -26,11 +26,14 @@ class TabWaterLineExperiment(QtGui.QWidget, Ui_tabWaterLineExperiment):
         self.label_1.setVisible(False)
         self.label_2.setVisible(False)
 
+
         self.controller = ControllerWaterLineExperiment(self.commands, self.channels)
         self.verticalLayoutCommandView.insertWidget(0, self.controller, 0)
+        self.verticalLayoutCommandView.setMargin(0)
 
         self.plotter = PlotWidget(self.channels, self.settings)
         self.horizontalLayoutPlotArea.insertWidget(0, self.plotter, 0)
+        self.horizontalLayoutPlotArea.setMargin(0)
 
 
     def curveHideShow(self, number, state):

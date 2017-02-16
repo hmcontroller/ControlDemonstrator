@@ -8,12 +8,21 @@ from gui.graphicItems.lineEditDoubleClickSpecial import LineEditDoubleClickSpeci
 
 
 class Gain(BaseCommand):
-
+    """
+    This class uses some variables of the super class.
+    The checks whether the microcontroller receives a given command or not are all done in the super class.
+    In this class, concerning the mentioned checks, only the relevant visualisation is implemented.
+    """
     valueChanged = QtCore.pyqtSignal(float)
 
     def __init__(self, command):
+
+        # first of all create a line edit because a value will be set to it during super class init phase
         self.lineEdit = LineEditDoubleClickSpecial()
+
         super(Gain, self).__init__(command)
+
+        self.suppressValueChangedSignal = False
 
         self.setAcceptHoverEvents(True)
 
@@ -36,12 +45,6 @@ class Gain(BaseCommand):
 
         self.lineEditProxy = QtGui.QGraphicsProxyWidget(self)
         self.lineEditProxy.setWidget(self.lineEdit)
-
-
-        # self.pen = QtGui.QPen()
-        # self.pen.setColor(QtGui.QColor(0, 0, 0))
-        # self.pen.setWidth(2)
-        # self.pen.setCosmetic(True)
 
         self.path = QtGui.QPainterPath()
         self.path.moveTo(0, 0)
@@ -73,19 +76,15 @@ class Gain(BaseCommand):
             self.lineEdit.setText(str(self.command.upperLimit))
             self.showUserInputWarning()
         else:
-            self.valueChanged.emit(number)
+            if self.suppressValueChangedSignal is True:
+                self.suppressValueChangedSignal = False
+            else:
+                self.valueChanged.emit(number)
 
-    def showUserInputWarning(self):
-        self.showWrongUserInputWarning = True
-        self.clearWarningTimer.start(200)
-        self.update()
-
-    def clearUserInputWarning(self):
-        self.showWrongUserInputWarning = False
-        self.update()
-
+    # overwrites method of base command
     def setValue(self, value):
         self.lineEdit.setText(str(value))
+        # thereafter editingFinished is called automatically
 
     @property
     def inCoordinates(self):
@@ -95,19 +94,32 @@ class Gain(BaseCommand):
     def outCoordinates(self):
         return self.mapToScene(QtCore.QPoint(70, 30))
 
+    # overwrites method of super class
+    def negativeConfirmation(self):
+        self.negativeConfirmationWarningBlinkTimer.start(self.negativeConfirmationBlinkInterval)
+        # don't emit value changed, because otherwise the checks are triggered again and the
+        # negativeConfirmationWarning phase will be aborted
+        self.suppressValueChangedSignal = True
+        self.setValue(self.command.value)
+
+
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)
 
         if self.showHoverIndication is True and self.lineEditProxy.hasFocus() is False:
             QPainter.fillPath(self.path, self.hoverBrush)
 
-        # draw red in front of gray
-        if self.showWrongUserInputWarning is True:
-            QPainter.fillPath(self.path, self.warningBrush)
+        # draw wrong user input warning
+        if self.showUserInputWarning is True:
+            QPainter.fillPath(self.path, self.userInputWarningBrush)
 
-        # draw confirmation warning in front of all other colors
-        if self.showConfirmationFailure is True:
-            QPainter.fillPath(self.path, self.unconfirmedBrush)
+        # draw confirmation timeout warning
+        if self.showConfirmationTimeoutWarning is True:
+            QPainter.fillPath(self.path, self.unconfirmedWarningBrush)
+
+        # draw negative confirmation warning in front of all other colors
+        if self.showNegativeConfirmationWarning is True:
+            QPainter.fillPath(self.path, self.negativeConfirmedWarningBrush)
 
         # draw the triangle
         QPainter.setPen(self.cablePen)

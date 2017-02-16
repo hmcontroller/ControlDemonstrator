@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import datetime
 
 from PyQt4 import QtCore
 
@@ -47,6 +48,7 @@ class Command(QtCore.QObject):
 
     confirmationTimeOut = QtCore.pyqtSignal(object)
     confirmation = QtCore.pyqtSignal(object)
+    negativeConfirmation = QtCore.pyqtSignal(object)
 
     def __init__(self):
         super(Command, self).__init__()
@@ -59,6 +61,9 @@ class Command(QtCore.QObject):
         self.lowerLimit = 0
         self.upperLimit = 2
         self.smallNumber = 0.00001
+        self.negativeConfirmationCounter = 0
+        self.timeOfLastResponse = datetime.datetime.now() - datetime.timedelta(hours=1)
+        self.valueOfLastResponse = 0.0
 
         self.confirmationTimer = QtCore.QTimer()
         self.timeOutDuration = 1000
@@ -84,15 +89,24 @@ class Command(QtCore.QObject):
         self.value = value
 
     def checkConfirmation(self, commandConfirmation):
+        self.timeOfLastResponse = datetime.datetime.now()
+        self.valueOfLastResponse = commandConfirmation.returnValue
+
         if abs(commandConfirmation.returnValue - self._value) < self.smallNumber:
             self.isConfirmed = True
             self.confirmationTimer.stop()
             self.confirmation.emit(self)
 
     def confirmationTimeout(self):
-        self.confirmationTimeOut.emit(self)
+        now = datetime.datetime.now()
+        if now - self.timeOfLastResponse < datetime.timedelta(milliseconds=self.timeOutDuration):
+            self.value = self.valueOfLastResponse
+            self.negativeConfirmation.emit(self)
+        else:
+            self.confirmationTimeOut.emit(self)
 
-# TODO for what do we need this class
+
+# TODO do i really need this class
 class CommandConfirmation():
     def __init__(self):
         self.id = None

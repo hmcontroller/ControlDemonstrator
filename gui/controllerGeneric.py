@@ -13,7 +13,7 @@ class ControllerGeneric(QtGui.QGraphicsView):
         QtGui.QGraphicsView.__init__(self, parent)
 
 
-        self.verticalScrollMode = False
+        self.verticalScrollMode = True
 
         # self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         # self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
@@ -115,5 +115,6 @@ class ControllerGeneric(QtGui.QGraphicsView):
         self.scene.update()
 
     def resizeEvent(self, QResizeEvent):
-        self.emit(QtCore.SIGNAL("resize()"))
+        # self.emit(QtCore.SIGNAL("resize()"))
+        super(ControllerGeneric, self).resizeEvent(QResizeEvent)
         self.arrangeItems()

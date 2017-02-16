@@ -92,6 +92,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         self.centralWidgetLayout = QtGui.QHBoxLayout(self.centralwidget)
         self.centralWidgetLayout.setMargin(0)
+        self.centralWidgetLayout.setSpacing(0)
 
         self.tabWidget = QtGui.QTabWidget(self.centralwidget)
         font = QtGui.QFont()

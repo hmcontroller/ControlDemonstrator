@@ -17,6 +17,7 @@ class PlotWidget(QtGui.QWidget):
         self.movePlot = True
 
         self.horizontalLayoutPlotArea = QtGui.QHBoxLayout(self)
+        self.horizontalLayoutPlotArea.setMargin(0)
 
         # Enable antialiasing for prettier plots or not
         pyqtgraph.setConfigOptions(antialias=False)
@@ -27,6 +28,7 @@ class PlotWidget(QtGui.QWidget):
         self.horizontalLayoutPlotArea.insertWidget(0, self.plotWidget, 0)
 
         self.verticalLayoutPlotSwitcher = QtGui.QVBoxLayout()
+        self.verticalLayoutPlotSwitcher.setMargin(0)
         self.horizontalLayoutPlotArea.insertLayout(1, self.verticalLayoutPlotSwitcher, 0)
 
         self.plotCurves = list()

@@ -21,7 +21,7 @@ class SignalSource(QtGui.QGraphicsObject):
         self.warningPath = QtGui.QPainterPath()
         self.warningPath.addRect(100, 5, 20, 20)
 
-        self.warningBrush = QtGui.QBrush(CONFIRMATION_WARNING_COLOR)
+        self.warningBrush = QtGui.QBrush(CONFIRMATION_TIMEOUT_WARNING_COLOR)
 
         self.upButton = UpButton(self)
         self.upButton.setPos(125, 0)
