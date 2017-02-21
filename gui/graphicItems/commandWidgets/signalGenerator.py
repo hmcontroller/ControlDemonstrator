@@ -613,6 +613,7 @@ class GenericCommandEditorWindow(QtGui.QDialog):
         self.setWindowTitle("Parametereditor")
 
         self.mainLayout = QtGui.QHBoxLayout(self)
+        self.mainLayout.setMargin(0)
 
         self.graphicsView = QtGui.QGraphicsView()
         self.mainLayout.addWidget(self.graphicsView)
@@ -647,12 +648,12 @@ class GenericCommandEditorWindow(QtGui.QDialog):
         self.arrangeItems()
 
     def update(self):
-        if self.contentHeight > self.graphicsView.height():
-            self.graphicsView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        else:
-            self.graphicsView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        # if self.contentHeight > self.graphicsView.height():
+        #     self.graphicsView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        # else:
+        #     self.graphicsView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
-        self.scene.setSceneRect(0, 0, self.contentWidth + 20, self.contentHeight + 20)
+        self.scene.setSceneRect(0, 0, self.contentWidth, self.contentHeight)
         self.scene.update()
         # self.resize(self.width(), self.height())
 
@@ -665,12 +666,15 @@ class GenericCommandEditorWindow(QtGui.QDialog):
             row += 1
 
         if len(self.items) > 0:
-            self.contentWidth = self.items[-1].width + 20
-            self.contentHeight = row * self.items[-1].height + 20
+            self.contentWidth = self.items[-1].width # + 20
+            self.contentHeight = row * self.items[-1].height # + 20
         else:
             self.contentWidth = 0
             self.contentHeight = 0
-        self.setGeometry(100, 100, self.contentWidth + 30, self.contentHeight + 30)
+        self.setGeometry(100, 100, self.contentWidth, self.contentHeight)
+
+        self.setFixedSize(self.contentWidth, self.contentHeight)
+
         self.update()
 
     def updateSymbols(self):

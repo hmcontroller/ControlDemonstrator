@@ -249,3 +249,21 @@ class GenericCommandWithoutMinMaxEdit(GenericCommand):
         super(GenericCommandWithoutMinMaxEdit, self).__init__(command)
         self.minLineEdit.setReadOnly(True)
         self.maxLineEdit.setReadOnly(True)
+
+
+        styleSheet = """border: none; background-color: rgba(0, 0, 0, 0);"""
+        # styleSheet = """border: none; color: rgb(120, 120, 120); background-color: rgba(0, 0, 0, 0);"""
+
+        p = QtGui.QPalette()
+        p.setBrush(QtGui.QPalette.Window, QtGui.QBrush(QtGui.QColor(0,0,0,0)))
+
+        p = QtGui.QPalette()
+        p.setBrush(QtGui.QPalette.Window, QtGui.QBrush(QtGui.QColor(0,0,0,0)))
+
+        self.minLineEdit.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.minLineEdit.setStyleSheet(styleSheet)
+        self.minLineEdit.setPalette(p)
+
+        self.maxLineEdit.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.maxLineEdit.setStyleSheet(styleSheet)
+        self.maxLineEdit.setPalette(p)
