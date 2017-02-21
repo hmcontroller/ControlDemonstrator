@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'tabWaterLineExperiment.ui'
 #
-# Created: Wed Feb 15 11:04:16 2017
+# Created: Tue Feb 21 12:14:50 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -31,6 +31,7 @@ class Ui_tabWaterLineExperiment(object):
         self.horizontalLayout.setMargin(0)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.verticalLayoutCommandView = QtGui.QVBoxLayout()
+        self.verticalLayoutCommandView.setMargin(0)
         self.verticalLayoutCommandView.setObjectName(_fromUtf8("verticalLayoutCommandView"))
         self.label_1 = QtGui.QLabel(tabWaterLineExperiment)
         self.label_1.setObjectName(_fromUtf8("label_1"))

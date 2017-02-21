@@ -1,0 +1,1 @@
+sphinx-apidoc -f -o sphinx\_apidoc . pyqtgraph examples

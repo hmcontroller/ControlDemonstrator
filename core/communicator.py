@@ -13,6 +13,8 @@ class UdpCommunicator():
         self.messageSize = None
         self.messageMap = None
 
+        self.commandSendBuffer = list()
+
         self.sockRX = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sockRX.bind((self.settings.computerIP, self.settings.computerRxPort))
         self.sockRX.setblocking(False)
@@ -29,8 +31,13 @@ class UdpCommunicator():
         # print "size", self.messageSize
 
     def send(self, commandList):
-        packedData = self._packCommandList(commandList)
-        self.sockTX.sendto(packedData, (self.settings.controllerIP, self.settings.controllerRxPort))
+        if len(commandList.changedCommands) > 0:
+            commandToSend = commandList.changedCommands.popleft()
+            packedData = self._packCommand(commandToSend)
+            self.sockTX.sendto(packedData, (self.settings.controllerIP, self.settings.controllerRxPort))
+            print "command send", commandToSend.id, commandToSend.name, commandToSend.value
+        # packedData = self._packCommandList(commandList)
+        # self.sockTX.sendto(packedData, (self.settings.controllerIP, self.settings.controllerRxPort))
 
     def _packCommandList(self, commandList):
         formatString = "<{}f".format(len(commandList))
@@ -38,6 +45,9 @@ class UdpCommunicator():
         for command in commandList:
             parameterValues.append(command.value)
         return struct.pack(formatString, *parameterValues)
+
+    def _packCommand(self, command):
+        return struct.pack("<1i1f", command.id, command.value)
 
     def receive(self):
         bufferContainsData = True

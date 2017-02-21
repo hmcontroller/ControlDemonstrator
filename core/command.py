@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 import datetime
+from collections import deque
 
 from PyQt4 import QtCore
 
@@ -12,6 +13,7 @@ class CommandList(QtCore.QObject):
         super(CommandList, self).__init__()
 
         self.cmdList = list()
+        self.changedCommands = deque()
 
     def append(self, cmd):
         self.cmdList.append(cmd)
@@ -27,6 +29,9 @@ class CommandList(QtCore.QObject):
             if cmd.name == name:
                 return cmd
         raise Exception("Command {} not found. Maybe you have to edit the config file.".format(name))
+
+    def commandChanged(self, command):
+        self.changedCommands.append(command)
 
     def __len__(self):
         return len(self.cmdList)
@@ -46,6 +51,9 @@ class CommandList(QtCore.QObject):
 
 class Command(QtCore.QObject):
 
+    valueChanged = QtCore.pyqtSignal(object)
+    minChangedFromController = QtCore.pyqtSignal(object)
+    maxChangedFromController = QtCore.pyqtSignal(object)
     confirmationTimeOut = QtCore.pyqtSignal(object)
     confirmation = QtCore.pyqtSignal(object)
     negativeConfirmation = QtCore.pyqtSignal(object)
@@ -53,8 +61,8 @@ class Command(QtCore.QObject):
     def __init__(self):
         super(Command, self).__init__()
         self.id = None
-        self._value = 0.0
         self.name = ""
+        self.displayName = None
         self.isConfirmed = False
         self.timeOfSend = None
 
@@ -70,6 +78,10 @@ class Command(QtCore.QObject):
         self.confirmationTimer.setSingleShot(True)
         self.confirmationTimer.timeout.connect(self.confirmationTimeout)
 
+        # set this at last
+        self.value = 0.0
+
+
     @property
     def value(self):
         return self._value
@@ -82,11 +94,13 @@ class Command(QtCore.QObject):
             self.confirmationTimer.start(self.timeOutDuration)
             print "Command change id {} name {} value {}".format(self.id, self.name, self.value)
         else:
-            raise ValueError("value out of allowed range {} - {}".format(self.lowerLimit, self.upperLimit))
+            raise ValueError("value {} out of allowed range {} - {} for command {}".format(
+                value, self.lowerLimit, self.upperLimit, self.name))
 
     @QtCore.pyqtSlot(object)
     def setValue(self, value):
         self.value = value
+        self.valueChanged.emit(self)
 
     def checkConfirmation(self, commandConfirmation):
         self.timeOfLastResponse = datetime.datetime.now()
@@ -96,15 +110,34 @@ class Command(QtCore.QObject):
             self.isConfirmed = True
             self.confirmationTimer.stop()
             self.confirmation.emit(self)
+        else:
+            if self.confirmationTimer.isActive():
+                pass
+            else:
+                # the value coming from the controller will be set to the gui
+                self.setValueFromController(commandConfirmation.returnValue)
+                self.negativeConfirmation.emit(self)
 
     def confirmationTimeout(self):
         now = datetime.datetime.now()
         if now - self.timeOfLastResponse < datetime.timedelta(milliseconds=self.timeOutDuration):
-            self.value = self.valueOfLastResponse
+            self.setValueFromController(self.valueOfLastResponse)
             self.negativeConfirmation.emit(self)
         else:
             self.confirmationTimeOut.emit(self)
 
+    def setValueFromController(self, value):
+        # set the allowed limits of the command according to the micro controller value
+        if self.lowerLimit > value:
+            self.lowerLimit = value
+            self.minChangedFromController.emit(self)
+        if self.upperLimit < value:
+            self.upperLimit = value
+            self.maxChangedFromController.emit(self)
+
+        self.value = value
+        print "command {} {} {} changed from controller".format(
+            self.id, self.name, value)
 
 # TODO do i really need this class
 class CommandConfirmation():

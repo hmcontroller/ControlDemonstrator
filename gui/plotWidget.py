@@ -23,12 +23,12 @@ class PlotWidget(QtGui.QWidget):
         pyqtgraph.setConfigOptions(antialias=False)
 
         self.plotWidget = pyqtgraph.PlotWidget()
-        self.plotWidget.setXRange(-float(self.settings.bufferLength)*(self.settings.controllerLoopCycleTime / float(1000000)), 0)
+        self.plotWidget.setXRange(-float(self.settings.bufferLength)*(self.settings.controllerLoopCycleTimeInUs / float(1000000)), 0)
         self.plotWidget.setYRange(0, 60000)
         self.horizontalLayoutPlotArea.insertWidget(0, self.plotWidget, 0)
 
         self.verticalLayoutPlotSwitcher = QtGui.QVBoxLayout()
-        self.verticalLayoutPlotSwitcher.setMargin(0)
+        self.verticalLayoutPlotSwitcher.setMargin(6)
         self.horizontalLayoutPlotArea.insertLayout(1, self.verticalLayoutPlotSwitcher, 0)
 
         self.plotCurves = list()
@@ -47,6 +47,7 @@ class PlotWidget(QtGui.QWidget):
             # box.setStyleSheet("""border: 3px solid rgb({})""".format(colorStrings[i % len(colorStrings)]))
             box.setChecked(True)
             box.changed.connect(self.curveHideShow)
+            box.keyPressed.connect(self.keyPressEvent)
             self.verticalLayoutPlotSwitcher.addWidget(box)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayoutPlotSwitcher.addItem(spacerItem)

@@ -12,6 +12,15 @@ class Gain(BaseCommand):
     This class uses some variables of the super class.
     The checks whether the microcontroller receives a given command or not are all done in the super class.
     In this class, concerning the mentioned checks, only the relevant visualisation is implemented.
+
+    **Data initialization arguments:** (x,y data only)
+            =================================== ======================================
+            PlotDataItem(xValues, yValues)      x and y values may be any sequence (including ndarray) of real numbers
+            PlotDataItem(yValues)               y values only -- x will be automatically set to range(len(y))
+            PlotDataItem(x=xValues, y=yValues)  x and y given by keyword arguments
+            PlotDataItem(ndarray(Nx2))          numpy array with shape (N, 2) where x=data[:,0] and y=data[:,1]
+            =================================== ======================================
+
     """
     valueChanged = QtCore.pyqtSignal(float)
 
@@ -61,7 +70,7 @@ class Gain(BaseCommand):
         if text == "":
             self.lineEdit.setText(str(self.command.lowerLimit))
             self.valueChanged.emit(self.command.lowerLimit)
-            self.showUserInputWarning()
+            self.activateUserInputWarning()
             return
 
         text = text.replace(",", ".")
@@ -70,11 +79,11 @@ class Gain(BaseCommand):
         if number < self.command.lowerLimit:
             self.lineEdit.setText(str(self.command.lowerLimit))
             self.valueChanged.emit(self.command.lowerLimit)
-            self.showUserInputWarning()
+            self.activateUserInputWarning()
         elif number > self.command.upperLimit:
             self.valueChanged.emit(self.command.upperLimit)
             self.lineEdit.setText(str(self.command.upperLimit))
-            self.showUserInputWarning()
+            self.activateUserInputWarning()
         else:
             if self.suppressValueChangedSignal is True:
                 self.suppressValueChangedSignal = False
@@ -96,12 +105,13 @@ class Gain(BaseCommand):
 
     # overwrites method of super class
     def negativeConfirmation(self):
-        self.negativeConfirmationWarningBlinkTimer.start(self.negativeConfirmationBlinkInterval)
+        # this call is needed to start the blink timer
+        super(Gain, self).negativeConfirmation()
+
         # don't emit value changed, because otherwise the checks are triggered again and the
         # negativeConfirmationWarning phase will be aborted
         self.suppressValueChangedSignal = True
         self.setValue(self.command.value)
-
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)

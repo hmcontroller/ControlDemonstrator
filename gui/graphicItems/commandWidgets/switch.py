@@ -16,13 +16,11 @@ class Switch(BaseCommand):
     def __init__(self, command):
         super(Switch, self).__init__(command)
 
-        self.setAcceptHoverEvents(True)
-        self.showBoundingRect = False
-
         # TODO use Qt standard coordinates
         self.bounds = [-20, -20, 50, 20]
         self.height = 30
         self.value = 1.0
+
         self.brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
 
         self.normalPen = QtGui.QPen()
@@ -69,10 +67,10 @@ class Switch(BaseCommand):
     def outCoordinates(self):
         return self.mapToScene(QtCore.QPointF(40, 0))
 
-    # # overwrites method of super class
-    # def negativeConfirmation(self):
-    #     self.negativeConfirmationWarningBlinkTimer.start(self.negativeConfirmationBlinkInterval)
-    #     self.setValue(self.command.value)
+    # overwrites method of super class
+    def negativeConfirmation(self):
+        super(Switch, self).negativeConfirmation()
+        self.value = self.command.value
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
@@ -98,7 +96,7 @@ class Switch(BaseCommand):
         QPainter.setPen(self.normalPen)
         QPainter.drawPath(self.fixedLines)
 
-        if self.value <0.5:
+        if self.value < 0.5:
             QPainter.drawPath(self.switchOpenedPath)
         else:
             QPainter.drawPath(self.switchClosedPath)
@@ -122,11 +120,4 @@ class Switch(BaseCommand):
             self.setValue(1.0)
         QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
 
-    def hoverEnterEvent(self, QGraphicsSceneMouseEvent):
-        self.showBoundingRect = True
-        QtGui.QGraphicsItem.hoverEnterEvent(self, QGraphicsSceneMouseEvent)
-
-    def hoverLeaveEvent(self, QGraphicsSceneMouseEvent):
-        self.showBoundingRect = False
-        QtGui.QGraphicsItem.hoverLeaveEvent(self, QGraphicsSceneMouseEvent)
 

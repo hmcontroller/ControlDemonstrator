@@ -29,7 +29,7 @@ class TabWaterLineExperiment(QtGui.QWidget, Ui_tabWaterLineExperiment):
 
         self.controller = ControllerWaterLineExperiment(self.commands, self.channels)
         self.verticalLayoutCommandView.insertWidget(0, self.controller, 0)
-        self.verticalLayoutCommandView.setMargin(0)
+        self.verticalLayoutCommandView.setMargin(6)
 
         self.plotter = PlotWidget(self.channels, self.settings)
         self.horizontalLayoutPlotArea.insertWidget(0, self.plotter, 0)

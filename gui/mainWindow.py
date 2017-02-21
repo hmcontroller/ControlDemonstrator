@@ -17,6 +17,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.setupUi()
 
+        self.setWindowTitle("ControlDemonstrator")
+
         self.screenRect = QtGui.QApplication.desktop().screenGeometry()
         self.setGeometry(self.screenRect.width() * 0.05, self.screenRect.height() * 0.05,
                          self.screenRect.width() * 0.9, self.screenRect.height() * 0.9)
@@ -33,7 +35,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         # generate model objects according to the config file
         configFilePath = os.path.join(rootFolder, "config.txt")
         modelMaker = ModelMaker(configFilePath)
-        self.sensorMapping = modelMaker.getSensorMapping()
+        # self.sensorMapping = modelMaker.getSensorMapping()
         self.settings = modelMaker.getMiscSettings()
 
         # TODO it is dirty how the messageData list will be generated in model maker - check single source problem
@@ -48,7 +50,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.communicator = UdpCommunicator(self.settings)
         self.communicator.setMessageMap(self.messageFormat)
 
-        # add a tab for the waterLineExperiment
+        # # add a tab for the waterLineExperiment
         self.tabWaterLineExperiment = TabWaterLineExperiment(self.commands, self.channels, self.settings)
         self.tabWaterLineExperimentLayout.addWidget(self.tabWaterLineExperiment)
 
@@ -57,12 +59,23 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.tabGenericViewLayout.addWidget(self.tabGeneric)
 
 
-        # setup a timer, that runs a loop to communicate with the controller and update all graphic elements
-        self.loopCycleTimer = QtCore.QTimer()
-        self.loopCycleTimer.setSingleShot(False)
-        self.connect(self.loopCycleTimer, QtCore.SIGNAL("timeout()"), self.loop)
-        self.loopCycleTimer.start(self.settings.plotUpdateTimeSpanInMs)
+        # setup a timer, that triggers to read from the controller
+        self.receiveTimer = QtCore.QTimer()
+        self.receiveTimer.setSingleShot(False)
+        self.receiveTimer.timeout.connect(self.receive)
+        self.receiveTimer.start(self.settings.receiveMessageIntervalLengthInMs)
 
+        # # setup a timer, that triggers to send to the controller
+        # self.sendTimer = QtCore.QTimer()
+        # self.sendTimer.setSingleShot(False)
+        # self.sendTimer.timeout.connect(self.send)
+        # self.sendTimer.start(self.settings.sendMessageIntervalLengthInMs)
+
+        # setup a timer, that runs a loop to update the gui
+        self.guiUpdateTimer = QtCore.QTimer()
+        self.guiUpdateTimer.setSingleShot(False)
+        self.guiUpdateTimer.timeout.connect(self.refreshGui)
+        self.guiUpdateTimer.start(self.settings.guiUpdateIntervalLengthInMs)
 
         # for debugging purpose
         self.loopReportTimer = QtCore.QTimer()
@@ -121,18 +134,20 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.centralWidgetLayout.addWidget(self.tabWidget)
         self.setCentralWidget(self.centralwidget)
 
-    def loop(self):
-        messages = self.receive()
+    def receive(self):
+        messages = self.communicator.receive()
         if messages is None:
-            self.updateGraphicElements()
             return
         self.handleNewData(messages)
-        self.send()
-        self.updateGraphicElements()
         self.calculateSomeStuff(messages)
+        self.send()
 
-    def receive(self):
-        return self.communicator.receive()
+    def send(self):
+        self.communicator.send(self.commands)
+
+    def refreshGui(self):
+        self.tabWaterLineExperiment.updateTab(self.channels)
+        self.tabGeneric.updateTab(self.channels)
 
     def handleNewData(self, messages):
         MessageInterpreter.mapUserChannels(self.channels, messages)
@@ -140,9 +155,6 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         for message in messages:
             commandConfirmation = MessageInterpreter.getCommandConfirmation(message)
             self.commands[commandConfirmation.id].checkConfirmation(commandConfirmation)
-
-    def send(self):
-        self.communicator.send(self.commands)
 
     def calculateSomeStuff(self, messages):
         loopCycleDuration = MessageInterpreter.getLoopCycleDuration(messages[-1])
@@ -156,10 +168,9 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.loopDurationCounter += 1
         self.loopDurationAverage = self.loopDurationSum / float(self.loopDurationCounter)
 
-    def updateGraphicElements(self):
-        self.tabWaterLineExperiment.updateTab(self.channels)
-        self.tabGeneric.updateTab(self.channels)
-
     def printLoopPerformance(self):
         print "min", self.loopDurationMin, "max", self.loopDurationMax, "avg", self.loopDurationAverage
+
+    def closeEvent(self, *args, **kwargs):
+        QtGui.QApplication.quit()
 

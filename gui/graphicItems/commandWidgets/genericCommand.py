@@ -22,16 +22,17 @@ class GenericCommand(BaseCommand):
 
         super(GenericCommand, self).__init__(command)
 
-        self.valueLineEditProxy = QtGui.QGraphicsProxyWidget(self)
-        self.valueLineEditProxy.setWidget(self.valueLineEdit)
-
+        # the order of initializing the proxies affects the tab order
         self.minLineEditProxy = QtGui.QGraphicsProxyWidget(self)
         self.minLineEditProxy.setWidget(self.minLineEdit)
 
         self.maxLineEditProxy = QtGui.QGraphicsProxyWidget(self)
         self.maxLineEditProxy.setWidget(self.maxLineEdit)
 
+        self.valueLineEditProxy = QtGui.QGraphicsProxyWidget(self)
+        self.valueLineEditProxy.setWidget(self.valueLineEdit)
 
+        self.suppressValueChangedSignal = False
 
         self.width = 400
         self.height = 80
@@ -45,19 +46,19 @@ class GenericCommand(BaseCommand):
         self.minLineEdit.move(45, self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.minLineEdit.height())
         self.minLineEditValidator = FloatValidator()
         self.minLineEdit.setValidator(self.minLineEditValidator)
-        self.minLineEdit.editingFinished.connect(self.minEditingFinished)
+        self.minLineEdit.returnPressed.connect(self.minEditingFinished)
         self.minLineEdit.setText(str(self.command.lowerLimit))
 
         self.maxLineEdit.move(167, self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.minLineEdit.height())
         self.maxLineEditValidator = FloatValidator()
         self.maxLineEdit.setValidator(self.maxLineEditValidator)
-        self.maxLineEdit.editingFinished.connect(self.maxEditingFinished)
+        self.maxLineEdit.returnPressed.connect(self.maxEditingFinished)
         self.maxLineEdit.setText(str(self.command.upperLimit))
 
         self.valueLineEdit.move(self.width - 10 - self.valueLineEdit.width(), self.hCenterEditArea - 0.5 * self.valueLineEdit.height())
         self.valueLineEditValidator = FloatValidator()
         self.valueLineEdit.setValidator(self.valueLineEditValidator)
-        self.valueLineEdit.editingFinished.connect(self.valueEditingFinished)
+        self.valueLineEdit.returnPressed.connect(self.valueEditingFinished)
 
 
         self.boundingRectPath = QtGui.QPainterPath()
@@ -99,15 +100,18 @@ class GenericCommand(BaseCommand):
         return lineEdit
 
     def valueEditingFinished(self):
-        self.valueLineEditProxy.clearFocus()
-
+        # self.valueLineEditProxy.clearFocus()
+        self.valueLineEdit.selectAll()
         text = self.valueLineEdit.text()
         print "Editfinished", text
 
+        # if nothing is in the textBox, the lower limit of the command will be set
         if text == "":
             self.valueLineEdit.setText(str(self.command.lowerLimit))
-            self.valueChanged.emit(self.command.lowerLimit)
-            self.showUserInputWarning()
+            if self.suppressValueChangedSignal is False:
+                self.valueChanged.emit(self.command.lowerLimit)
+            self.activateUserInputWarning()
+            self.suppressValueChangedSignal = False
             return
 
         text = text.replace(",", ".")
@@ -115,17 +119,23 @@ class GenericCommand(BaseCommand):
         number = float(text)
         if number < self.command.lowerLimit:
             self.valueLineEdit.setText(str(self.command.lowerLimit))
-            self.valueChanged.emit(self.command.lowerLimit)
-            self.showUserInputWarning()
+            if self.suppressValueChangedSignal is False:
+                self.valueChanged.emit(self.command.lowerLimit)
+            self.activateUserInputWarning()
         elif number > self.command.upperLimit:
-            self.valueChanged.emit(self.command.upperLimit)
+            if self.suppressValueChangedSignal is False:
+                self.valueChanged.emit(self.command.upperLimit)
             self.valueLineEdit.setText(str(self.command.upperLimit))
-            self.showUserInputWarning()
+            self.activateUserInputWarning()
         else:
-            self.valueChanged.emit(number)
+            if self.suppressValueChangedSignal is False:
+                self.valueChanged.emit(number)
+
+        self.suppressValueChangedSignal = False
 
     def minEditingFinished(self):
-        self.minLineEditProxy.clearFocus()
+        # self.minLineEditProxy.clearFocus()
+        self.minLineEdit.selectAll()
 
         text = self.minLineEdit.text()
         if text == "":
@@ -135,7 +145,8 @@ class GenericCommand(BaseCommand):
         self.command.lowerLimit = min
 
     def maxEditingFinished(self):
-        self.maxLineEditProxy.clearFocus()
+        # self.maxLineEditProxy.clearFocus()
+        self.maxLineEdit.selectAll()
 
         text = self.maxLineEdit.text()
         if text == "":
@@ -147,6 +158,30 @@ class GenericCommand(BaseCommand):
     def setValue(self, value):
         self.valueLineEdit.setText(str(value))
 
+    def setMin(self, value):
+        self.minLineEdit.setText(str(value))
+
+    def setMax(self, value):
+        self.maxLineEdit.setText(str(value))
+
+    # overwrites method of super class
+    def negativeConfirmation(self):
+        # this call is needed to start the blink timer
+        super(GenericCommand, self).negativeConfirmation()
+
+        # don't emit value changed, because otherwise the checks are triggered again and the
+        # negativeConfirmationWarning phase will be aborted
+        self.suppressValueChangedSignal = True
+        self.setValue(self.command.value)
+
+    # overwrites method of super class
+    def minChangedFromController(self, command):
+        self.minLineEdit.setText(str(command.lowerLimit))
+
+    # overwrites method of super class
+    def maxChangedFromController(self, command):
+        self.maxLineEdit.setText(str(command.upperLimit))
+
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)
 
@@ -156,21 +191,31 @@ class GenericCommand(BaseCommand):
         # draw background of edit area
         QPainter.fillPath(self.editAreaPath, self.editAreaBrush)
 
-        # draw red in front of gray
+
+        # draw wrong user input warning
         if self.showUserInputWarning is True:
             QPainter.fillPath(self.editAreaPath, self.userInputWarningBrush)
 
-        # draw confirmation warning in front of all other colors
+        # draw confirmation timeout warning
         if self.showConfirmationTimeoutWarning is True:
             QPainter.fillPath(self.editAreaPath, self.unconfirmedWarningBrush)
+
+        # draw negative confirmation warning in front of all other colors
+        if self.showNegativeConfirmationWarning is True:
+            QPainter.fillPath(self.editAreaPath, self.negativeConfirmedWarningBrush)
 
         QPainter.setPen(self.blackPen)
 
         # draw the command name
         QPainter.setFont(self.commandNameFont)
-        QPainter.drawText(self.labelRect,
-                         QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-                         QtCore.QString(self.command.name))
+        if self.command.displayName is not None:
+            QPainter.drawText(self.labelRect,
+                             QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
+                             QtCore.QString(self.command.displayName))
+        else:
+            QPainter.drawText(self.labelRect,
+                             QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
+                             QtCore.QString(self.command.name))
 
         # draw some text
         QPainter.setFont(self.otherFont)
@@ -197,3 +242,10 @@ class GenericCommand(BaseCommand):
     def boundingRect(self):
         return QtCore.QRectF(0, 0, self.width, self.height)
 
+
+
+class GenericCommandWithoutMinMaxEdit(GenericCommand):
+    def __init__(self, command):
+        super(GenericCommandWithoutMinMaxEdit, self).__init__(command)
+        self.minLineEdit.setReadOnly(True)
+        self.maxLineEdit.setReadOnly(True)

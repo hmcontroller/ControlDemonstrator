@@ -4,19 +4,80 @@ import os
 
 from PyQt4 import QtGui, QtCore
 
+from core.signalGeneratorCommandGroup import SignalGeneratorCommandGroup
 from gui.constants import *
+from gui.graphicItems.commandWidgets.genericCommand import GenericCommandWithoutMinMaxEdit
+from gui.graphicItems.commandWidgets.baseCommand import BaseCommand
 
-
-class SignalSource(QtGui.QGraphicsObject):
+class SignalGenerator(BaseCommand):
 
     # valueChanged = QtCore.pyqtSignal(float)
 
-    def __init__(self):
-        super(SignalSource, self).__init__()
+    def __init__(self, signalGeneratorCommandGroup):
+        if not isinstance(signalGeneratorCommandGroup, SignalGeneratorCommandGroup):
+            raise TypeError("must be initialized with a core.signalGeneratorCommandGroup.SignalGeneratorCommandGroup instance")
 
-        self.showConfirmationFailure = False
+        self.commands = signalGeneratorCommandGroup
+        self.functionNumberCommand = self.commands.functionNumberCommand
+        self.functionNumberCommand.lowerLimit = 0
+        self.functionNumberCommand.upperLimit = 5
 
-        self.isCommandConfirmed = False
+        # the command to set the function number of the generator is used as main command here
+        # TODO rewrite documentation one line above
+        super(SignalGenerator, self).__init__(self.commands.functionNumberCommand)
+
+
+        # set up some groups of commands, each suitable for a function number
+        # the editing of the parameters takes place in a popup window
+        self.groupedCommandLists = list()
+
+        # these are commands for the dirac function
+        cmds = list()
+        cmds.append(self.commands.diracLowCommand)
+        cmds[-1].displayName = u"unterer Wert"
+        cmds.append(self.commands.diracHighCommand)
+        cmds[-1].displayName = u"oberer Wert"
+        cmds.append(self.commands.diracDurationCommand)
+        cmds[-1].displayName = u"Dauer in Sekunden"
+        self.groupedCommandLists.append(cmds)
+
+        # these are commands for the heavyside function
+        cmds = list()
+        cmds.append(self.commands.stepLowCommand)
+        cmds[-1].displayName = u"unterer Wert"
+        cmds.append(self.commands.stepHighCommand)
+        cmds[-1].displayName = u"oberer Wert"
+        self.groupedCommandLists.append(cmds)
+
+        # these are commands for the ramp function
+        cmds = list()
+        self.groupedCommandLists.append(cmds)
+
+        # these are commands for the sin function
+        cmds = list()
+        cmds.append(self.commands.sinAmplitudeCommand)
+        cmds[-1].displayName = u"Amplitude"
+        cmds.append(self.commands.sinOmegaCommand)
+        cmds[-1].displayName = u"Omega"
+        cmds.append(self.commands.sinOffsetCommand)
+        cmds[-1].displayName = u"Y-Offset"
+        self.groupedCommandLists.append(cmds)
+
+        # these are commands for the square wave function
+        cmds = list()
+        self.groupedCommandLists.append(cmds)
+
+
+        # a list with functions that get executed on the trigger button
+        self.triggerCommands = list()
+        self.triggerCommands.append(self.startDirac)
+        self.triggerCommands.append(self.toggleHeavySide)
+        self.triggerCommands.append(None)
+        self.triggerCommands.append(None)
+        self.triggerCommands.append(None)
+
+
+
 
         self.warningPath = QtGui.QPainterPath()
         self.warningPath.addRect(100, 5, 20, 20)
@@ -32,6 +93,7 @@ class SignalSource(QtGui.QGraphicsObject):
 
         self.settingsButton = SettingsButton(self)
         self.settingsButton.setPos(125, 50)
+        self.settingsButton.clicked.connect(self.settingsButtonClicked)
 
         self.downButton = DownButton(self)
         self.downButton.setPos(125, 75)
@@ -61,29 +123,82 @@ class SignalSource(QtGui.QGraphicsObject):
         self.signalSymbols.append(square)
 
         self.currentSignalNumber = 0
-        self.setCurrentSignal()
+        self.drawCurrentSignal()
 
-        self.constantShape = SignalSourceConstantShape(self)
+        self.constantShape = SignalGeneratorConstantShape(self)
 
-        self.confirmationWarningTimer = QtCore.QTimer()
-        self.confirmationWarningTimer.setSingleShot(False)
-        self.confirmationWarningTimer.timeout.connect(self.toggleConfirmationFailureIndication)
-        self.confirmationWarningBlinkInterval = 200
-        self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
+        # self.confirmationWarningTimer = QtCore.QTimer()
+        # self.confirmationWarningTimer.setSingleShot(False)
+        # self.confirmationWarningTimer.timeout.connect(self.toggleConfirmationFailureIndication)
+        # self.confirmationWarningBlinkInterval = 200
+        # # self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
 
-    def oneSignalUp(self):
+        self.dialogUpdateTimer = QtCore.QTimer()
+        self.dialogUpdateTimer.setSingleShot(False)
+        self.dialogUpdateTimer.timeout.connect(self.updateDialog)
+
+        self.currentDialog = None
+
+        self.sigNumberFont = QtGui.QFont("sans-serif", 10, QtGui.QFont.Normal)
+        self.sigNumberRect = QtCore.QRectF(100, 5, 50, 50)
+
+        self.connectTriggerButton()
+
+    def connectTriggerButton(self):
+        try:
+            self.okButton.clicked.disconnect()
+        except TypeError:
+            pass
+
+        if self.triggerCommands[self.currentSignalNumber] is not None:
+            self.okButton.clicked.connect(self.triggerCommands[self.currentSignalNumber])
+        print self.triggerCommands[self.currentSignalNumber]
+
+    def startDirac(self):
+        self.commands.diracNowCommand.setValue(1.0)
+
+    def toggleHeavySide(self):
+        if self.commands.stepStateCommand.value < 0.5:
+            self.commands.stepStateCommand.setValue(1.0)
+        else:
+            self.commands.stepStateCommand.setValue(0.0)
+
+    def startRamp(self):
+        pass
+
+    def updateDialog(self):
+        self.currentDialog.update()
+
+    def oneSignalUp(self, qGraphicsSceneMouseEvent):
         self.currentSignalNumber += 1
         if self.currentSignalNumber >= len(self.signalSymbols):
             self.currentSignalNumber = len(self.signalSymbols) - 1
-        self.setCurrentSignal()
+        self.drawCurrentSignal()
+        self.functionNumberCommand.setValue(self.currentSignalNumber)
+        self.connectTriggerButton()
 
-    def oneSignalDown(self):
+    def settingsButtonClicked(self, qGraphicsSceneMouseEvent):
+        lastDialog = self.currentDialog
+        if lastDialog is not None:
+            lastDialog.hide()
+
+        self.currentDialog = GenericCommandEditorWindow(self.groupedCommandLists[self.currentSignalNumber])
+
+        self.dialogUpdateTimer.start(50)
+
+        self.currentDialog.show()
+
+
+    def oneSignalDown(self, qGraphicsSceneMouseEvent):
         self.currentSignalNumber -= 1
         if self.currentSignalNumber <= 0:
             self.currentSignalNumber = 0
-        self.setCurrentSignal()
+        self.drawCurrentSignal()
+        self.functionNumberCommand.setValue(self.currentSignalNumber)
+        self.connectTriggerButton()
 
-    def setCurrentSignal(self):
+
+    def drawCurrentSignal(self):
         for sig in self.signalSymbols:
             sig.hide()
         self.signalSymbols[self.currentSignalNumber].show()
@@ -104,29 +219,37 @@ class SignalSource(QtGui.QGraphicsObject):
     def eastCoordinates(self):
         return self.mapToScene(QtCore.QPoint(150, 50))
 
-    def confirmationTimeOut(self):
-        self.isCommandConfirmed = False
-        self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
-
-    def confirmation(self):
-        self.confirmationWarningTimer.stop()
-        self.isCommandConfirmed = True
-        self.showConfirmationFailure = False
-
-    def toggleConfirmationFailureIndication(self):
-        self.showConfirmationFailure = not self.showConfirmationFailure
+    # def confirmationTimeOut(self):
+    #     self.isCommandConfirmed = False
+    #     self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
+    #
+    # def confirmation(self):
+    #     self.confirmationWarningTimer.stop()
+    #     self.isCommandConfirmed = True
+    #     self.showConfirmationFailure = False
+    #
+    # def toggleConfirmationFailureIndication(self):
+    #     self.showConfirmationFailure = not self.showConfirmationFailure
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        if self.showConfirmationFailure is True:
+        if self.showConfirmationTimeoutWarning is True:
             QPainter.fillPath(self.warningPath, self.warningBrush)
+
+        # draw the signal number
+        sigNumberText = str(self.currentSignalNumber + 1) + "/5"
+        QPainter.setFont(self.sigNumberFont)
+        QPainter.drawText(self.sigNumberRect,
+                         QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
+                         QtCore.QString(sigNumberText))
+
 
     def boundingRect(self):
         return QtCore.QRectF(0, 0, 150, 100)
 
 
-class SignalSourceConstantShape(QtGui.QGraphicsItem):
+class SignalGeneratorConstantShape(QtGui.QGraphicsItem):
     def __init__(self, parent=None):
-        super(SignalSourceConstantShape, self).__init__(parent)
+        super(SignalGeneratorConstantShape, self).__init__(parent)
 
         # boundingRect
         self.boundingRectPath = QtGui.QPainterPath()
@@ -201,7 +324,7 @@ class SignalSourceConstantShape(QtGui.QGraphicsItem):
 
 class LittleButton(QtGui.QGraphicsObject):
 
-    clicked = QtCore.pyqtSignal()
+    clicked = QtCore.pyqtSignal(object)
 
     def __init__(self, parent=None):
         super(LittleButton, self).__init__(parent)
@@ -236,9 +359,12 @@ class LittleButton(QtGui.QGraphicsObject):
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         self.currentBackgroundBrush = self.clickBackgroundBrush
+
+        # this causes the buttons to react slow while clicking them at a fast interval
+        # QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
+
+        self.clicked.emit(QGraphicsSceneMouseEvent)
         self.clickReleaseTimer.start(50)
-        QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
-        self.clicked.emit()
 
     def clickRelease(self):
         self.currentBackgroundBrush = self.hoverBackgroundBrush
@@ -248,9 +374,6 @@ class LittleButton(QtGui.QGraphicsObject):
 
 
 class UpButton(LittleButton):
-
-    clicked = QtCore.pyqtSignal()
-
     def __init__(self, parent=None):
         super(UpButton, self).__init__(parent)
 
@@ -258,11 +381,6 @@ class UpButton(LittleButton):
         self.arrowPath.moveTo(0 + 4.5, 6 + 8)
         self.arrowPath.lineTo(8 + 4.5, 0 + 8)
         self.arrowPath.lineTo(16 + 4.5, 6 + 8)
-
-    #     LittleButton.clicked.connect(self.clicki)
-    #
-    # def clicki(self):
-    #     self.clicked.emit()
 
     def boundingRect(self):
         return QtCore.QRectF(0, 0, 25, 25)
@@ -478,3 +596,85 @@ class HeaviSideSignal(QtGui.QGraphicsItem):
             self.currentPath = self.downPath
         else:
             self.currentPath = self.upPath
+
+
+
+
+
+
+
+class GenericCommandEditorWindow(QtGui.QDialog):
+
+    parameterChanged = QtCore.pyqtSignal(int, float)
+
+    def __init__(self, commands, parent=None):
+        super(GenericCommandEditorWindow, self).__init__(parent)
+
+        self.setWindowTitle("Parametereditor")
+
+        self.mainLayout = QtGui.QHBoxLayout(self)
+
+        self.graphicsView = QtGui.QGraphicsView()
+        self.mainLayout.addWidget(self.graphicsView)
+
+        self.graphicsView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.graphicsView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
+        self.graphicsView.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+
+        self.commands = commands
+
+        self.graphicsView.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.lightGray))
+        self.graphicsView.setStyleSheet("""
+            .ControllerGeneric {
+                border-style: none;
+                }
+            """)
+
+        self.scene = QtGui.QGraphicsScene()
+
+        self.items = list()
+        for command in self.commands:
+            commandItem = GenericCommandWithoutMinMaxEdit(command)
+            self.scene.addItem(commandItem)
+            self.items.append(commandItem)
+
+        self.graphicsView.setScene(self.scene)
+
+        self.contentWidth = 0
+        self.contentHeight = 0
+
+        self.arrangeItems()
+
+    def update(self):
+        if self.contentHeight > self.graphicsView.height():
+            self.graphicsView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        else:
+            self.graphicsView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
+        self.scene.setSceneRect(0, 0, self.contentWidth + 20, self.contentHeight + 20)
+        self.scene.update()
+        # self.resize(self.width(), self.height())
+
+    def arrangeItems(self):
+        row = 0
+        for item in self.items:
+            positionX = 0
+            positionY = row * item.height
+            item.setPos(positionX, positionY)
+            row += 1
+
+        if len(self.items) > 0:
+            self.contentWidth = self.items[-1].width + 20
+            self.contentHeight = row * self.items[-1].height + 20
+        else:
+            self.contentWidth = 0
+            self.contentHeight = 0
+        self.setGeometry(100, 100, self.contentWidth + 30, self.contentHeight + 30)
+        self.update()
+
+    def updateSymbols(self):
+        self.scene.update()
+
+    def resizeEvent(self, QResizeEvent):
+        super(GenericCommandEditorWindow, self).resizeEvent(QResizeEvent)

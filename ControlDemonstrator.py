@@ -24,6 +24,9 @@ def myExcepthook(exc_type, exc_value, exc_traceback):
 
 
 class ControlDemonstrator(QtGui.QApplication):
+    """
+    Main entry point for the application.
+    """
     def __init__(self, args):
         logging.info("application start")
         QtGui.QApplication.__init__(self, args)

@@ -3,10 +3,11 @@
 
 class Settings():
     def __init__(self):
-        self.controllerLoopCycleTime = 0
+        self.controllerLoopCycleTimeInUs = 0
         self.bufferLength = 0
-        self.plotUpdateTimeSpanInMs = 0
-        self.controlUpdateTimeSpanInMs = 0
+        self.guiUpdateIntervalLengthInMs = 0
+        self.receiveMessageIntervalLengthInMs = 0
+        self.sendMessageIntervalLengthInMs = 0
         self.computerIP = ""
         self.controllerIP = ""
         self.computerRxPort = 1

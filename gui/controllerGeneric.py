@@ -15,18 +15,9 @@ class ControllerGeneric(QtGui.QGraphicsView):
 
         self.verticalScrollMode = True
 
-        # self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        # self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-
+        # the scroll bars will be manually shown or not from self.arrangeItems
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-
-        # if self.verticalScrollMode is True:
-        #     self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        #     self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        # else:
-        #     self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        #     self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
@@ -59,13 +50,25 @@ class ControllerGeneric(QtGui.QGraphicsView):
 
 
     def arrangeItems(self):
-        column = 0
-        row = 0
+        """
+        All commands will be arranged in a grid, that either fits horizontally or vertically
+        depending on the value of self.verticalScrollMode.
+
+        If verticalScrollMode is True, a horizontal scrollbar will appear and
+        only so many rows are drawn, that they fit in the available vertical space.
+
+        If verticalScrollMode is False, a vertical scrollbar will appear and
+        only so many columns are drawn, that they fit in the available horizontal space.
+        """
+
+        # adjust here for the size of possible scrollbars
         maxHeight = self.height() - 20
         maxWidth = self.width() - 20
 
-        # print maxHeight
 
+        # position the commandItems in a grid
+        column = 0
+        row = 0
         if self.verticalScrollMode is True:
             # arrange for a vertical scroll bar
             for item in self.items:
@@ -89,6 +92,7 @@ class ControllerGeneric(QtGui.QGraphicsView):
                 item.setPos(positionX, positionY)
                 row += 1
 
+        # calculate the new width and height
         if len(self.items) > 0:
             totalWidth = column * self.items[-1].width + self.items[-1].width + 20
             totalHeight = row * self.items[-1].height + self.items[-1].height + 20
@@ -96,6 +100,7 @@ class ControllerGeneric(QtGui.QGraphicsView):
             totalWidth = 0
             totalHeight = 0
 
+        # show scrollbars if needed
         if self.verticalScrollMode is True:
             if totalHeight > self.height():
                 self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
@@ -107,6 +112,7 @@ class ControllerGeneric(QtGui.QGraphicsView):
             else:
                 self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
+        #
         self.scene.setSceneRect(0, 0, totalWidth, totalHeight)
         self.scene.update()
         self.resize(self.width(), self.height())
@@ -115,6 +121,5 @@ class ControllerGeneric(QtGui.QGraphicsView):
         self.scene.update()
 
     def resizeEvent(self, QResizeEvent):
-        # self.emit(QtCore.SIGNAL("resize()"))
         super(ControllerGeneric, self).resizeEvent(QResizeEvent)
         self.arrangeItems()

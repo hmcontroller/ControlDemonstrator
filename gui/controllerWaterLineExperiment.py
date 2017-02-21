@@ -2,6 +2,7 @@
 
 from PyQt4 import QtCore, QtGui
 
+from core.signalGeneratorCommandGroup import SignalGeneratorCommandGroup
 
 from gui.graphicItems.commandWidgets.gain import Gain
 from gui.graphicItems.commandWidgets.switch import Switch
@@ -9,7 +10,7 @@ from gui.graphicItems.gauges.tankGauge import TankGauge
 from gui.graphicItems.symbols.arrow import Arrow
 
 from gui.graphicItems.symbols.sumCircle import SumCircle
-from gui.graphicItems.commandWidgets.signalSource import SignalSource
+from gui.graphicItems.commandWidgets.signalGenerator import SignalGenerator
 from gui.graphicItems.symbols.derivativeFunction import DerivativeFunctionBlock
 from gui.graphicItems.symbols.integralFunction import IntegralFunctionBlock
 from gui.graphicItems.symbols.distributionNode import DistributionNode
@@ -25,7 +26,9 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 
-        self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        # self.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.lightGray))
+
+        # self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
         self.commands = commands
         self.channels = channels
@@ -48,7 +51,20 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         self.cablePen.setCosmetic(True)
 
 
-        signalGenerator = SignalSource()
+        sigCommandGroup = SignalGeneratorCommandGroup()
+        sigCommandGroup.functionNumberCommand = self.commands.getCommandByName("SP_GEN1_NUMBER")
+        sigCommandGroup.diracNowCommand = self.commands.getCommandByName("SP_GEN1_DIRAC_NOW")
+        sigCommandGroup.diracLowCommand = self.commands.getCommandByName("SP_GEN1_DIRAC_LOW")
+        sigCommandGroup.diracHighCommand = self.commands.getCommandByName("SP_GEN1_DIRAC_HIGH")
+        sigCommandGroup.diracDurationCommand = self.commands.getCommandByName("SP_GEN1_DIRAC_DURATION")
+        sigCommandGroup.stepLowCommand = self.commands.getCommandByName("SP_GEN1_STEP_LOW")
+        sigCommandGroup.stepHighCommand = self.commands.getCommandByName("SP_GEN1_STEP_HIGH")
+        sigCommandGroup.stepStateCommand = self.commands.getCommandByName("SP_GEN1_STEP_STATE")
+        sigCommandGroup.sinAmplitudeCommand = self.commands.getCommandByName("SP_GEN1_SIN_AMPLITUDE")
+        sigCommandGroup.sinOmegaCommand = self.commands.getCommandByName("SP_GEN1_SIN_OMEGA")
+        sigCommandGroup.sinOffsetCommand = self.commands.getCommandByName("SP_GEN1_SIN_OFFSET")
+
+        signalGenerator = SignalGenerator(sigCommandGroup)
         self.scene.addItem(signalGenerator)
         signalGenerator.setPos(10, 150)
 
@@ -102,7 +118,20 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         integrativeSwitch.setPos(550, 300)
 
 
-        disturbanceGenerator = SignalSource()
+        distCommandGroup = SignalGeneratorCommandGroup()
+        distCommandGroup.functionNumberCommand = self.commands.getCommandByName("SP_GEN2_NUMBER")
+        distCommandGroup.diracNowCommand = self.commands.getCommandByName("SP_GEN2_DIRAC_NOW")
+        distCommandGroup.diracLowCommand = self.commands.getCommandByName("SP_GEN2_DIRAC_LOW")
+        distCommandGroup.diracHighCommand = self.commands.getCommandByName("SP_GEN2_DIRAC_HIGH")
+        distCommandGroup.diracDurationCommand = self.commands.getCommandByName("SP_GEN2_DIRAC_DURATION")
+        distCommandGroup.stepLowCommand = self.commands.getCommandByName("SP_GEN2_STEP_LOW")
+        distCommandGroup.stepHighCommand = self.commands.getCommandByName("SP_GEN2_STEP_HIGH")
+        distCommandGroup.stepStateCommand = self.commands.getCommandByName("SP_GEN2_STEP_STATE")
+        distCommandGroup.sinAmplitudeCommand = self.commands.getCommandByName("SP_GEN2_SIN_AMPLITUDE")
+        distCommandGroup.sinOmegaCommand = self.commands.getCommandByName("SP_GEN2_SIN_OMEGA")
+        distCommandGroup.sinOffsetCommand = self.commands.getCommandByName("SP_GEN2_SIN_OFFSET")
+
+        disturbanceGenerator = SignalGenerator(distCommandGroup)
         self.scene.addItem(disturbanceGenerator)
         disturbanceGenerator.setPos(800, 10)
 

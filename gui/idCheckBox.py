@@ -6,6 +6,7 @@ from PyQt4 import QtGui, QtCore
 class IdColorLabelCheckbox(QtGui.QWidget):
 
     changed = QtCore.pyqtSignal(int, int)
+    keyPressed = QtCore.pyqtSignal(object)
 
     def __init__(self, parent=None, id=None, color=None):
         super(IdColorLabelCheckbox, self).__init__(parent)
@@ -16,7 +17,8 @@ class IdColorLabelCheckbox(QtGui.QWidget):
         horizontalLayout.setMargin(0)
         horizontalLayout.setSpacing(6)
 
-        self.checkBox = QtGui.QCheckBox()
+        self.checkBox = CheckBoxWithoutKeyPress()
+        self.checkBox.keyPressed.connect(self.keyPressed)
         self.colorBox = ColouredRectangle(self.color)
         self.label = QtGui.QLabel()
 
@@ -65,3 +67,12 @@ class ColouredRectangle(QtGui.QWidget):
         return QtCore.QRectF(0, 0, self.widthInPixels, self.heightInPixels)
 
 
+class CheckBoxWithoutKeyPress(QtGui.QCheckBox):
+
+    keyPressed = QtCore.pyqtSignal(object)
+
+    def __init__(self):
+        super(CheckBoxWithoutKeyPress, self).__init__()
+
+    def keyPressEvent(self, qKeyEvent):
+        self.keyPressed.emit(qKeyEvent)

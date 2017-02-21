@@ -20,14 +20,21 @@ class ModelMaker():
         self.config.read(self.configFilePath)
 
     def getCommands(self):
-        commands = CommandList()
-        for i, name in enumerate(self.config.options('requestedControlledParameters')):
+        commandList = CommandList()
+
+        settings = self.getMiscSettings()
+
+        configSections = self.config.options('availableControlledParameters')
+
+        for i, name in enumerate(configSections):
             cmd = Command()
             cmd.id = i
             cmd.name = name
             cmd.value = 0.0
-            commands.append(cmd)
-        return commands
+            cmd.timeOutDuration = 1000 #int(float(settings.controllerLoopCycleTimeInUs * len(configSections) * 5) / float(1000))
+            commandList.append(cmd)
+            cmd.valueChanged.connect(commandList.commandChanged)
+        return commandList
 
     def getMeasurementDataModel(self):
         model = MeasurementData()
@@ -120,17 +127,18 @@ class ModelMaker():
 
         return messagePartsList
 
-    def getSensorMapping(self):
-        mappingString = self.config.get("Sensors", "mapping")
-        mappingString = mappingString.replace("\n", "").replace(" ", "")
-        return json.loads(mappingString)
+    # def getSensorMapping(self):
+    #     mappingString = self.config.get("Sensors", "mapping")
+    #     mappingString = mappingString.replace("\n", "").replace(" ", "")
+    #     return json.loads(mappingString)
 
     def getMiscSettings(self):
         settingsModel = Settings()
-        settingsModel.controllerLoopCycleTime = self.config.getint("misc", "loopCycleTimeUS")
+        settingsModel.controllerLoopCycleTimeInUs = self.config.getint("misc", "loopCycleTimeUS")
         settingsModel.bufferLength = self.config.getint("misc", "bufferSizePC")
-        settingsModel.plotUpdateTimeSpanInMs = self.config.getint("misc", "plotUpdateTimeSpanInMs")
-        settingsModel.controlUpdateTimeSpanInMs = self.config.getint("misc", "controlUpdateTimeSpanInMs")
+        settingsModel.guiUpdateIntervalLengthInMs = self.config.getint("misc", "guiUpdateIntervalLengthInMs")
+        settingsModel.receiveMessageIntervalLengthInMs = self.config.getint("misc", "receiveMessageIntervalLengthInMs")
+        settingsModel.sendMessageIntervalLengthInMs = self.config.getint("misc", "sendMessageIntervalLengthInMs")
         settingsModel.computerIP = self.config.get("misc", "computerIP")
         settingsModel.controllerIP = self.config.get("misc", "controllerIP")
         settingsModel.computerRxPort = self.config.getint("misc", "computerRxPort")
