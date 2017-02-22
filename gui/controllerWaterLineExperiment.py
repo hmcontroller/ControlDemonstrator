@@ -15,6 +15,7 @@ from gui.graphicItems.symbols.derivativeFunction import DerivativeFunctionBlock
 from gui.graphicItems.symbols.integralFunction import IntegralFunctionBlock
 from gui.graphicItems.symbols.distributionNode import DistributionNode
 from gui.graphicItems.symbols.corner import Corner
+from gui.graphicItems.commandWidgets.gaugeSwitcher import GaugeSwitcher
 
 
 class ControllerWaterLineExperiment(QtGui.QGraphicsView):
@@ -141,6 +142,9 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         disturbanceSwitch.setPos(725, 100)
         disturbanceSwitch.rotate(90)
 
+        disturbanceOnOffCommand.setValue(0.0)
+        # alternativ geht auch
+        # disturbanceSwitch.setValue(0.0)
 
         duDt = DerivativeFunctionBlock()
         self.scene.addItem(duDt)
@@ -162,15 +166,31 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         sumCircleDisturbance.setPos(725, 200)
 
 
-        tankGaugeChannel = self.channels.getChannelByName("ANALOG_IN_3")
+        gauges = list()
 
-        self.tankGauge = TankGauge()
-        self.scene.addItem(self.tankGauge)
-        self.tankGauge.setPos(800, 350)
-        self.tankGauge.setValue(0)
-        self.tankGauge.setColor(tankGaugeChannel.colorRgbTuple)
-        tankGaugeChannel.newValueArrived.connect(self.tankGauge.setValue)
+        tankGaugeChannel1 = self.channels.getChannelByName("ANALOG_IN_3")
+        tankGauge1 = TankGauge()
+        tankGauge1.lowerLimit = 30000
+        tankGauge1.upperLimit = 50000
+        tankGauge1.isRelativeScale = True
+        tankGauge1.setColor(tankGaugeChannel1.colorRgbTuple)
+        tankGaugeChannel1.newValueArrived.connect(tankGauge1.setValue)
+        gauges.append(tankGauge1)
 
+        tankGaugeChannel2 = self.channels.getChannelByName("ANALOG_IN_2")
+        tankGauge2 = TankGauge()
+        tankGauge2.lowerLimit = 0
+        tankGauge2.upperLimit = 65536
+        tankGauge2.isRelativeScale = True
+        tankGauge2.setColor(tankGaugeChannel2.colorRgbTuple)
+        tankGaugeChannel2.newValueArrived.connect(tankGauge2.setValue)
+        gauges.append(tankGauge2)
+
+        gaugeSwitchCommand = self.commands.getCommandByName("PID1_SENSOR_SOURCE")
+
+        gaugeSwitcher = GaugeSwitcher(gaugeSwitchCommand, gauges)
+        self.scene.addItem(gaugeSwitcher)
+        gaugeSwitcher.setPos(790, 235)
 
         nodeOut = DistributionNode()
         self.scene.addItem(nodeOut)
@@ -229,7 +249,7 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         self.drawArrow(cornerPointSumControllerIn.coordinates, sumCircleControllerIn.southCoordinates)
         self.drawLine(cornerPointSumControllerIn.coordinates, cornerPointSensorOut.coordinates)
 
-        self.drawLine(cornerPointSensorOut.coordinates, self.tankGauge.southCoordinates)
+        self.drawLine(cornerPointSensorOut.coordinates, gaugeSwitcher.southCoordinates)
 
         self.drawArrow(sumCircleControllerOut.eastCoordinates, sumCircleDisturbance.westCoordinates)
 
@@ -238,7 +258,7 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         # the output signal
         self.drawArrow(nodeOut.coordinates, QtCore.QPointF(1000, 200))
 
-        self.drawArrow(nodeOut.coordinates, self.tankGauge.northCoordinates)
+        self.drawArrow(nodeOut.coordinates, gaugeSwitcher.northCoordinates)
 
         self.drawLine(disturbanceGenerator.westCoordinates, cornerDisturber.coordinates)
         self.drawLine(cornerDisturber.coordinates, disturbanceSwitch.inCoordinates)

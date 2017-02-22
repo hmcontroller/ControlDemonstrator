@@ -1,13 +1,13 @@
 # -*- encoding: utf-8 -*-
 import math
-import os
 
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtCore
 
 from core.signalGeneratorCommandGroup import SignalGeneratorCommandGroup
 from gui.constants import *
 from gui.graphicItems.commandWidgets.genericCommand import GenericCommandWithoutMinMaxEdit
 from gui.graphicItems.commandWidgets.baseCommand import BaseCommand
+from gui.graphicItems.button import SymbolButton
 
 class SignalGenerator(BaseCommand):
 
@@ -21,6 +21,7 @@ class SignalGenerator(BaseCommand):
         self.functionNumberCommand = self.commands.functionNumberCommand
         self.functionNumberCommand.lowerLimit = 0
         self.functionNumberCommand.upperLimit = 5
+        self.signalSymbols = list()
 
         # the command to set the function number of the generator is used as main command here
         # TODO rewrite documentation one line above
@@ -80,26 +81,25 @@ class SignalGenerator(BaseCommand):
 
 
         self.warningPath = QtGui.QPainterPath()
-        self.warningPath.addRect(100, 5, 20, 20)
+        self.warningPath.addRect(70, 5, 20, 20)
 
         self.warningBrush = QtGui.QBrush(CONFIRMATION_TIMEOUT_WARNING_COLOR)
 
-        self.upButton = UpButton(self)
+        self.upButton = SymbolButton(SymbolButton.UP, parent=self)
         self.upButton.setPos(125, 0)
         self.upButton.clicked.connect(self.oneSignalUp)
 
-        self.okButton = OkButton(self)
+        self.okButton = SymbolButton(SymbolButton.OK, parent=self)
         self.okButton.setPos(125, 25)
 
-        self.settingsButton = SettingsButton(self)
+        self.settingsButton = SymbolButton(SymbolButton.SETTINGS, parent=self)
         self.settingsButton.setPos(125, 50)
         self.settingsButton.clicked.connect(self.settingsButtonClicked)
 
-        self.downButton = DownButton(self)
+        self.downButton = SymbolButton(SymbolButton.DOWN, parent=self)
         self.downButton.setPos(125, 75)
         self.downButton.clicked.connect(self.oneSignalDown)
 
-        self.signalSymbols = list()
 
         dirac = DiracSignal(self)
         dirac.setPos(20, 0)
@@ -122,7 +122,7 @@ class SignalGenerator(BaseCommand):
         square.setPos(20, 0)
         self.signalSymbols.append(square)
 
-        self.currentSignalNumber = 0
+        self.currentSignalNumber = int(self.command.value)
         self.drawCurrentSignal()
 
         self.constantShape = SignalGeneratorConstantShape(self)
@@ -144,6 +144,8 @@ class SignalGenerator(BaseCommand):
 
         self.connectTriggerButton()
 
+        # self.setValue(self.command.value)
+
     def connectTriggerButton(self):
         try:
             self.okButton.clicked.disconnect()
@@ -152,7 +154,6 @@ class SignalGenerator(BaseCommand):
 
         if self.triggerCommands[self.currentSignalNumber] is not None:
             self.okButton.clicked.connect(self.triggerCommands[self.currentSignalNumber])
-        print self.triggerCommands[self.currentSignalNumber]
 
     def startDirac(self):
         self.commands.diracNowCommand.setValue(1.0)
@@ -173,9 +174,15 @@ class SignalGenerator(BaseCommand):
         self.currentSignalNumber += 1
         if self.currentSignalNumber >= len(self.signalSymbols):
             self.currentSignalNumber = len(self.signalSymbols) - 1
-        self.drawCurrentSignal()
         self.functionNumberCommand.setValue(self.currentSignalNumber)
-        self.connectTriggerButton()
+        self.actualizeSignalSymbol()
+
+    def oneSignalDown(self, qGraphicsSceneMouseEvent):
+        self.currentSignalNumber -= 1
+        if self.currentSignalNumber <= 0:
+            self.currentSignalNumber = 0
+        self.functionNumberCommand.setValue(self.currentSignalNumber)
+        self.actualizeSignalSymbol()
 
     def settingsButtonClicked(self, qGraphicsSceneMouseEvent):
         lastDialog = self.currentDialog
@@ -188,20 +195,26 @@ class SignalGenerator(BaseCommand):
 
         self.currentDialog.show()
 
+    def valueChangedFromController(self):
+        self.currentSignalNumber = int(round(self.command.value))
+        self.actualizeSignalSymbol()
 
-    def oneSignalDown(self, qGraphicsSceneMouseEvent):
-        self.currentSignalNumber -= 1
-        if self.currentSignalNumber <= 0:
-            self.currentSignalNumber = 0
+
+
+    def actualizeSignalSymbol(self):
         self.drawCurrentSignal()
-        self.functionNumberCommand.setValue(self.currentSignalNumber)
+        # self.command.setValue(self.currentSignalNumber)
         self.connectTriggerButton()
-
 
     def drawCurrentSignal(self):
         for sig in self.signalSymbols:
             sig.hide()
-        self.signalSymbols[self.currentSignalNumber].show()
+        if len(self.signalSymbols) > 0:
+            self.signalSymbols[self.currentSignalNumber].show()
+
+    def setValue(self, value):
+        self.currentSignalNumber = int(value)
+        self.actualizeSignalSymbol()
 
     @property
     def northCoordinates(self):
@@ -322,142 +335,6 @@ class SignalGeneratorConstantShape(QtGui.QGraphicsItem):
 
 
 
-class LittleButton(QtGui.QGraphicsObject):
-
-    clicked = QtCore.pyqtSignal(object)
-
-    def __init__(self, parent=None):
-        super(LittleButton, self).__init__(parent)
-        self.setAcceptHoverEvents(True)
-
-        self.currentBackgroundBrush = None
-
-        self.backgroundPath = QtGui.QPainterPath()
-        self.backgroundPath.moveTo(0, 0)
-        self.backgroundPath.lineTo(25, 0)
-        self.backgroundPath.lineTo(25, 25)
-        self.backgroundPath.lineTo(0, 25)
-        self.backgroundPath.closeSubpath()
-
-        self.normalBackgroundBrush = QtGui.QBrush(QtGui.QColor(200, 200, 200, 0))
-        self.hoverBackgroundBrush = QtGui.QBrush(HOVER_COLOR)
-        self.clickBackgroundBrush = QtGui.QBrush(MOUSE_DOWN_COLOR)
-
-        self.currentBackgroundBrush = self.normalBackgroundBrush
-
-        self.clickReleaseTimer = QtCore.QTimer()
-        self.clickReleaseTimer.setSingleShot(True)
-        self.clickReleaseTimer.timeout.connect(self.clickRelease)
-
-    def hoverEnterEvent(self, QGraphicsSceneMouseEvent):
-        self.currentBackgroundBrush = self.hoverBackgroundBrush
-        QtGui.QGraphicsItem.hoverEnterEvent(self, QGraphicsSceneMouseEvent)
-
-    def hoverLeaveEvent(self, QGraphicsSceneMouseEvent):
-        self.currentBackgroundBrush = self.normalBackgroundBrush
-        QtGui.QGraphicsItem.hoverLeaveEvent(self, QGraphicsSceneMouseEvent)
-
-    def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        self.currentBackgroundBrush = self.clickBackgroundBrush
-
-        # this causes the buttons to react slow while clicking them at a fast interval
-        # QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
-
-        self.clicked.emit(QGraphicsSceneMouseEvent)
-        self.clickReleaseTimer.start(50)
-
-    def clickRelease(self):
-        self.currentBackgroundBrush = self.hoverBackgroundBrush
-
-    # def mouseDoubleClickEvent(self, QMouseEvent):
-    #     print "double"
-
-
-class UpButton(LittleButton):
-    def __init__(self, parent=None):
-        super(UpButton, self).__init__(parent)
-
-        self.arrowPath = QtGui.QPainterPath()
-        self.arrowPath.moveTo(0 + 4.5, 6 + 8)
-        self.arrowPath.lineTo(8 + 4.5, 0 + 8)
-        self.arrowPath.lineTo(16 + 4.5, 6 + 8)
-
-    def boundingRect(self):
-        return QtCore.QRectF(0, 0, 25, 25)
-
-    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        QPainter.fillPath(self.backgroundPath, self.currentBackgroundBrush)
-
-        QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
-        QPainter.drawPath(self.arrowPath)
-
-
-
-class DownButton(LittleButton):
-    def __init__(self, parent=None):
-        super(DownButton, self).__init__(parent)
-
-        self.arrowPath = QtGui.QPainterPath()
-        self.arrowPath.moveTo(0 + 4.5, 0 + 12)
-        self.arrowPath.lineTo(8 + 4.5, 6 + 12)
-        self.arrowPath.lineTo(16 + 4.5, 0 + 12)
-
-    def boundingRect(self):
-        return QtCore.QRectF(0, 0, 25, 25)
-
-    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        QPainter.fillPath(self.backgroundPath, self.currentBackgroundBrush)
-
-        QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
-        QPainter.drawPath(self.arrowPath)
-
-
-class SettingsButton(LittleButton):
-    def __init__(self, parent=None):
-        super(SettingsButton, self).__init__(parent)
-
-        self.outerPath = QtGui.QPainterPath()
-        self.outerPath.moveTo(0, 0)
-        self.outerPath.lineTo(8 + 4.5, 6 + 12)
-
-        self.pixmapItem = QtGui.QGraphicsPixmapItem(self)
-        absDir = os.path.dirname(os.path.realpath(__file__))
-        absPath = os.path.join(absDir, "settings.png")
-        self.pixmap = QtGui.QPixmap(absPath)
-        self.pixmapItem.setPixmap(self.pixmap)
-        self.pixmapItem.scale(0.04, 0.04)
-        self.pixmapItem.setPos(2, 2)
-
-    def boundingRect(self):
-        return QtCore.QRectF(0, 0, 25, 25)
-
-    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        QPainter.fillPath(self.backgroundPath, self.currentBackgroundBrush)
-
-
-class OkButton(LittleButton):
-    def __init__(self, parent=None):
-        super(OkButton, self).__init__(parent)
-
-        self.path = QtGui.QPainterPath()
-        self.path.moveTo(8, 13)
-        self.path.lineTo(12.5, 20)
-        self.path.lineTo(18, 8)
-
-        self.pen = QtGui.QPen()
-        self.pen.setWidth(1)
-        self.pen.setCosmetic(True)
-        self.pen.setColor(QtCore.Qt.black)
-
-
-    def boundingRect(self):
-        return QtCore.QRectF(0, 0, 25, 25)
-
-    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        QPainter.fillPath(self.backgroundPath, self.currentBackgroundBrush)
-        QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
-        QPainter.setPen(self.pen)
-        QPainter.drawPath(self.path)
 
 class SinusSignal(QtGui.QGraphicsItem):
     def __init__(self, parent=None):

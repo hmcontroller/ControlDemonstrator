@@ -64,9 +64,10 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.clearNegativeConfirmationWarningTimer.setSingleShot(True)
         self.clearNegativeConfirmationWarningTimer.timeout.connect(self.clearNegativeConfirmationWarning)
 
-        self.setValue(self.command.value)
+        # self.setValue(self.command.value)
         self.valueChanged.connect(self.command.setValue)
 
+        self.command.valueChangedFromController.connect(self.valueChangedFromController)
         self.command.minChangedFromController.connect(self.minChangedFromController)
         self.command.maxChangedFromController.connect(self.maxChangedFromController)
 
@@ -105,13 +106,16 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.negativeConfirmationWarningBlinkTimer.stop()
         self.showNegativeConfirmationWarning = False
 
+    def valueChangedFromController(self):
+        raise NotImplementedError("abstract method valueChangedFromController must be overwritten")
+
     ## Meine Methodendokumentation
     #  @param self The instance pointer
     #  @param command the command, that holds the min to be set to the gui
-    def minChangedFromController(self, command):
+    def minChangedFromController(self):
         pass
 
-    def maxChangedFromController(self, command):
+    def maxChangedFromController(self):
         pass
 
     def setValue(self, value):

@@ -19,7 +19,7 @@ class Switch(BaseCommand):
         # TODO use Qt standard coordinates
         self.bounds = [-20, -20, 50, 20]
         self.height = 30
-        self.value = 1.0
+        self.value = command.value
 
         self.brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
 
@@ -58,6 +58,9 @@ class Switch(BaseCommand):
         self.boundingRectPath.lineTo(self.bounds[2], self.bounds[3])
         self.boundingRectPath.lineTo(self.bounds[0], self.bounds[3])
         self.boundingRectPath.closeSubpath()
+
+    def valueChangedFromController(self):
+        pass
 
     @property
     def inCoordinates(self):

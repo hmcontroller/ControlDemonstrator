@@ -52,6 +52,7 @@ class CommandList(QtCore.QObject):
 class Command(QtCore.QObject):
 
     valueChanged = QtCore.pyqtSignal(object)
+    valueChangedFromController = QtCore.pyqtSignal(object)
     minChangedFromController = QtCore.pyqtSignal(object)
     maxChangedFromController = QtCore.pyqtSignal(object)
     confirmationTimeOut = QtCore.pyqtSignal(object)
@@ -66,8 +67,9 @@ class Command(QtCore.QObject):
         self.isConfirmed = False
         self.timeOfSend = None
 
-        self.lowerLimit = 0
-        self.upperLimit = 2
+        self._lowerLimit = 0
+        self._upperLimit = 1
+
         self.smallNumber = 0.00001
         self.negativeConfirmationCounter = 0
         self.timeOfLastResponse = datetime.datetime.now() - datetime.timedelta(hours=1)
@@ -79,7 +81,7 @@ class Command(QtCore.QObject):
         self.confirmationTimer.timeout.connect(self.confirmationTimeout)
 
         # set this at last
-        self.value = 0.0
+        self._value = 0.0
 
 
     @property
@@ -96,11 +98,33 @@ class Command(QtCore.QObject):
         else:
             raise ValueError("value {} out of allowed range {} - {} for command {}".format(
                 value, self.lowerLimit, self.upperLimit, self.name))
+        self.valueChanged.emit(self)
+
+    @property
+    def lowerLimit(self):
+        return self._lowerLimit
+
+    @lowerLimit.setter
+    def lowerLimit(self, value):
+        self._lowerLimit = value
+        if self.value < self._lowerLimit:
+            self.value = self.lowerLimit
+            self.valueChangedFromController.emit(self)
+
+    @property
+    def upperLimit(self):
+        return self._upperLimit
+
+    @upperLimit.setter
+    def upperLimit(self, value):
+        self._upperLimit = value
+        if self.value > self.upperLimit:
+            self.value = self.upperLimit
+            self.valueChangedFromController.emit(self)
 
     @QtCore.pyqtSlot(object)
     def setValue(self, value):
         self.value = value
-        self.valueChanged.emit(self)
 
     def checkConfirmation(self, commandConfirmation):
         self.timeOfLastResponse = datetime.datetime.now()
@@ -138,6 +162,7 @@ class Command(QtCore.QObject):
         self.value = value
         print "command {} {} {} changed from controller".format(
             self.id, self.name, value)
+        self.valueChangedFromController.emit(self)
 
 # TODO do i really need this class
 class CommandConfirmation():

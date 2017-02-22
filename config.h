@@ -4,9 +4,9 @@
 // must have parameters
 #define LOOP_CYCLE_TIME_US                         5000
 #define FAST_PARAMETER_COUNT                         30
-#define REQUESTED_FAST_PARAMETER_COUNT               11
-#define CONTROLLED_PARAMETER_COUNT                   39
-#define REQUESTED_CONTROLLED_PARAMETER_COUNT         39
+#define REQUESTED_FAST_PARAMETER_COUNT               12
+#define CONTROLLED_PARAMETER_COUNT                   40
+#define REQUESTED_CONTROLLED_PARAMETER_COUNT         40
 
 // all available fast parameters
 // define names for parameters, that can be send to the connected pc.
@@ -88,9 +88,11 @@
 #define SP_GEN2_SIN_AMPLITUDE                        36
 #define SP_GEN2_SIN_OMEGA                            37
 #define SP_GEN2_SIN_OFFSET                           38
+#define PID1_SENSOR_SOURCE                           39
 
 // parameters that will be send to the pc at every loop cycle
 int requestedFastParameters[REQUESTED_FAST_PARAMETER_COUNT] = {
+    ANALOG_IN_2,
     ANALOG_IN_3,
     PID1_ERROR,
     FAST_PWM_ON,
@@ -144,7 +146,8 @@ int requestedControlledParameters[CONTROLLED_PARAMETER_COUNT] = {
     SP_GEN2_STEP_STATE,
     SP_GEN2_SIN_AMPLITUDE,
     SP_GEN2_SIN_OMEGA,
-    SP_GEN2_SIN_OFFSET
+    SP_GEN2_SIN_OFFSET,
+    PID1_SENSOR_SOURCE
 };
 
 #endif

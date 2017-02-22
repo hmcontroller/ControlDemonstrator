@@ -61,6 +61,9 @@ class Gain(BaseCommand):
         self.path.lineTo(70, 30)
         self.path.closeSubpath()
 
+    def valueChangedFromController(self):
+        self.lineEdit.setText(str(self.command.value))
+
     def editFinished(self):
         self.lineEditProxy.clearFocus()
 

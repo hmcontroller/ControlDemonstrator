@@ -30,7 +30,7 @@ class ModelMaker():
             cmd = Command()
             cmd.id = i
             cmd.name = name
-            cmd.value = 0.0
+            # cmd.value = 0.0
             cmd.timeOutDuration = 1000 #int(float(settings.controllerLoopCycleTimeInUs * len(configSections) * 5) / float(1000))
             commandList.append(cmd)
             cmd.valueChanged.connect(commandList.commandChanged)
