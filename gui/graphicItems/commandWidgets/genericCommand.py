@@ -31,8 +31,6 @@ class GenericCommand(BaseCommand):
         self.valueLineEditProxy = QtGui.QGraphicsProxyWidget(self)
         self.valueLineEditProxy.setWidget(self.valueLineEdit)
 
-        # self.suppressValueChangedSignal = False
-
         self.width = 400
         self.height = 80
         self.labelAreaHeight = 30
@@ -43,20 +41,26 @@ class GenericCommand(BaseCommand):
         self.minLineEdit.move(45, self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.minLineEdit.height())
         self.minLineEditValidator = FloatValidator()
         self.minLineEdit.setValidator(self.minLineEditValidator)
+        self.minLineEdit.setText(str(self.command.getLowerLimit()))
+
         self.minLineEdit.editingFinished.connect(self.minEditingFinished)
         self.minLineEdit.returnPressed.connect(self.minEditingReturnPressed)
-        self.minLineEdit.setText(str(self.command.lowerLimit))
+
 
         self.maxLineEdit.move(167, self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.minLineEdit.height())
         self.maxLineEditValidator = FloatValidator()
         self.maxLineEdit.setValidator(self.maxLineEditValidator)
+        self.maxLineEdit.setText(str(self.command.getUpperLimit()))
+
         self.maxLineEdit.editingFinished.connect(self.maxEditingFinished)
         self.maxLineEdit.returnPressed.connect(self.maxEditingReturnPressed)
-        self.maxLineEdit.setText(str(self.command.upperLimit))
+
 
         self.valueLineEdit.move(self.width - 10 - self.valueLineEdit.width(), self.hCenterEditArea - 0.5 * self.valueLineEdit.height())
         self.valueLineEditValidator = FloatValidator()
         self.valueLineEdit.setValidator(self.valueLineEditValidator)
+        self.valueLineEdit.setText(str(self.command.getValue()))
+
         self.valueLineEdit.editingFinished.connect(self.valueEditingFinished)
         self.valueLineEdit.returnPressed.connect(self.valueEditingReturnPressed)
 
@@ -110,28 +114,28 @@ class GenericCommand(BaseCommand):
         # self.valueLineEditProxy.clearFocus()
         # self.valueLineEdit.selectAll()
         text = self.valueLineEdit.text()
-        print "Editfinished", text
+        print "ValueEditFinished", text
 
         # if nothing is in the textBox, the lower limit of the command will be set
         if text == "":
-            self.valueLineEdit.setText(str(self.command.lowerLimit))
-            self.command.value = self.command.lowerLimit
+            self.valueLineEdit.setText(str(self.command.getLowerLimit()))
+            self.command.setValue(self, self.command.getLowerLimit())
             self.activateUserInputWarning()
         else:
             # allowed for the decimal point are a comma and a dot
             text = text.replace(",", ".")
 
             number = float(text)
-            if number < self.command.lowerLimit:
-                self.valueLineEdit.setText(str(self.command.lowerLimit))
-                self.command.value = self.command.lowerLimit
+            if number < self.command.getLowerLimit():
+                self.command.setValue(self, self.command.getLowerLimit())
+                self.valueLineEdit.setText(str(self.command.getLowerLimit()))
                 self.activateUserInputWarning()
-            elif number > self.command.upperLimit:
-                self.valueLineEdit.setText(str(self.command.upperLimit))
-                self.command.value = self.command.upperLimit
+            elif number > self.command.getUpperLimit():
+                self.command.setValue(self, self.command.getUpperLimit())
+                self.valueLineEdit.setText(str(self.command.getUpperLimit()))
                 self.activateUserInputWarning()
             else:
-                self.command.value = number
+                self.command.setValue(self,  number)
 
     def valueEditingReturnPressed(self):
         self.valueLineEdit.selectAll()
@@ -140,16 +144,22 @@ class GenericCommand(BaseCommand):
         # self.minLineEditProxy.clearFocus()
         # self.minLineEdit.selectAll()
 
+
         text = self.minLineEdit.text()
+
+        print "minEditFinished", text
+
         if text == "":
             min = 0
         else:
             min = float(text)
-        if min > self.command.upperLimit:
-            self.command.lowerLimit = self.command.upperLimit
+        if min > self.command.getUpperLimit():
+            self.command.setLowerLimit(self, self.command.getUpperLimit())
+            self.minLineEdit.setText(str(self.command.getLowerLimit()))
+            self.minLineEdit.selectAll()
             self.activateUserInputWarning()
         else:
-            self.command.lowerLimit = min
+            self.command.setLowerLimit(self, min)
 
     def minEditingReturnPressed(self):
         self.minLineEdit.selectAll()
@@ -159,16 +169,21 @@ class GenericCommand(BaseCommand):
         # self.maxLineEdit.selectAll()
 
         text = self.maxLineEdit.text()
+
+        print "maxEditFinished", text
+
         if text == "":
             max = 0
         else:
             max = float(text)
 
-        if max < self.command.lowerLimit:
-            self.command.upperLimit = self.command.lowerLimit
+        if max < self.command.getLowerLimit():
+            self.command.setUpperLimit(self, self.command.getLowerLimit())
+            self.maxLineEdit.setText(str(self.command.getUpperLimit()))
+            self.maxLineEdit.selectAll()
             self.activateUserInputWarning()
         else:
-            self.command.upperLimit = max
+            self.command.setUpperLimit(self, max)
 
     def maxEditingReturnPressed(self):
         self.maxLineEdit.selectAll()
@@ -177,35 +192,27 @@ class GenericCommand(BaseCommand):
         if widgetInstance is self:
             pass
         else:
-            self.valueLineEdit.setText(str(self.command.value))
+            self.valueLineEdit.setText(str(self.command.getValue()))
 
-    def minChangedFromController(self, widgetInstance):
+    def minChangedPerWidget(self, widgetInstance):
         if widgetInstance is self:
             pass
         else:
-            self.minLineEdit.setText(str(self.command.lowerLimit))
+            self.minLineEdit.setText(str(self.command.getLowerLimit()))
 
-    def maxChangedFromController(self, widgetInstance):
+    def maxChangedPerWidget(self, widgetInstance):
         if widgetInstance is self:
             pass
         else:
-            self.maxLineEdit.setText(str(self.command.upperLimit))
-
-    # def setValue(self, value):
-    #     self.valueLineEdit.setText(str(value))
-
-    # def setMin(self, value):
-    #     self.minLineEdit.setText(str(value))
-
-    # def setMax(self, value):
-    #     self.maxLineEdit.setText(str(value))
+            self.maxLineEdit.setText(str(self.command.getUpperLimit()))
+            self.update()
 
     # overwrites method of super class
     def differentValueReceived(self):
         # this call is needed to start the blink timer
         super(GenericCommand, self).differentValueReceived()
 
-        self.valueLineEdit.setText(str(self.command.value))
+        self.valueLineEdit.setText(str(self.command.getValue()))
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)

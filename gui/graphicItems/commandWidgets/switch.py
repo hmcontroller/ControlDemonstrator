@@ -58,6 +58,9 @@ class Switch(BaseCommand):
         self.boundingRectPath.lineTo(self.bounds[0], self.bounds[3])
         self.boundingRectPath.closeSubpath()
 
+    def valueChangedPerWidget(self, widgetInstance):
+        pass
+
     # overwrites method of super class
     def differentValueReceived(self):
         # this call is needed to start the blink timer
@@ -96,7 +99,7 @@ class Switch(BaseCommand):
         QPainter.setPen(self.normalPen)
         QPainter.drawPath(self.fixedLines)
 
-        if self.command.value < 0.5:
+        if self.command.getValue() < 0.5:
             QPainter.drawPath(self.switchOpenedPath)
         else:
             QPainter.drawPath(self.switchClosedPath)
@@ -109,10 +112,10 @@ class Switch(BaseCommand):
     #     self.height = height
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        if self.command.value > 0.5:
-            self.command.value = 0.0
+        if self.command.getValue() > 0.5:
+            self.command.setValue(self, 0.0)
         else:
-            self.command.value = 1.0
+            self.command.setValue(self, 1.0)
         QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
 
 

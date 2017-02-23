@@ -5,14 +5,11 @@ from PyQt4 import QtCore
 
 from core.signalGeneratorCommandGroup import SignalGeneratorCommandGroup
 from gui.constants import *
-from gui.graphicItems.commandWidgets.genericCommand import GenericCommandWithoutMinMaxEdit
 from gui.graphicItems.commandWidgets.baseCommand import BaseCommand
 from gui.graphicItems.button import SymbolButton
+from gui.genericCommandEditorWindow import GenericCommandEditorWindow
 
 class SignalGenerator(BaseCommand):
-
-    # valueChanged = QtCore.pyqtSignal(float)
-
     def __init__(self, signalGeneratorCommandGroup):
         if not isinstance(signalGeneratorCommandGroup, SignalGeneratorCommandGroup):
             raise TypeError("must be initialized with a core.signalGeneratorCommandGroup.SignalGeneratorCommandGroup instance")
@@ -21,8 +18,8 @@ class SignalGenerator(BaseCommand):
         self.functionNumberCommand = self.commands.functionNumberCommand
 
         # there exist 6 functions that can be used for signal generation at the time of writing this (2017-02-23).
-        self.functionNumberCommand.lowerLimit = 0
-        self.functionNumberCommand.upperLimit = 5
+        self.functionNumberCommand.setLowerLimit(self, 0)
+        self.functionNumberCommand.setUpperLimit(self, 4)
         self.signalSymbols = list()
 
         # the command to set the function number of the generator is used as main command here
@@ -123,16 +120,16 @@ class SignalGenerator(BaseCommand):
         square.setPos(20, 0)
         self.signalSymbols.append(square)
 
-        self.currentSignalNumber = int(self.command.value)
+        self.currentSignalNumber = int(self.command.getValue())
         self.drawCurrentSignal()
 
         self.constantShape = SignalGeneratorConstantShape(self)
 
-        # if i open a window here to let the user edit some properties, it needs to be updated to show
-        #  warnings, if some are active.
-        self.dialogUpdateTimer = QtCore.QTimer()
-        self.dialogUpdateTimer.setSingleShot(False)
-        self.dialogUpdateTimer.timeout.connect(self.updateDialog)
+        # # if i open a window here to let the user edit some properties, it needs to be updated to show
+        # #  warnings, if some are active.
+        # self.dialogUpdateTimer = QtCore.QTimer()
+        # self.dialogUpdateTimer.setSingleShot(False)
+        # self.dialogUpdateTimer.timeout.connect(self.updateDialog)
 
         self.currentDialog = None
 
@@ -151,13 +148,13 @@ class SignalGenerator(BaseCommand):
             self.okButton.clicked.connect(self.triggerCommands[self.currentSignalNumber])
 
     def startDirac(self):
-        self.commands.diracNowCommand.setValue(1.0)
+        self.commands.diracNowCommand.setValue(self, 1.0)
 
     def toggleHeavySide(self):
-        if self.commands.stepStateCommand.value < 0.5:
-            self.commands.stepStateCommand.setValue(1.0)
+        if self.commands.stepStateCommand.getValue() < 0.5:
+            self.commands.stepStateCommand.setValue(self, 1.0)
         else:
-            self.commands.stepStateCommand.setValue(0.0)
+            self.commands.stepStateCommand.setValue(self, 0.0)
 
     def startRamp(self):
         pass
@@ -169,14 +166,14 @@ class SignalGenerator(BaseCommand):
         self.currentSignalNumber += 1
         if self.currentSignalNumber >= len(self.signalSymbols):
             self.currentSignalNumber = len(self.signalSymbols) - 1
-        self.functionNumberCommand.value = self.currentSignalNumber
+        self.functionNumberCommand.setValue(self, self.currentSignalNumber)
         self.actualizeSignalSymbol()
 
     def oneSignalDown(self, qGraphicsSceneMouseEvent):
         self.currentSignalNumber -= 1
         if self.currentSignalNumber <= 0:
             self.currentSignalNumber = 0
-        self.functionNumberCommand.value = self.currentSignalNumber
+        self.functionNumberCommand.setValue(self, self.currentSignalNumber)
         self.actualizeSignalSymbol()
 
     def settingsButtonClicked(self, qGraphicsSceneMouseEvent):
@@ -186,13 +183,21 @@ class SignalGenerator(BaseCommand):
 
         self.currentDialog = GenericCommandEditorWindow(self.groupedCommandLists[self.currentSignalNumber])
 
-        self.dialogUpdateTimer.start(50)
+        # self.dialogUpdateTimer.start(50)
 
         self.currentDialog.show()
 
+    def valueChangedPerWidget(self, widgetInstance):
+        if widgetInstance is self:
+            pass
+        else:
+            self.currentSignalNumber = int(round(self.command.getValue()))
+            self.actualizeSignalSymbol()
+
+
     def differentValueReceived(self):
         super(SignalGenerator, self).differentValueReceived()
-        self.currentSignalNumber = int(round(self.command.value))
+        self.currentSignalNumber = int(round(self.command.getValue()))
         self.actualizeSignalSymbol()
 
     def actualizeSignalSymbol(self):
@@ -205,10 +210,6 @@ class SignalGenerator(BaseCommand):
         if len(self.signalSymbols) > 0:
             self.signalSymbols[self.currentSignalNumber].show()
 
-    # def setValue(self, value):
-    #     self.currentSignalNumber = int(value)
-    #     self.actualizeSignalSymbol()
-    #
     @property
     def northCoordinates(self):
         return self.mapToScene(QtCore.QPoint(75, 0))
@@ -225,18 +226,6 @@ class SignalGenerator(BaseCommand):
     def eastCoordinates(self):
         return self.mapToScene(QtCore.QPoint(150, 50))
 
-    # def confirmationTimeOut(self):
-    #     self.isCommandConfirmed = False
-    #     self.confirmationWarningTimer.start(self.commFailureWarningBlinkInterval)
-    #
-    # def confirmation(self):
-    #     self.confirmationWarningTimer.stop()
-    #     self.isCommandConfirmed = True
-    #     self.showConfirmationFailure = False
-    #
-    # def toggleConfirmationFailureIndication(self):
-    #     self.showConfirmationFailure = not self.showConfirmationFailure
-
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         if self.showCommFailureWarning is True:
             QPainter.fillPath(self.warningPath, self.commFailureWarningBrush)
@@ -247,7 +236,6 @@ class SignalGenerator(BaseCommand):
         QPainter.drawText(self.sigNumberRect,
                          QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
                          QtCore.QString(sigNumberText))
-
 
     def boundingRect(self):
         return QtCore.QRectF(0, 0, 150, 100)
@@ -466,89 +454,3 @@ class HeaviSideSignal(QtGui.QGraphicsItem):
             self.currentPath = self.downPath
         else:
             self.currentPath = self.upPath
-
-
-
-
-
-
-
-class GenericCommandEditorWindow(QtGui.QDialog):
-
-    parameterChanged = QtCore.pyqtSignal(int, float)
-
-    def __init__(self, commands, parent=None):
-        super(GenericCommandEditorWindow, self).__init__(parent)
-
-        self.setWindowTitle("Parametereditor")
-
-        self.mainLayout = QtGui.QHBoxLayout(self)
-        self.mainLayout.setMargin(0)
-
-        self.graphicsView = QtGui.QGraphicsView()
-        self.mainLayout.addWidget(self.graphicsView)
-
-        self.graphicsView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.graphicsView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-
-        self.graphicsView.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
-
-        self.commands = commands
-
-        self.graphicsView.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.lightGray))
-        self.graphicsView.setStyleSheet("""
-            .ControllerGeneric {
-                border-style: none;
-                }
-            """)
-
-        self.scene = QtGui.QGraphicsScene()
-
-        self.items = list()
-        for command in self.commands:
-            commandItem = GenericCommandWithoutMinMaxEdit(command)
-            self.scene.addItem(commandItem)
-            self.items.append(commandItem)
-
-        self.graphicsView.setScene(self.scene)
-
-        self.contentWidth = 0
-        self.contentHeight = 0
-
-        self.arrangeItems()
-
-    def update(self):
-        # if self.contentHeight > self.graphicsView.height():
-        #     self.graphicsView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        # else:
-        #     self.graphicsView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-
-        self.scene.setSceneRect(0, 0, self.contentWidth, self.contentHeight)
-        self.scene.update()
-        # self.resize(self.width(), self.height())
-
-    def arrangeItems(self):
-        row = 0
-        for item in self.items:
-            positionX = 0
-            positionY = row * item.height
-            item.setPos(positionX, positionY)
-            row += 1
-
-        if len(self.items) > 0:
-            self.contentWidth = self.items[-1].width # + 20
-            self.contentHeight = row * self.items[-1].height # + 20
-        else:
-            self.contentWidth = 0
-            self.contentHeight = 0
-        self.setGeometry(100, 100, self.contentWidth, self.contentHeight)
-
-        self.setFixedSize(self.contentWidth, self.contentHeight)
-
-        self.update()
-
-    def updateSymbols(self):
-        self.scene.update()
-
-    def resizeEvent(self, QResizeEvent):
-        super(GenericCommandEditorWindow, self).resizeEvent(QResizeEvent)

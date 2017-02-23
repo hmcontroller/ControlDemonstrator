@@ -77,6 +77,7 @@ class Command(QtCore.QObject):
 
         self._lowerLimit = 0
         self._upperLimit = 1
+        self._value = 0.0
 
         # This is needed to handle the fact, that float values may change a bit during send and receive.
         self.smallNumber = 0.00001
@@ -100,68 +101,61 @@ class Command(QtCore.QObject):
         self.commCheckTimer.start(self.commCheckTimeOutDuration)
 
         # set this at last
-        self._value = 0.0
+        # self._value = 0.0
 
-
-    @property
-    def value(self):
+    def getValue(self):
         return self._value
 
-    @value.setter
-    def value(self, value):
-        if self.lowerLimit <= value <= self.upperLimit:
+    def setValue(self, widgetInstance, value):
+        if self._lowerLimit <= value <= self._upperLimit:
             self._value = value
             self.differentValueSuppressionTimer.start(self.differentValueSuppressionDuration)
-            print "Command change id {} name {} value {}".format(self.id, self.name, self.value)
+            print "Command change id {} name {} value {}".format(self.id, self.name, self._value)
         else:
             raise ValueError("value {} out of allowed range {} - {} for command {}".format(
-                value, self.lowerLimit, self.upperLimit, self.name))
+                value, self._lowerLimit, self._upperLimit, self.name))
         self.valueChanged.emit(self)
+        self.valueChangedPerWidget.emit(widgetInstance)
 
-    @property
-    def lowerLimit(self):
+    def getLowerLimit(self):
         return self._lowerLimit
 
-    @lowerLimit.setter
-    def lowerLimit(self, value):
+    def setLowerLimit(self, widgetInstance, value):
         self._lowerLimit = value
 
         # adapt the value to still fit in the limits
-        if self.value < self._lowerLimit:
-            self.value = self.lowerLimit
+        if self._value < self._lowerLimit:
+            self.setValue(self, self._lowerLimit)
 
-            # This is a bit dirty, as the value is changed from here, but it takes care of the gui elements to update.
-            self.valueChangedPerWidget.emit(self)
+            # # This is a bit dirty, as the value is changed from here, but it takes care of the gui elements to update.
+            # self.valueChangedPerWidget.emit(self)
 
-            self.valueChanged.emit(self)
+            # self.valueChanged.emit(self)
 
-    @property
-    def upperLimit(self):
+        self.minChangedPerWidget.emit(widgetInstance)
+
+    def getUpperLimit(self):
         return self._upperLimit
 
-    @upperLimit.setter
-    def upperLimit(self, value):
+    def setUpperLimit(self, widgetInstance, value):
         self._upperLimit = value
 
         # adapt the value to still fit in the limits
-        if self.value > self.upperLimit:
-            self.value = self.upperLimit
+        if self._value > self._upperLimit:
+            self.setValue(self, self._upperLimit)
 
-            # This is a bit dirty, as the value is changed from here, but it takes care of the gui elements to update.
-            self.valueChangedFromController.emit(self)
+            # # This is a bit dirty, as the value is changed from here, but it takes care of the gui elements to update.
+            # self.valueChangedPerWidget.emit(self)
+            #
+            # self.valueChanged.emit(self)
 
-            self.valueChanged.emit(self)
-
-    # @QtCore.pyqtSlot(object)
-    # def setValue(self, value):
-    #     # this slot is needed, because Signals cannot set properties
-    #     # TODO check if anybody still uses this slot
-    #     self.value = value
+        self.maxChangedPerWidget.emit(widgetInstance)
 
     def checkMicroControllerReturnValue(self, commandConfirmation):
         self.timeOfLastResponse = datetime.datetime.now()
         self.valueOfLastResponse = commandConfirmation.returnValue
 
+        # check if the returned value equals the own value
         if abs(commandConfirmation.returnValue - self._value) < self.smallNumber:
             self.differentValueSuppressionTimer.stop()
             self.sameValueReceived.emit(self)
@@ -179,22 +173,14 @@ class Command(QtCore.QObject):
         if now - self.timeOfLastResponse > datetime.timedelta(milliseconds=self.timeOutDuration):
             self.commTimeOut.emit(self)
 
-    def differentValueSuppressionTimeout(self):
-        return
-        now = datetime.datetime.now()
-        if now - self.timeOfLastResponse < datetime.timedelta(milliseconds=self.timeOutDuration):
-            self.adaptLimitsToValue(self.valueOfLastResponse)
-            self._value = self.valueOfLastResponse
-            self.differentValueReceived.emit(self)
-
     def adaptLimitsToValue(self, value):
         # adjust the allowed limits of the command, that the given value is inside the limits
         # this is needed, when the user sets limits but the controller sends command values outside these limits.
-        if self.lowerLimit > value:
-            self.lowerLimit = value
+        if self._lowerLimit > value:
+            self._lowerLimit = value
             self.minChangedPerWidget.emit(self)
-        if self.upperLimit < value:
-            self.upperLimit = value
+        if self._upperLimit < value:
+            self._upperLimit = value
             self.maxChangedPerWidget.emit(self)
 
 

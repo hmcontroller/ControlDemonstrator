@@ -23,6 +23,14 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.setGeometry(self.screenRect.width() * 0.05, self.screenRect.height() * 0.05,
                          self.screenRect.width() * 0.9, self.screenRect.height() * 0.9)
 
+
+        # show the application on the second monitor as maximized window
+        self.screenRectSecondMonitor = QtGui.QApplication.desktop().screenGeometry(1)
+        self.setGeometry(self.screenRect.width(), 0,
+                         self.screenRectSecondMonitor.width() * 0.9, self.screenRectSecondMonitor.height() * 0.9)
+        self.showMaximized()
+
+
         # show a splash image
         splashImagePath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Regelkreis.gif")
         splashMap = QtGui.QPixmap(splashImagePath)

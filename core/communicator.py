@@ -35,7 +35,7 @@ class UdpCommunicator():
             commandToSend = commandList.changedCommands.popleft()
             packedData = self._packCommand(commandToSend)
             self.sockTX.sendto(packedData, (self.settings.controllerIP, self.settings.controllerRxPort))
-            print "command send", commandToSend.id, commandToSend.name, commandToSend.value
+            print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue()
         # packedData = self._packCommandList(commandList)
         # self.sockTX.sendto(packedData, (self.settings.controllerIP, self.settings.controllerRxPort))
 
@@ -43,11 +43,11 @@ class UdpCommunicator():
         formatString = "<{}f".format(len(commandList))
         parameterValues = list()
         for command in commandList:
-            parameterValues.append(command.value)
+            parameterValues.append(command.getValue())
         return struct.pack(formatString, *parameterValues)
 
     def _packCommand(self, command):
-        return struct.pack("<1i1f", command.id, command.value)
+        return struct.pack("<1i1f", command.id, command.getValue())
 
     def receive(self):
         bufferContainsData = True

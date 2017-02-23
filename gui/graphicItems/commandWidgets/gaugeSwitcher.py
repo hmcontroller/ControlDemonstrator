@@ -17,14 +17,15 @@ class GaugeSwitcher(BaseCommand):
     def __init__(self, command, gauges):
         super(GaugeSwitcher, self).__init__(command)
 
-        self.command = command
-
-        self.command.lowerLimit = 0
-        self.command.upperLimit = 3
-
-
         if len(gauges) == 0:
             raise ValueError("Need at least one gauge in the list")
+
+        self.command = command
+
+        self.command.setLowerLimit(self, 0)
+        self.command.setUpperLimit(self, len(gauges) - 1)
+
+
 
         self.gauges = gauges
 
@@ -33,7 +34,7 @@ class GaugeSwitcher(BaseCommand):
             gauge.setPos(10, 25)
             gauge.hide()
 
-        self.currentNumber = int(command.value)
+        self.currentNumber = int(command.getValue())
         self.gauges[0].show()
 
         self.width = 80
@@ -53,24 +54,31 @@ class GaugeSwitcher(BaseCommand):
         self.borderPen = CABLE_PEN
         self.backgroundBrush = QtGui.QBrush(QtCore.Qt.lightGray)
 
+    def valueChangedPerWidget(self, widgetInstance):
+        if widgetInstance is self:
+            pass
+        else:
+            self.currentNumber = int(round(self.command.getValue()))
+            self.actualize()
+
     # overwrites method of super class
     def differentValueReceived(self):
         # this call is needed to start the blink timer
         super(GaugeSwitcher, self).differentValueReceived()
 
-        self.currentNumber = int(round(self.command.value))
+        self.currentNumber = int(round(self.command.getValue()))
         self.actualize()
 
     def oneToTheLeft(self):
         self.currentNumber -= 1
         self.fitNumberInRange()
-        self.command.value = self.currentNumber
+        self.command.setValue(self, self.currentNumber)
         self.actualize()
 
     def oneToTheRight(self):
         self.currentNumber += 1
         self.fitNumberInRange()
-        self.command.value = self.currentNumber
+        self.command.setValue(self, self.currentNumber)
         self.actualize()
 
     def actualize(self):
@@ -80,10 +88,10 @@ class GaugeSwitcher(BaseCommand):
         self.update()
 
     def fitNumberInRange(self):
-        if self.currentNumber < self.command.lowerLimit:
-            self.currentNumber = self.command.lowerLimit
-        if self.currentNumber > self.command.upperLimit:
-            self.currentNumber = self.command.upperLimit
+        if self.currentNumber < self.command.getLowerLimit():
+            self.currentNumber = self.command.getLowerLimit()
+        if self.currentNumber > self.command.getUpperLimit():
+            self.currentNumber = self.command.getUpperLimit()
 
     @property
     def northCoordinates(self):

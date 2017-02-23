@@ -4,6 +4,7 @@ import os
 from PyQt4 import QtCore, QtGui
 
 from gui.constants import *
+from gui.resources import *
 
 class SymbolButton(QtGui.QGraphicsObject):
 
@@ -142,9 +143,11 @@ class SettingsSymbol(QtGui.QGraphicsItem):
         self.outerPath.lineTo(8 + 4.5, 6 + 12)
 
         self.pixmapItem = QtGui.QGraphicsPixmapItem(self)
-        absDir = os.path.dirname(os.path.realpath(__file__))
-        absPath = os.path.join(absDir, "settings.png")
-        self.pixmap = QtGui.QPixmap(absPath)
+
+        # absDir = os.path.dirname(os.path.realpath(__file__))
+        # absPath = os.path.join(absDir, "settings.png")
+
+        self.pixmap = QtGui.QPixmap(settingsPngPath)
         self.pixmapItem.setPixmap(self.pixmap)
         self.pixmapItem.scale(0.04, 0.04)
         self.pixmapItem.setPos(2, 2)

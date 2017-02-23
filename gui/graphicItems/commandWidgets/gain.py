@@ -55,10 +55,6 @@ class Gain(BaseCommand):
         self.path.lineTo(70, 30)
         self.path.closeSubpath()
 
-    def differentValueReceived(self):
-        super(Gain, self).differentValueReceived()
-        self.lineEdit.setText(str(self.command.value))
-
     def editFinished(self):
         self.lineEditProxy.clearFocus()
 
@@ -66,24 +62,34 @@ class Gain(BaseCommand):
         # print "Editfinished", text
 
         if text == "":
-            self.lineEdit.setText(str(self.command.lowerLimit))
-            self.command.value = self.command.lowerLimit
+            self.lineEdit.setText(str(self.command.getLowerLimit()))
+            self.command.setValue(self, self.command.getLowerLimit())
             self.activateUserInputWarning()
         else:
 
             text = text.replace(",", ".")
 
             number = float(text)
-            if number < self.command.lowerLimit:
-                self.lineEdit.setText(str(self.command.lowerLimit))
-                self.command.value = self.command.lowerLimit
+            if number < self.command.getLowerLimit():
+                self.lineEdit.setText(str(self.command.getLowerLimit()))
+                self.command.setValue(self, self.command.getLowerLimit())
                 self.activateUserInputWarning()
-            elif number > self.command.upperLimit:
-                self.lineEdit.setText(str(self.command.upperLimit))
-                self.command.value = self.command.upperLimit
+            elif number > self.command.getUpperLimit():
+                self.lineEdit.setText(str(self.command.getUpperLimit()))
+                self.command.setValue(self, self.command.getUpperLimit())
                 self.activateUserInputWarning()
             else:
-                self.command.value = number
+                self.command.setValue(self, number)
+
+    def valueChangedPerWidget(self, widgetInstance):
+        if widgetInstance is self:
+            pass
+        else:
+            self.lineEdit.setText(str(self.command.getValue()))
+
+    def differentValueReceived(self):
+        super(Gain, self).differentValueReceived()
+        self.lineEdit.setText(str(self.command.getValue()))
 
     @property
     def inCoordinates(self):
