@@ -19,6 +19,8 @@ class SignalGenerator(BaseCommand):
 
         self.commands = signalGeneratorCommandGroup
         self.functionNumberCommand = self.commands.functionNumberCommand
+
+        # there exist 6 functions that can be used for signal generation at the time of writing this (2017-02-23).
         self.functionNumberCommand.lowerLimit = 0
         self.functionNumberCommand.upperLimit = 5
         self.signalSymbols = list()
@@ -83,14 +85,13 @@ class SignalGenerator(BaseCommand):
         self.warningPath = QtGui.QPainterPath()
         self.warningPath.addRect(70, 5, 20, 20)
 
-        self.warningBrush = QtGui.QBrush(CONFIRMATION_TIMEOUT_WARNING_COLOR)
-
         self.upButton = SymbolButton(SymbolButton.UP, parent=self)
         self.upButton.setPos(125, 0)
         self.upButton.clicked.connect(self.oneSignalUp)
 
         self.okButton = SymbolButton(SymbolButton.OK, parent=self)
         self.okButton.setPos(125, 25)
+        # the slot connected to this button changes programmatically
 
         self.settingsButton = SymbolButton(SymbolButton.SETTINGS, parent=self)
         self.settingsButton.setPos(125, 50)
@@ -127,12 +128,8 @@ class SignalGenerator(BaseCommand):
 
         self.constantShape = SignalGeneratorConstantShape(self)
 
-        # self.confirmationWarningTimer = QtCore.QTimer()
-        # self.confirmationWarningTimer.setSingleShot(False)
-        # self.confirmationWarningTimer.timeout.connect(self.toggleConfirmationFailureIndication)
-        # self.confirmationWarningBlinkInterval = 200
-        # # self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
-
+        # if i open a window here to let the user edit some properties, it needs to be updated to show
+        #  warnings, if some are active.
         self.dialogUpdateTimer = QtCore.QTimer()
         self.dialogUpdateTimer.setSingleShot(False)
         self.dialogUpdateTimer.timeout.connect(self.updateDialog)
@@ -143,8 +140,6 @@ class SignalGenerator(BaseCommand):
         self.sigNumberRect = QtCore.QRectF(100, 5, 50, 50)
 
         self.connectTriggerButton()
-
-        # self.setValue(self.command.value)
 
     def connectTriggerButton(self):
         try:
@@ -174,14 +169,14 @@ class SignalGenerator(BaseCommand):
         self.currentSignalNumber += 1
         if self.currentSignalNumber >= len(self.signalSymbols):
             self.currentSignalNumber = len(self.signalSymbols) - 1
-        self.functionNumberCommand.setValue(self.currentSignalNumber)
+        self.functionNumberCommand.value = self.currentSignalNumber
         self.actualizeSignalSymbol()
 
     def oneSignalDown(self, qGraphicsSceneMouseEvent):
         self.currentSignalNumber -= 1
         if self.currentSignalNumber <= 0:
             self.currentSignalNumber = 0
-        self.functionNumberCommand.setValue(self.currentSignalNumber)
+        self.functionNumberCommand.value = self.currentSignalNumber
         self.actualizeSignalSymbol()
 
     def settingsButtonClicked(self, qGraphicsSceneMouseEvent):
@@ -195,15 +190,13 @@ class SignalGenerator(BaseCommand):
 
         self.currentDialog.show()
 
-    def valueChangedFromController(self):
+    def differentValueReceived(self):
+        super(SignalGenerator, self).differentValueReceived()
         self.currentSignalNumber = int(round(self.command.value))
         self.actualizeSignalSymbol()
 
-
-
     def actualizeSignalSymbol(self):
         self.drawCurrentSignal()
-        # self.command.setValue(self.currentSignalNumber)
         self.connectTriggerButton()
 
     def drawCurrentSignal(self):
@@ -212,10 +205,10 @@ class SignalGenerator(BaseCommand):
         if len(self.signalSymbols) > 0:
             self.signalSymbols[self.currentSignalNumber].show()
 
-    def setValue(self, value):
-        self.currentSignalNumber = int(value)
-        self.actualizeSignalSymbol()
-
+    # def setValue(self, value):
+    #     self.currentSignalNumber = int(value)
+    #     self.actualizeSignalSymbol()
+    #
     @property
     def northCoordinates(self):
         return self.mapToScene(QtCore.QPoint(75, 0))
@@ -234,7 +227,7 @@ class SignalGenerator(BaseCommand):
 
     # def confirmationTimeOut(self):
     #     self.isCommandConfirmed = False
-    #     self.confirmationWarningTimer.start(self.confirmationWarningBlinkInterval)
+    #     self.confirmationWarningTimer.start(self.commFailureWarningBlinkInterval)
     #
     # def confirmation(self):
     #     self.confirmationWarningTimer.stop()
@@ -245,8 +238,8 @@ class SignalGenerator(BaseCommand):
     #     self.showConfirmationFailure = not self.showConfirmationFailure
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        if self.showConfirmationTimeoutWarning is True:
-            QPainter.fillPath(self.warningPath, self.warningBrush)
+        if self.showCommFailureWarning is True:
+            QPainter.fillPath(self.warningPath, self.commFailureWarningBrush)
 
         # draw the signal number
         sigNumberText = str(self.currentSignalNumber + 1) + "/5"

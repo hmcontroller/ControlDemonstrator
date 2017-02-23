@@ -35,7 +35,6 @@ class GaugeSwitcher(BaseCommand):
 
         self.currentNumber = int(command.value)
         self.gauges[0].show()
-        # self.command.setValue(0.0)
 
         self.width = 80
         self.height = self.gauges[0].boundingRect().height() + 25
@@ -54,20 +53,24 @@ class GaugeSwitcher(BaseCommand):
         self.borderPen = CABLE_PEN
         self.backgroundBrush = QtGui.QBrush(QtCore.Qt.lightGray)
 
-    def valueChangedFromController(self):
+    # overwrites method of super class
+    def differentValueReceived(self):
+        # this call is needed to start the blink timer
+        super(GaugeSwitcher, self).differentValueReceived()
+
         self.currentNumber = int(round(self.command.value))
         self.actualize()
 
     def oneToTheLeft(self):
         self.currentNumber -= 1
         self.fitNumberInRange()
-        self.command.setValue(self.currentNumber)
+        self.command.value = self.currentNumber
         self.actualize()
 
     def oneToTheRight(self):
         self.currentNumber += 1
         self.fitNumberInRange()
-        self.command.setValue(self.currentNumber)
+        self.command.value = self.currentNumber
         self.actualize()
 
     def actualize(self):

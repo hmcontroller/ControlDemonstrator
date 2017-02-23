@@ -142,7 +142,7 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         disturbanceSwitch.setPos(725, 100)
         disturbanceSwitch.rotate(90)
 
-        disturbanceOnOffCommand.setValue(0.0)
+        disturbanceOnOffCommand.value = 0.0
         # alternativ geht auch
         # disturbanceSwitch.setValue(0.0)
 

@@ -11,9 +11,6 @@ from gui.constants import *
 
 
 class GenericCommand(BaseCommand):
-
-    valueChanged = QtCore.pyqtSignal(float)
-
     def __init__(self, command):
 
         self.minLineEdit = self._addLineEdit(LineEditDoubleClickSpecial())
@@ -34,14 +31,12 @@ class GenericCommand(BaseCommand):
         self.valueLineEditProxy = QtGui.QGraphicsProxyWidget(self)
         self.valueLineEditProxy.setWidget(self.valueLineEdit)
 
-        self.suppressValueChangedSignal = False
+        # self.suppressValueChangedSignal = False
 
         self.width = 400
         self.height = 80
         self.labelAreaHeight = 30
         self.editAreaHeight = self.height - self.labelAreaHeight
-
-
 
         self.hCenterEditArea = self.labelAreaHeight + 0.5 * self.editAreaHeight
 
@@ -115,28 +110,28 @@ class GenericCommand(BaseCommand):
         # self.valueLineEditProxy.clearFocus()
         # self.valueLineEdit.selectAll()
         text = self.valueLineEdit.text()
-        print "Editfinished", text, self.suppressValueChangedSignal
+        print "Editfinished", text
 
         # if nothing is in the textBox, the lower limit of the command will be set
         if text == "":
             self.valueLineEdit.setText(str(self.command.lowerLimit))
-            self.command.setValue(self.command.lowerLimit)
+            self.command.value = self.command.lowerLimit
             self.activateUserInputWarning()
         else:
-
+            # allowed for the decimal point are a comma and a dot
             text = text.replace(",", ".")
 
             number = float(text)
             if number < self.command.lowerLimit:
                 self.valueLineEdit.setText(str(self.command.lowerLimit))
-                self.command.setValue(self.command.lowerLimit)
+                self.command.value = self.command.lowerLimit
                 self.activateUserInputWarning()
             elif number > self.command.upperLimit:
                 self.valueLineEdit.setText(str(self.command.upperLimit))
-                self.command.setValue(self.command.upperLimit)
+                self.command.value = self.command.upperLimit
                 self.activateUserInputWarning()
             else:
-                self.command.setValue(number)
+                self.command.value = number
 
     def valueEditingReturnPressed(self):
         self.valueLineEdit.selectAll()
@@ -152,6 +147,7 @@ class GenericCommand(BaseCommand):
             min = float(text)
         if min > self.command.upperLimit:
             self.command.lowerLimit = self.command.upperLimit
+            self.activateUserInputWarning()
         else:
             self.command.lowerLimit = min
 
@@ -170,39 +166,46 @@ class GenericCommand(BaseCommand):
 
         if max < self.command.lowerLimit:
             self.command.upperLimit = self.command.lowerLimit
+            self.activateUserInputWarning()
         else:
             self.command.upperLimit = max
 
     def maxEditingReturnPressed(self):
         self.maxLineEdit.selectAll()
 
-    def valueChangedFromController(self):
-        self.valueLineEdit.setText(str(self.command.value))
+    def valueChangedPerWidget(self, widgetInstance):
+        if widgetInstance is self:
+            pass
+        else:
+            self.valueLineEdit.setText(str(self.command.value))
 
-    def minChangedFromController(self):
-        self.minLineEdit.setText(str(self.command.lowerLimit))
+    def minChangedFromController(self, widgetInstance):
+        if widgetInstance is self:
+            pass
+        else:
+            self.minLineEdit.setText(str(self.command.lowerLimit))
 
-    def maxChangedFromController(self):
-        self.maxLineEdit.setText(str(self.command.upperLimit))
+    def maxChangedFromController(self, widgetInstance):
+        if widgetInstance is self:
+            pass
+        else:
+            self.maxLineEdit.setText(str(self.command.upperLimit))
 
-    def setValue(self, value):
-        self.valueLineEdit.setText(str(value))
+    # def setValue(self, value):
+    #     self.valueLineEdit.setText(str(value))
 
-    def setMin(self, value):
-        self.minLineEdit.setText(str(value))
+    # def setMin(self, value):
+    #     self.minLineEdit.setText(str(value))
 
-    def setMax(self, value):
-        self.maxLineEdit.setText(str(value))
+    # def setMax(self, value):
+    #     self.maxLineEdit.setText(str(value))
 
     # overwrites method of super class
-    def negativeConfirmation(self):
+    def differentValueReceived(self):
         # this call is needed to start the blink timer
-        super(GenericCommand, self).negativeConfirmation()
+        super(GenericCommand, self).differentValueReceived()
 
-        # don't emit value changed, because otherwise the checks are triggered again and the
-        # negativeConfirmationWarning phase will be aborted
-        self.suppressValueChangedSignal = True
-        self.setValue(self.command.value)
+        self.valueLineEdit.setText(str(self.command.value))
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)
@@ -214,17 +217,17 @@ class GenericCommand(BaseCommand):
         QPainter.fillPath(self.editAreaPath, self.editAreaBrush)
 
 
-        # draw wrong user input warning
+        # draw a warning
         if self.showUserInputWarning is True:
             QPainter.fillPath(self.editAreaPath, self.userInputWarningBrush)
 
-        # draw confirmation timeout warning
-        if self.showConfirmationTimeoutWarning is True:
-            QPainter.fillPath(self.editAreaPath, self.unconfirmedWarningBrush)
+        # draw a warning
+        if self.showCommFailureWarning is True:
+            QPainter.fillPath(self.editAreaPath, self.commFailureWarningBrush)
 
-        # draw negative confirmation warning in front of all other colors
-        if self.showNegativeConfirmationWarning is True:
-            QPainter.fillPath(self.editAreaPath, self.negativeConfirmedWarningBrush)
+        # draw this warning in front of all other colors
+        if self.showDifferentValueReceivedWarning is True:
+            QPainter.fillPath(self.editAreaPath, self.differentValueReceivedWarningBrush)
 
         QPainter.setPen(self.blackPen)
 

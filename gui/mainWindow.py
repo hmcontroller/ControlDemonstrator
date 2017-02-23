@@ -153,8 +153,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         MessageInterpreter.mapUserChannels(self.channels, messages)
 
         for message in messages:
-            commandConfirmation = MessageInterpreter.getCommandConfirmation(message)
-            self.commands[commandConfirmation.id].checkConfirmation(commandConfirmation)
+            returnedCommand = MessageInterpreter.getMicroControllerCommandReturned(message)
+            self.commands[returnedCommand.id].checkMicroControllerReturnValue(returnedCommand)
 
     def calculateSomeStuff(self, messages):
         loopCycleDuration = MessageInterpreter.getLoopCycleDuration(messages[-1])

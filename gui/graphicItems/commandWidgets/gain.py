@@ -22,18 +22,13 @@ class Gain(BaseCommand):
             =================================== ======================================
 
     """
-    valueChanged = QtCore.pyqtSignal(float)
 
     def __init__(self, command):
 
-        # first of all create a line edit because a value will be set to it during super class init phase
-        self.lineEdit = LineEditDoubleClickSpecial()
 
         super(Gain, self).__init__(command)
 
-        self.suppressValueChangedSignal = False
-
-        self.setAcceptHoverEvents(True)
+        self.lineEdit = LineEditDoubleClickSpecial()
 
         self.lineEdit.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.lineEdit.setFixedSize(50, 40)
@@ -45,7 +40,6 @@ class Gain(BaseCommand):
         self.lineEdit.setText("0.0")
         self.lineEdit.setMaxLength(6)
         self.lineEdit.setFont(QtGui.QFont("sans-serif", 10))
-
 
         self.valli = FloatValidator()
         self.lineEdit.setValidator(self.valli)
@@ -61,42 +55,35 @@ class Gain(BaseCommand):
         self.path.lineTo(70, 30)
         self.path.closeSubpath()
 
-    def valueChangedFromController(self):
+    def differentValueReceived(self):
+        super(Gain, self).differentValueReceived()
         self.lineEdit.setText(str(self.command.value))
 
     def editFinished(self):
         self.lineEditProxy.clearFocus()
 
         text = self.lineEdit.text()
-        print "Editfinished", text
+        # print "Editfinished", text
 
         if text == "":
             self.lineEdit.setText(str(self.command.lowerLimit))
-            self.valueChanged.emit(self.command.lowerLimit)
-            self.activateUserInputWarning()
-            return
-
-        text = text.replace(",", ".")
-
-        number = float(text)
-        if number < self.command.lowerLimit:
-            self.lineEdit.setText(str(self.command.lowerLimit))
-            self.valueChanged.emit(self.command.lowerLimit)
-            self.activateUserInputWarning()
-        elif number > self.command.upperLimit:
-            self.valueChanged.emit(self.command.upperLimit)
-            self.lineEdit.setText(str(self.command.upperLimit))
+            self.command.value = self.command.lowerLimit
             self.activateUserInputWarning()
         else:
-            if self.suppressValueChangedSignal is True:
-                self.suppressValueChangedSignal = False
-            else:
-                self.valueChanged.emit(number)
 
-    # overwrites method of base command
-    def setValue(self, value):
-        self.lineEdit.setText(str(value))
-        # thereafter editingFinished is called automatically
+            text = text.replace(",", ".")
+
+            number = float(text)
+            if number < self.command.lowerLimit:
+                self.lineEdit.setText(str(self.command.lowerLimit))
+                self.command.value = self.command.lowerLimit
+                self.activateUserInputWarning()
+            elif number > self.command.upperLimit:
+                self.lineEdit.setText(str(self.command.upperLimit))
+                self.command.value = self.command.upperLimit
+                self.activateUserInputWarning()
+            else:
+                self.command.value = number
 
     @property
     def inCoordinates(self):
@@ -105,16 +92,6 @@ class Gain(BaseCommand):
     @property
     def outCoordinates(self):
         return self.mapToScene(QtCore.QPoint(70, 30))
-
-    # overwrites method of super class
-    def negativeConfirmation(self):
-        # this call is needed to start the blink timer
-        super(Gain, self).negativeConfirmation()
-
-        # don't emit value changed, because otherwise the checks are triggered again and the
-        # negativeConfirmationWarning phase will be aborted
-        self.suppressValueChangedSignal = True
-        self.setValue(self.command.value)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)
@@ -127,12 +104,12 @@ class Gain(BaseCommand):
             QPainter.fillPath(self.path, self.userInputWarningBrush)
 
         # draw confirmation timeout warning
-        if self.showConfirmationTimeoutWarning is True:
-            QPainter.fillPath(self.path, self.unconfirmedWarningBrush)
+        if self.showCommFailureWarning is True:
+            QPainter.fillPath(self.path, self.commFailureWarningBrush)
 
         # draw negative confirmation warning in front of all other colors
-        if self.showNegativeConfirmationWarning is True:
-            QPainter.fillPath(self.path, self.negativeConfirmedWarningBrush)
+        if self.showDifferentValueReceivedWarning is True:
+            QPainter.fillPath(self.path, self.differentValueReceivedWarningBrush)
 
         # draw the triangle
         QPainter.setPen(self.cablePen)

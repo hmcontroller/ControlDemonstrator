@@ -39,7 +39,7 @@ class MessageInterpreter():
         return None
 
     @staticmethod
-    def getCommandConfirmation(message):
+    def getMicroControllerCommandReturned(message):
         cmd = CommandConfirmation()
         for i, messagePart in enumerate(message):
             if messagePart.name == "parameterNumber":

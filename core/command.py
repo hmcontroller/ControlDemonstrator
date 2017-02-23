@@ -6,9 +6,6 @@ from PyQt4 import QtCore
 
 # TODO make a good list inheritance
 class CommandList(QtCore.QObject):
-
-    confirmationTimeOut = QtCore.pyqtSignal(object)
-
     def __init__(self):
         super(CommandList, self).__init__()
 
@@ -51,34 +48,56 @@ class CommandList(QtCore.QObject):
 
 class Command(QtCore.QObject):
 
+    # This signal is intended for the communicator, so that he can send a new value to the microcontroller,
+    # It carries an instance of this class.
     valueChanged = QtCore.pyqtSignal(object)
-    valueChangedFromController = QtCore.pyqtSignal(object)
-    minChangedFromController = QtCore.pyqtSignal(object)
-    maxChangedFromController = QtCore.pyqtSignal(object)
-    confirmationTimeOut = QtCore.pyqtSignal(object)
-    confirmation = QtCore.pyqtSignal(object)
-    negativeConfirmation = QtCore.pyqtSignal(object)
+
+    # These signals should allow all gui elements to update their views, if the values changed per other gui elements.
+    # They are intended to serve for the synchronization of all gui elements.
+    #
+    # The signals carry an instance of the widget, that initiated the command.
+    #
+    # The widget, that initiated a value change should break a possible loop condition. For that it can check, whether
+    # the instance delivered with this signal is its own one.
+    valueChangedPerWidget = QtCore.pyqtSignal(object)
+    minChangedPerWidget = QtCore.pyqtSignal(object)
+    maxChangedPerWidget = QtCore.pyqtSignal(object)
+
+    # These signals allow the gui elements to signalize the user an uncommanded value change.
+    commTimeOut = QtCore.pyqtSignal(object)
+    sameValueReceived = QtCore.pyqtSignal(object)
+    differentValueReceived = QtCore.pyqtSignal(object)
 
     def __init__(self):
         super(Command, self).__init__()
         self.id = None
         self.name = ""
         self.displayName = None
-        self.isConfirmed = False
         self.timeOfSend = None
 
         self._lowerLimit = 0
         self._upperLimit = 1
 
+        # This is needed to handle the fact, that float values may change a bit during send and receive.
         self.smallNumber = 0.00001
-        self.negativeConfirmationCounter = 0
+
+        # On init set the following to something in the past, that is beyond the commCheckTimeOutDuration.
         self.timeOfLastResponse = datetime.datetime.now() - datetime.timedelta(hours=1)
         self.valueOfLastResponse = 0.0
 
-        self.confirmationTimer = QtCore.QTimer()
-        self.timeOutDuration = 1000
-        self.confirmationTimer.setSingleShot(True)
-        self.confirmationTimer.timeout.connect(self.confirmationTimeout)
+        # This timer is needed, as communication is asynchronous and a command confirmation might take a while.
+        # During this time, some old values may arrive from the controller, because of latency.
+        self.differentValueSuppressionDuration = 1000
+        self.differentValueSuppressionTimer = QtCore.QTimer()
+        self.differentValueSuppressionTimer.setSingleShot(True)
+        # self.differentValueSuppressionTimer.timeout.connect(self.differentValueSuppressionTimeout)
+
+        # this timer is reset on each call to checkMicroControllerReturnValue
+        self.commCheckTimeOutDuration = 1000
+        self.commCheckTimer = QtCore.QTimer()
+        self.commCheckTimer.setSingleShot(False)
+        self.commCheckTimer.timeout.connect(self.commCheckTimeout)
+        self.commCheckTimer.start(self.commCheckTimeOutDuration)
 
         # set this at last
         self._value = 0.0
@@ -92,8 +111,7 @@ class Command(QtCore.QObject):
     def value(self, value):
         if self.lowerLimit <= value <= self.upperLimit:
             self._value = value
-            self.isConfirmed = False
-            self.confirmationTimer.start(self.timeOutDuration)
+            self.differentValueSuppressionTimer.start(self.differentValueSuppressionDuration)
             print "Command change id {} name {} value {}".format(self.id, self.name, self.value)
         else:
             raise ValueError("value {} out of allowed range {} - {} for command {}".format(
@@ -107,9 +125,15 @@ class Command(QtCore.QObject):
     @lowerLimit.setter
     def lowerLimit(self, value):
         self._lowerLimit = value
+
+        # adapt the value to still fit in the limits
         if self.value < self._lowerLimit:
             self.value = self.lowerLimit
-            self.valueChangedFromController.emit(self)
+
+            # This is a bit dirty, as the value is changed from here, but it takes care of the gui elements to update.
+            self.valueChangedPerWidget.emit(self)
+
+            self.valueChanged.emit(self)
 
     @property
     def upperLimit(self):
@@ -118,51 +142,61 @@ class Command(QtCore.QObject):
     @upperLimit.setter
     def upperLimit(self, value):
         self._upperLimit = value
+
+        # adapt the value to still fit in the limits
         if self.value > self.upperLimit:
             self.value = self.upperLimit
+
+            # This is a bit dirty, as the value is changed from here, but it takes care of the gui elements to update.
             self.valueChangedFromController.emit(self)
 
-    @QtCore.pyqtSlot(object)
-    def setValue(self, value):
-        self.value = value
+            self.valueChanged.emit(self)
 
-    def checkConfirmation(self, commandConfirmation):
+    # @QtCore.pyqtSlot(object)
+    # def setValue(self, value):
+    #     # this slot is needed, because Signals cannot set properties
+    #     # TODO check if anybody still uses this slot
+    #     self.value = value
+
+    def checkMicroControllerReturnValue(self, commandConfirmation):
         self.timeOfLastResponse = datetime.datetime.now()
         self.valueOfLastResponse = commandConfirmation.returnValue
 
         if abs(commandConfirmation.returnValue - self._value) < self.smallNumber:
-            self.isConfirmed = True
-            self.confirmationTimer.stop()
-            self.confirmation.emit(self)
+            self.differentValueSuppressionTimer.stop()
+            self.sameValueReceived.emit(self)
         else:
-            if self.confirmationTimer.isActive():
+            if self.differentValueSuppressionTimer.isActive():
                 pass
             else:
                 # the value coming from the controller will be set to the gui
-                self.setValueFromController(commandConfirmation.returnValue)
-                self.negativeConfirmation.emit(self)
+                self.adaptLimitsToValue(commandConfirmation.returnValue)
+                self._value = commandConfirmation.returnValue
+                self.differentValueReceived.emit(self)
 
-    def confirmationTimeout(self):
+    def commCheckTimeout(self):
+        now = datetime.datetime.now()
+        if now - self.timeOfLastResponse > datetime.timedelta(milliseconds=self.timeOutDuration):
+            self.commTimeOut.emit(self)
+
+    def differentValueSuppressionTimeout(self):
+        return
         now = datetime.datetime.now()
         if now - self.timeOfLastResponse < datetime.timedelta(milliseconds=self.timeOutDuration):
-            self.setValueFromController(self.valueOfLastResponse)
-            self.negativeConfirmation.emit(self)
-        else:
-            self.confirmationTimeOut.emit(self)
+            self.adaptLimitsToValue(self.valueOfLastResponse)
+            self._value = self.valueOfLastResponse
+            self.differentValueReceived.emit(self)
 
-    def setValueFromController(self, value):
-        # set the allowed limits of the command according to the micro controller value
+    def adaptLimitsToValue(self, value):
+        # adjust the allowed limits of the command, that the given value is inside the limits
+        # this is needed, when the user sets limits but the controller sends command values outside these limits.
         if self.lowerLimit > value:
             self.lowerLimit = value
-            self.minChangedFromController.emit(self)
+            self.minChangedPerWidget.emit(self)
         if self.upperLimit < value:
             self.upperLimit = value
-            self.maxChangedFromController.emit(self)
+            self.maxChangedPerWidget.emit(self)
 
-        self.value = value
-        print "command {} {} {} changed from controller".format(
-            self.id, self.name, value)
-        self.valueChangedFromController.emit(self)
 
 # TODO do i really need this class
 class CommandConfirmation():

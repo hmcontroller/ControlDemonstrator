@@ -19,7 +19,6 @@ class Switch(BaseCommand):
         # TODO use Qt standard coordinates
         self.bounds = [-20, -20, 50, 20]
         self.height = 30
-        self.value = command.value
 
         self.brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
 
@@ -59,8 +58,11 @@ class Switch(BaseCommand):
         self.boundingRectPath.lineTo(self.bounds[0], self.bounds[3])
         self.boundingRectPath.closeSubpath()
 
-    def valueChangedFromController(self):
-        pass
+    # overwrites method of super class
+    def differentValueReceived(self):
+        # this call is needed to start the blink timer
+        super(Switch, self).differentValueReceived()
+        # we don't need to do anything here, because the paint method always draws the state of the command model
 
     @property
     def inCoordinates(self):
@@ -69,11 +71,6 @@ class Switch(BaseCommand):
     @property
     def outCoordinates(self):
         return self.mapToScene(QtCore.QPointF(40, 0))
-
-    # overwrites method of super class
-    def negativeConfirmation(self):
-        super(Switch, self).negativeConfirmation()
-        self.value = self.command.value
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
@@ -86,12 +83,12 @@ class Switch(BaseCommand):
         # wrong user input warning is not possible with the switch
 
         # draw confirmation timeout warning
-        if self.showConfirmationTimeoutWarning is True:
-            QPainter.fillPath(self.boundingRectPath, self.unconfirmedWarningBrush)
+        if self.showCommFailureWarning is True:
+            QPainter.fillPath(self.boundingRectPath, self.commFailureWarningBrush)
 
         # draw negative confirmation warning in front of all other colors
-        if self.showNegativeConfirmationWarning is True:
-            QPainter.fillPath(self.boundingRectPath, self.negativeConfirmedWarningBrush)
+        if self.showDifferentValueReceivedWarning is True:
+            QPainter.fillPath(self.boundingRectPath, self.differentValueReceivedWarningBrush)
 
         # draw dots
         QPainter.fillPath(self.dotsPath, self.brush)
@@ -99,7 +96,7 @@ class Switch(BaseCommand):
         QPainter.setPen(self.normalPen)
         QPainter.drawPath(self.fixedLines)
 
-        if self.value < 0.5:
+        if self.command.value < 0.5:
             QPainter.drawPath(self.switchOpenedPath)
         else:
             QPainter.drawPath(self.switchClosedPath)
@@ -107,20 +104,15 @@ class Switch(BaseCommand):
     def boundingRect(self):
         return QtCore.QRectF(self.bounds[0], self.bounds[1], self.bounds[2] - self.bounds[0], self.bounds[3] - self.bounds[1])
 
-    def setWidthHeight(self, width, height):
-        self.width = width
-        self.height = height
-
-    # # using method of base command here
-    # def setValue(self, value):
-    #     self.value = value
-    #     self.valueChanged.emit(self.value)
+    # def setWidthHeight(self, width, height):
+    #     self.width = width
+    #     self.height = height
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
-        if self.value > 0.5:
-            self.setValue(0.0)
+        if self.command.value > 0.5:
+            self.command.value = 0.0
         else:
-            self.setValue(1.0)
+            self.command.value = 1.0
         QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
 
 
