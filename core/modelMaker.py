@@ -1,15 +1,14 @@
 # -*- encoding: utf-8 -*-
 import ConfigParser
-import json
-import collections
 
-from core.settingsModel import Settings
+from core.model.applicationSettings import ApplicationSettings
 from core.command import Command
 from core.command import CommandList
 from core.messageData import MessageData
 from core.measurementData import MeasurementData
 from core.valueChannel import ValueChannel
 from core.constants import *
+from core.commandArgumentsParser import CommandArgumentsParser
 
 
 class ModelMaker():
@@ -22,36 +21,57 @@ class ModelMaker():
     def getCommands(self):
         commandList = CommandList()
 
-        settings = self.getMiscSettings()
+        settings = self.getApplicationSettings()
 
-        configSections = self.config.options('availableControlledParameters')
+        availableParameters = self.config.options('availableParameters')
 
-        for i, name in enumerate(configSections):
+        requestedParameters = self.config.options('requestedParameters')
+
+        for i, name in enumerate(availableParameters):
+
             cmd = Command()
             cmd.id = i
             cmd.name = name
+
+            if cmd.name in requestedParameters:
+                cmd.setIsSelectedAsActive(True)
+
+            # cmd.displayName = args.displayName
+
             # cmd.value = 0.0
             cmd.timeOutDuration = 1000 #int(float(settings.controllerLoopCycleTimeInUs * len(configSections) * 5) / float(1000))
+
+            # after appending the cmd, value changes are possible
             commandList.append(cmd)
-            cmd.valueChanged.connect(commandList.commandChanged)
+
+            try:
+                argsString = self.config.get("requestedParameters", name)
+                cmd.rawArgumentString = argsString
+                parser = CommandArgumentsParser(cmd)
+                cmd = parser.setCommandAttributesFromConfigFileArguments()
+            except ConfigParser.NoOptionError:
+                # no args exist
+                pass
+
         return commandList
+
 
     def getMeasurementDataModel(self):
         model = MeasurementData()
 
         bufferLength = self.config.getint("misc", "bufferSizePC")
-        for i, channelName in enumerate(self.config.options('requestedFastParameters')):
+        for i, channelName in enumerate(self.config.options('requestedChannels')):
             channel = ValueChannel(bufferLength)
             channel.id = i
             channel.name = channelName
             channel.colorRgbTuple = CHANNEL_COLORS[i % len(CHANNEL_COLORS)]
-            model.channels.append(channel)
+            model.addChannel(channel)
             for n in range(0, bufferLength):
-                channel.append(0.0, suppressSignal=True)
+                channel.appendSilently(0.0)
 
         model.timeValues = ValueChannel(bufferLength)
         for i in range(0, bufferLength):
-            model.timeValues.append(0.0)
+            model.timeValues.appendSilently(0.0)
 
         return model
 
@@ -61,21 +81,10 @@ class ModelMaker():
         positionCounter = 0
         channelCounter = 0
 
-        # value channels
-        for i, channelName in enumerate(self.config.options('requestedFastParameters')):
-            messageData = MessageData()
-            # messageData.id = i
-            messageData.positionInBytes = positionCounter
-            messageData.lengthInBytes = 4
-            messageData.dataType = float
-            messageData.unpackString = "<f"
-            messageData.name = channelName
-            messageData.isUserChannel = True
-            messagePartsList.append(messageData)
-            positionCounter += messageData.lengthInBytes
-            channelCounter += 1
 
-        # TODO dirty get the additional message stuff from some single source place
+
+        # TODO dirty get the fix message stuff from some single source place
+        # TODO maybe put the typedefs in the config.c file
 
         # loopStartTime
         mData = MessageData()
@@ -125,23 +134,32 @@ class ModelMaker():
         mData3.name = "parameterValue"
         messagePartsList.append(mData3)
 
+        # channels
+        for i, channelName in enumerate(self.config.options('requestedChannels')):
+            messageData = MessageData()
+            # messageData.id = i
+            messageData.positionInBytes = positionCounter
+            messageData.lengthInBytes = 4
+            messageData.dataType = float
+            messageData.unpackString = "<f"
+            messageData.name = channelName
+            messageData.isUserChannel = True
+            messageData.userChannelId = i
+            messagePartsList.append(messageData)
+            positionCounter += messageData.lengthInBytes
+            channelCounter += 1
+
         return messagePartsList
 
-    # def getSensorMapping(self):
-    #     mappingString = self.config.get("Sensors", "mapping")
-    #     mappingString = mappingString.replace("\n", "").replace(" ", "")
-    #     return json.loads(mappingString)
-
-    def getMiscSettings(self):
-        settingsModel = Settings()
-        settingsModel.controllerLoopCycleTimeInUs = self.config.getint("misc", "loopCycleTimeUS")
-        settingsModel.bufferLength = self.config.getint("misc", "bufferSizePC")
-        settingsModel.guiUpdateIntervalLengthInMs = self.config.getint("misc", "guiUpdateIntervalLengthInMs")
-        settingsModel.receiveMessageIntervalLengthInMs = self.config.getint("misc", "receiveMessageIntervalLengthInMs")
-        settingsModel.sendMessageIntervalLengthInMs = self.config.getint("misc", "sendMessageIntervalLengthInMs")
-        settingsModel.computerIP = self.config.get("misc", "computerIP")
-        settingsModel.controllerIP = self.config.get("misc", "controllerIP")
-        settingsModel.computerRxPort = self.config.getint("misc", "computerRxPort")
-        settingsModel.controllerRxPort = self.config.getint("misc", "controllerRxPort")
-        return settingsModel
+    def getApplicationSettings(self):
+        settings = ApplicationSettings()
+        settings.controllerLoopCycleTimeInUs = self.config.getint("misc", "loopCycleTimeUS")
+        settings.bufferLength = self.config.getint("misc", "bufferSizePC")
+        settings.guiUpdateIntervalLengthInMs = self.config.getint("misc", "guiUpdateIntervalLengthInMs")
+        settings.receiveMessageIntervalLengthInMs = self.config.getint("misc", "receiveMessageIntervalLengthInMs")
+        settings.sendMessageIntervalLengthInMs = self.config.getint("misc", "sendMessageIntervalLengthInMs")
+        settings.computerIP = self.config.get("misc", "computerIP")
+        settings.controllerIP = self.config.get("misc", "controllerIP")
+        settings.udpPort = self.config.getint("misc", "udpPort")
+        return settings
 

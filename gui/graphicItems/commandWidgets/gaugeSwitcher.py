@@ -22,8 +22,8 @@ class GaugeSwitcher(BaseCommand):
 
         self.command = command
 
-        self.command.setLowerLimit(self, 0)
-        self.command.setUpperLimit(self, len(gauges) - 1)
+        self.command.setLowerLimit(0, self)
+        self.command.setUpperLimit(len(gauges) - 1, self)
 
 
 
@@ -72,13 +72,13 @@ class GaugeSwitcher(BaseCommand):
     def oneToTheLeft(self):
         self.currentNumber -= 1
         self.fitNumberInRange()
-        self.command.setValue(self, self.currentNumber)
+        self.command.setValue(self.currentNumber, self)
         self.actualize()
 
     def oneToTheRight(self):
         self.currentNumber += 1
         self.fitNumberInRange()
-        self.command.setValue(self, self.currentNumber)
+        self.command.setValue(self.currentNumber, self)
         self.actualize()
 
     def actualize(self):

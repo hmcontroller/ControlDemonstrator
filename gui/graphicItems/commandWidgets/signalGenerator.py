@@ -18,8 +18,8 @@ class SignalGenerator(BaseCommand):
         self.functionNumberCommand = self.commands.functionNumberCommand
 
         # there exist 6 functions that can be used for signal generation at the time of writing this (2017-02-23).
-        self.functionNumberCommand.setLowerLimit(self, 0)
-        self.functionNumberCommand.setUpperLimit(self, 4)
+        self.functionNumberCommand.setLowerLimit(0, self)
+        self.functionNumberCommand.setUpperLimit(4, self)
         self.signalSymbols = list()
 
         # the command to set the function number of the generator is used as main command here
@@ -51,6 +51,17 @@ class SignalGenerator(BaseCommand):
 
         # these are commands for the ramp function
         cmds = list()
+        cmds.append(self.commands.rampState)
+        cmds[-1].displayName = u"Rampe Richtung"
+        cmds.append(self.commands.rampGradient)
+        cmds[-1].displayName = u"Rampe Steigung"
+        cmds.append(self.commands.rampLow)
+        cmds[-1].displayName = u"Rampe unten"
+        cmds.append(self.commands.rampHigh)
+        cmds[-1].displayName = u"Rampe oben"
+
+
+
         self.groupedCommandLists.append(cmds)
 
         # these are commands for the sin function
@@ -65,6 +76,13 @@ class SignalGenerator(BaseCommand):
 
         # these are commands for the square wave function
         cmds = list()
+        cmds.append(self.commands.squareLowCommand)
+        cmds[-1].displayName = u"Square unterer Wert"
+        cmds.append(self.commands.squareHighCommand)
+        cmds[-1].displayName = u"Square oberer Wert"
+        cmds.append(self.commands.squareFrequencyCommand)
+        cmds[-1].displayName = u"Square Frequenz in Hz"
+
         self.groupedCommandLists.append(cmds)
 
 
@@ -72,7 +90,7 @@ class SignalGenerator(BaseCommand):
         self.triggerCommands = list()
         self.triggerCommands.append(self.startDirac)
         self.triggerCommands.append(self.toggleHeavySide)
-        self.triggerCommands.append(None)
+        self.triggerCommands.append(self.toggleRamp)
         self.triggerCommands.append(None)
         self.triggerCommands.append(None)
 
@@ -148,16 +166,19 @@ class SignalGenerator(BaseCommand):
             self.okButton.clicked.connect(self.triggerCommands[self.currentSignalNumber])
 
     def startDirac(self):
-        self.commands.diracNowCommand.setValue(self, 1.0)
+        self.commands.diracNowCommand.setValue(1.0, self)
 
     def toggleHeavySide(self):
         if self.commands.stepStateCommand.getValue() < 0.5:
-            self.commands.stepStateCommand.setValue(self, 1.0)
+            self.commands.stepStateCommand.setValue(1.0, self)
         else:
-            self.commands.stepStateCommand.setValue(self, 0.0)
+            self.commands.stepStateCommand.setValue(0.0, self)
 
-    def startRamp(self):
-        pass
+    def toggleRamp(self):
+        if self.commands.rampState.getValue() < 0.5:
+            self.commands.rampState.setValue(1.0, self)
+        else:
+            self.commands.rampState.setValue(0.0, self)
 
     def updateDialog(self):
         self.currentDialog.update()
@@ -166,14 +187,14 @@ class SignalGenerator(BaseCommand):
         self.currentSignalNumber += 1
         if self.currentSignalNumber >= len(self.signalSymbols):
             self.currentSignalNumber = len(self.signalSymbols) - 1
-        self.functionNumberCommand.setValue(self, self.currentSignalNumber)
+        self.functionNumberCommand.setValue(self.currentSignalNumber, self)
         self.actualizeSignalSymbol()
 
     def oneSignalDown(self, qGraphicsSceneMouseEvent):
         self.currentSignalNumber -= 1
         if self.currentSignalNumber <= 0:
             self.currentSignalNumber = 0
-        self.functionNumberCommand.setValue(self, self.currentSignalNumber)
+        self.functionNumberCommand.setValue(self.currentSignalNumber, self)
         self.actualizeSignalSymbol()
 
     def settingsButtonClicked(self, qGraphicsSceneMouseEvent):
@@ -209,6 +230,7 @@ class SignalGenerator(BaseCommand):
             sig.hide()
         if len(self.signalSymbols) > 0:
             self.signalSymbols[self.currentSignalNumber].show()
+        self.update()
 
     @property
     def northCoordinates(self):

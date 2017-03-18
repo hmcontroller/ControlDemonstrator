@@ -4,11 +4,11 @@ from PyQt4 import QtCore, QtGui, QtSql
 
 from gui.constants import *
 from gui.designerfiles.tabGenericView import Ui_tabGenericView
-from gui.controllerGeneric import ControllerGeneric
+from gui.controllerSmallGeneric import ControllerSmallGeneric
 from gui.plotWidget import PlotWidget
 
 
-class TabGenericView(QtGui.QWidget, Ui_tabGenericView):
+class TabSmallGenericView(QtGui.QWidget, Ui_tabGenericView):
 
     changingName = QtCore.pyqtSignal(str)
 
@@ -28,7 +28,21 @@ class TabGenericView(QtGui.QWidget, Ui_tabGenericView):
         self.label_3.setVisible(False)
         self.label_4.setVisible(False)
 
-        self.controller = ControllerGeneric(self.commands, self.channels)
+        self.controller = ControllerSmallGeneric(self.commands, self.channels)
+
+        self.headerLayout = QtGui.QHBoxLayout()
+
+        self.sendButton = QtGui.QPushButton("send now")
+        self.headerLayout.insertWidget(0, self.sendButton, 0)
+
+        self.cancelSendButton = QtGui.QPushButton("cancel")
+        self.headerLayout.insertWidget(1, self.cancelSendButton, 0)
+
+        self.headerLayout.insertStretch(2, 0)
+
+
+        self.commandViewLayout.insertLayout(0, self.headerLayout, 0)
+
         self.commandViewLayout.insertWidget(1, self.controller, 0)
 
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -47,8 +61,9 @@ class TabGenericView(QtGui.QWidget, Ui_tabGenericView):
             self.plotCurves[number].setVisible(False)
 
     def updateTab(self, channels):
-        self.plotter.updatePlots(channels)
-        self.controller.updateSymbols()
+        pass
+        # self.plotter.updatePlots(channels)
+        # self.controller.updateSymbols()
 
     def splitterMoved(self, pos, index):
         self.controller.arrangeItems()

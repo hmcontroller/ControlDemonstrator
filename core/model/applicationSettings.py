@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 
-class Settings():
+class ApplicationSettings():
     def __init__(self):
         self.controllerLoopCycleTimeInUs = 0
         self.bufferLength = 0

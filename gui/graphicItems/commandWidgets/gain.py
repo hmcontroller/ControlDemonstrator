@@ -63,7 +63,7 @@ class Gain(BaseCommand):
 
         if text == "":
             self.lineEdit.setText(str(self.command.getLowerLimit()))
-            self.command.setValue(self, self.command.getLowerLimit())
+            self.command.setValue(self.command.getLowerLimit(), self)
             self.activateUserInputWarning()
         else:
 
@@ -72,14 +72,15 @@ class Gain(BaseCommand):
             number = float(text)
             if number < self.command.getLowerLimit():
                 self.lineEdit.setText(str(self.command.getLowerLimit()))
-                self.command.setValue(self, self.command.getLowerLimit())
+                self.command.setValue(self.command.getLowerLimit(), self)
                 self.activateUserInputWarning()
             elif number > self.command.getUpperLimit():
                 self.lineEdit.setText(str(self.command.getUpperLimit()))
-                self.command.setValue(self, self.command.getUpperLimit())
+                self.command.setValue(self.command.getUpperLimit(), self)
                 self.activateUserInputWarning()
             else:
-                self.command.setValue(self, number)
+                self.command.setValue(number, self)
+        self.update()
 
     def valueChangedPerWidget(self, widgetInstance):
         if widgetInstance is self:
@@ -90,6 +91,7 @@ class Gain(BaseCommand):
     def differentValueReceived(self):
         super(Gain, self).differentValueReceived()
         self.lineEdit.setText(str(self.command.getValue()))
+        self.update()
 
     @property
     def inCoordinates(self):
@@ -127,21 +129,25 @@ class Gain(BaseCommand):
     def hoverEnterEvent(self, QGraphicsSceneMouseEvent):
         self.showHoverIndication = True
         QtGui.QGraphicsItem.hoverEnterEvent(self, QGraphicsSceneMouseEvent)
+        self.update()
 
     def hoverLeaveEvent(self, QGraphicsSceneMouseEvent):
         self.showHoverIndication = False
         QtGui.QGraphicsItem.hoverLeaveEvent(self, QGraphicsSceneMouseEvent)
+        self.update()
 
     def mousePressEvent(self, mouseEvent):
         QtGui.QGraphicsItem.mousePressEvent(self, mouseEvent)
         self.lineEditProxy.setFocus(True)
         textLength = len(self.lineEdit.text())
         self.lineEdit.setSelection(textLength, textLength)
+        self.update()
 
     def mouseDoubleClickEvent(self, mouseEvent):
         QtGui.QGraphicsItem.mouseDoubleClickEvent(self, mouseEvent)
         self.lineEditProxy.setFocus(True)
         self.lineEdit.selectAll()
+        self.update()
 
 
 

@@ -132,6 +132,8 @@ class BaseCommand(QtGui.QGraphicsObject):
 
     def hoverEnterEvent(self, QGraphicsSceneMouseEvent):
         self.showHoverIndication = True
+        self.update()
 
     def hoverLeaveEvent(self, QGraphicsSceneMouseEvent):
         self.showHoverIndication = False
+        self.update()

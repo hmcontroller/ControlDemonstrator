@@ -97,6 +97,9 @@ class TankGauge(QtGui.QGraphicsItem):
         self.reposition()
         self.update()
 
+    def newValueArrived(self, channel):
+        self.setValue(channel[-1])
+
     def valueToAbsolute(self):
         pass
 

@@ -66,6 +66,7 @@ class Switch(BaseCommand):
         # this call is needed to start the blink timer
         super(Switch, self).differentValueReceived()
         # we don't need to do anything here, because the paint method always draws the state of the command model
+        self.update()
 
     @property
     def inCoordinates(self):
@@ -113,9 +114,10 @@ class Switch(BaseCommand):
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         if self.command.getValue() > 0.5:
-            self.command.setValue(self, 0.0)
+            self.command.setValue(0.0, self)
         else:
-            self.command.setValue(self, 1.0)
+            self.command.setValue(1.0, self)
         QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
+        self.update()
 
 

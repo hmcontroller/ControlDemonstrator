@@ -21,7 +21,7 @@ class SymbolButton(QtGui.QGraphicsObject):
         super(SymbolButton, self).__init__(parent)
         self.setAcceptHoverEvents(True)
 
-        self.drawBorder = False
+        self.drawBorder = True
 
         self.currentBackgroundBrush = None
 
@@ -65,10 +65,12 @@ class SymbolButton(QtGui.QGraphicsObject):
     def hoverEnterEvent(self, QGraphicsSceneMouseEvent):
         self.currentBackgroundBrush = self.hoverBackgroundBrush
         QtGui.QGraphicsItem.hoverEnterEvent(self, QGraphicsSceneMouseEvent)
+        self.update()
 
     def hoverLeaveEvent(self, QGraphicsSceneMouseEvent):
         self.currentBackgroundBrush = self.normalBackgroundBrush
         QtGui.QGraphicsItem.hoverLeaveEvent(self, QGraphicsSceneMouseEvent)
+        self.update()
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         self.currentBackgroundBrush = self.clickBackgroundBrush
@@ -78,16 +80,19 @@ class SymbolButton(QtGui.QGraphicsObject):
 
         self.clicked.emit(QGraphicsSceneMouseEvent)
         self.clickReleaseTimer.start(50)
+        self.update()
 
     def clickRelease(self):
         self.currentBackgroundBrush = self.hoverBackgroundBrush
+        self.update()
 
     def paint(self, qPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         
         qPainter.setRenderHint(QtGui.QPainter.Antialiasing)
         qPainter.setPen(self.borderPen)
         qPainter.fillPath(self.borderPath, self.currentBackgroundBrush)
-        qPainter.drawPath(self.borderPath)
+        if self.drawBorder is True:
+            qPainter.drawPath(self.borderPath)
 
 
     def boundingRect(self):

@@ -13,9 +13,19 @@ from gui.constants import *
 class GenericCommand(BaseCommand):
     def __init__(self, command):
 
+        self.commandNameFont = QtGui.QFont("sans-serif", 12, QtGui.QFont.Bold)
+        self.otherFont = QtGui.QFont("sans-serif", 12)
+        self.blackPen = QtGui.QPen(QtCore.Qt.black)
+
+
         self.minLineEdit = self._addLineEdit(LineEditDoubleClickSpecial())
         self.maxLineEdit = self._addLineEdit(LineEditDoubleClickSpecial())
         self.valueLineEdit = self._addLineEdit(LineEditDoubleClickSpecial())
+        self.pendingStateCheckbox = QtGui.QCheckBox()
+        self.pendingStateCheckbox.setText("Guggu")
+        self.pendingStateCheckbox.setFont(self.otherFont)
+        self.pendingStateCheckbox.setGeometry(0, 0, 150, 20)
+        self.pendingStateCheckbox.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         # self.minLineEdit.lostFocus.connect(self.minLostFocus)
 
@@ -31,14 +41,18 @@ class GenericCommand(BaseCommand):
         self.valueLineEditProxy = QtGui.QGraphicsProxyWidget(self)
         self.valueLineEditProxy.setWidget(self.valueLineEdit)
 
+        self.pendingStateCheckboxProxy = QtGui.QGraphicsProxyWidget(self)
+        self.pendingStateCheckboxProxy.setWidget(self.pendingStateCheckbox)
+
         self.width = 400
-        self.height = 80
+        self.height = 100
         self.labelAreaHeight = 30
         self.editAreaHeight = self.height - self.labelAreaHeight
 
         self.hCenterEditArea = self.labelAreaHeight + 0.5 * self.editAreaHeight
 
-        self.minLineEdit.move(45, self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.minLineEdit.height())
+        # self.minLineEdit.move(45, self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.minLineEdit.height())
+        self.minLineEdit.move(45, self.labelAreaHeight + 0.5 * self.editAreaHeight - 1.1 * self.minLineEdit.height())
         self.minLineEditValidator = FloatValidator()
         self.minLineEdit.setValidator(self.minLineEditValidator)
         self.minLineEdit.setText(str(self.command.getLowerLimit()))
@@ -46,8 +60,8 @@ class GenericCommand(BaseCommand):
         self.minLineEdit.editingFinished.connect(self.minEditingFinished)
         self.minLineEdit.returnPressed.connect(self.minEditingReturnPressed)
 
-
-        self.maxLineEdit.move(167, self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.minLineEdit.height())
+        # self.maxLineEdit.move(167, self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.minLineEdit.height())
+        self.maxLineEdit.move(45, self.labelAreaHeight + 0.5 * self.editAreaHeight + 0.1 * self.minLineEdit.height())
         self.maxLineEditValidator = FloatValidator()
         self.maxLineEdit.setValidator(self.maxLineEditValidator)
         self.maxLineEdit.setText(str(self.command.getUpperLimit()))
@@ -56,7 +70,7 @@ class GenericCommand(BaseCommand):
         self.maxLineEdit.returnPressed.connect(self.maxEditingReturnPressed)
 
 
-        self.valueLineEdit.move(self.width - 10 - self.valueLineEdit.width(), self.hCenterEditArea - 0.5 * self.valueLineEdit.height())
+        self.valueLineEdit.move(self.width - 10 - self.valueLineEdit.width(), self.labelAreaHeight + 0.5 * self.editAreaHeight - 1.1 * self.minLineEdit.height())
         self.valueLineEditValidator = FloatValidator()
         self.valueLineEdit.setValidator(self.valueLineEditValidator)
         self.valueLineEdit.setText(str(self.command.getValue()))
@@ -64,6 +78,13 @@ class GenericCommand(BaseCommand):
         self.valueLineEdit.editingFinished.connect(self.valueEditingFinished)
         self.valueLineEdit.returnPressed.connect(self.valueEditingReturnPressed)
 
+        self.pendingStateCheckbox.setCheckState(self.command.getPendingSendMode())
+        self.pendingStateCheckbox.move(45 + self.minLineEdit.width() + 10, self.labelAreaHeight + 10)# + 0.5 * self.editAreaHeight)
+        self.pendingStateCheckbox.setTristate(False)
+        self.pendingStateCheckbox.clicked.connect(self.pendingCheckboxClicked)
+
+        # no text is drawn when the
+        self.pendingStateCheckbox.setText(u"pending mode")
 
         self.boundingRectPath = QtGui.QPainterPath()
         self.boundingRectPath.addRect(0, 0, 200, self.height)
@@ -76,19 +97,28 @@ class GenericCommand(BaseCommand):
         self.editAreaPath.addRect(0, self.labelAreaHeight, self.width, self.editAreaHeight)
         self.editAreaBrush = QtGui.QBrush(QtGui.QColor(0, 153, 250, 30))
 
-        self.commandNameFont = QtGui.QFont("sans-serif", 12, QtGui.QFont.Bold)
-        self.otherFont = QtGui.QFont("sans-serif", 12)
-        self.blackPen = QtGui.QPen(QtCore.Qt.black)
 
         self.labelRect = QtCore.QRectF(10, 0, self.width - 10, self.labelAreaHeight)
-        self.minRect = QtCore.QRectF(10, self.labelAreaHeight, 50, self.editAreaHeight)
-        self.maxRect = QtCore.QRectF(130, self.labelAreaHeight, 50, self.editAreaHeight)
-        self.valueRect = QtCore.QRectF(280, self.labelAreaHeight, 50, self.editAreaHeight)
+        # self.minRect = QtCore.QRectF(10, self.labelAreaHeight, 50, self.editAreaHeight)
+        # self.maxRect = QtCore.QRectF(130, self.labelAreaHeight, 50, self.editAreaHeight)
+        # self.valueRect = QtCore.QRectF(280, self.labelAreaHeight, 50, self.editAreaHeight)
+        self.minRect = QtCore.QRectF(5, 15, 50, self.editAreaHeight)
+        self.maxRect = QtCore.QRectF(5, 45, 50, self.editAreaHeight)
+        self.valueRect = QtCore.QRectF(280, 45, 50, self.editAreaHeight)
+        self.pendingRect = QtCore.QRectF(45 + self.minLineEdit.width() + 30, self.labelAreaHeight + 10, 150, 100)
+        self.pendingValueRect = QtCore.QRectF(45 + self.minLineEdit.width() + 10, self.labelAreaHeight + 40, 155, 100)
+        self.valueFromControllerRect = QtCore.QRectF(self.width - 10 - self.valueLineEdit.width(),
+                                                     self.labelAreaHeight + 0.5 * self.editAreaHeight + 0.1 * self.minLineEdit.height(),
+                                                     63,
+                                                     25)
 
         self.onePixelGrayPen = QtGui.QPen()
         self.onePixelGrayPen.setWidth(1)
         self.onePixelGrayPen.setCosmetic(True)
         self.onePixelGrayPen.setColor(QtCore.Qt.darkGray)
+
+        self.pendingValuePen = QtGui.QPen()
+        self.pendingValuePen.setColor(PENDING_VALUE_COLOR)
 
     # def minLostFocus(self):
     #     self.triggerNoChangeWarning()
@@ -110,6 +140,9 @@ class GenericCommand(BaseCommand):
         lineEdit.setFont(QtGui.QFont("sans-serif", 12))
         return lineEdit
 
+    def pendingCheckboxClicked(self, newValue):
+        self.command.setPendingSendMode(newValue)
+
     def valueEditingFinished(self):
         # self.valueLineEditProxy.clearFocus()
         # self.valueLineEdit.selectAll()
@@ -117,9 +150,10 @@ class GenericCommand(BaseCommand):
         print "ValueEditFinished", text
 
         # if nothing is in the textBox, the lower limit of the command will be set
-        if text == "":
+        if len(text) is 0:
             self.valueLineEdit.setText(str(self.command.getLowerLimit()))
-            self.command.setValue(self, self.command.getLowerLimit())
+            self.valueLineEdit.setCursorPosition(0)
+            self.command.setValue(self.command.getLowerLimit(), self)
             self.activateUserInputWarning()
         else:
             # allowed for the decimal point are a comma and a dot
@@ -127,15 +161,20 @@ class GenericCommand(BaseCommand):
 
             number = float(text)
             if number < self.command.getLowerLimit():
-                self.command.setValue(self, self.command.getLowerLimit())
+                self.command.setValue(self.command.getLowerLimit(), self)
                 self.valueLineEdit.setText(str(self.command.getLowerLimit()))
+                self.valueLineEdit.setCursorPosition(0)
                 self.activateUserInputWarning()
             elif number > self.command.getUpperLimit():
-                self.command.setValue(self, self.command.getUpperLimit())
+                self.command.setValue(self.command.getUpperLimit(), self)
                 self.valueLineEdit.setText(str(self.command.getUpperLimit()))
+                self.valueLineEdit.setCursorPosition(0)
                 self.activateUserInputWarning()
             else:
-                self.command.setValue(self,  number)
+                self.command.setValue(number, self)
+
+        # self.valueLineEdit.setText(str(self.command.getValue()))
+        # self.valueLineEdit.setCursorPosition(0)
 
     def valueEditingReturnPressed(self):
         self.valueLineEdit.selectAll()
@@ -154,12 +193,13 @@ class GenericCommand(BaseCommand):
         else:
             min = float(text)
         if min > self.command.getUpperLimit():
-            self.command.setLowerLimit(self, self.command.getUpperLimit())
+            self.command.setLowerLimit(self.command.getUpperLimit(), self)
             self.minLineEdit.setText(str(self.command.getLowerLimit()))
+            self.minLineEdit.setCursorPosition(0)
             self.minLineEdit.selectAll()
             self.activateUserInputWarning()
         else:
-            self.command.setLowerLimit(self, min)
+            self.command.setLowerLimit(min, self)
 
     def minEditingReturnPressed(self):
         self.minLineEdit.selectAll()
@@ -178,12 +218,13 @@ class GenericCommand(BaseCommand):
             max = float(text)
 
         if max < self.command.getLowerLimit():
-            self.command.setUpperLimit(self, self.command.getLowerLimit())
+            self.command.setUpperLimit(self.command.getLowerLimit(), self)
             self.maxLineEdit.setText(str(self.command.getUpperLimit()))
+            self.maxLineEdit.setCursorPosition(0)
             self.maxLineEdit.selectAll()
             self.activateUserInputWarning()
         else:
-            self.command.setUpperLimit(self, max)
+            self.command.setUpperLimit(max, self)
 
     def maxEditingReturnPressed(self):
         self.maxLineEdit.selectAll()
@@ -192,19 +233,24 @@ class GenericCommand(BaseCommand):
         if widgetInstance is self:
             pass
         else:
-            self.valueLineEdit.setText(str(self.command.getValue()))
+            pass
+            # self.valueLineEdit.setText(str(self.command.getValue()))
+            # self.valueLineEdit.setCursorPosition(0)
+
 
     def minChangedPerWidget(self, widgetInstance):
         if widgetInstance is self:
             pass
         else:
             self.minLineEdit.setText(str(self.command.getLowerLimit()))
+            self.minLineEdit.setCursorPosition(0)
 
     def maxChangedPerWidget(self, widgetInstance):
         if widgetInstance is self:
             pass
         else:
             self.maxLineEdit.setText(str(self.command.getUpperLimit()))
+            self.maxLineEdit.setCursorPosition(0)
             self.update()
 
     # overwrites method of super class
@@ -212,7 +258,8 @@ class GenericCommand(BaseCommand):
         # this call is needed to start the blink timer
         super(GenericCommand, self).differentValueReceived()
 
-        self.valueLineEdit.setText(str(self.command.getValue()))
+        # self.valueLineEdit.setText(str(self.command.getValue()))
+        # self.valueLineEdit.setCursorPosition(0)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)
@@ -254,6 +301,28 @@ class GenericCommand(BaseCommand):
         QPainter.drawText(self.minRect,
                          QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                          QtCore.QString("min"))
+
+        # # draw some text
+        # QPainter.setFont(self.otherFont)
+        # QPainter.drawText(self.pendingRect,
+        #                  QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
+        #                  QtCore.QString("pending mode"))
+
+        # draw some text
+        if self.command._pendingValue is not None:
+            QPainter.setPen(self.pendingValuePen)
+            pendingValue = unicode(self.command._pendingValue) + u"  -->"
+            QPainter.setFont(self.otherFont)
+            QPainter.drawText(self.pendingValueRect,
+                             QtCore.Qt.AlignRight | QtCore.Qt.AlignTop,
+                             QtCore.QString(pendingValue))
+            QPainter.setPen(self.blackPen)
+
+        # draw some text
+        QPainter.setFont(self.otherFont)
+        QPainter.drawText(self.valueFromControllerRect,
+                         QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
+                         QtCore.QString(str(self.command.valueOfLastResponse)))
 
         # draw some text
         QPainter.drawText(self.maxRect,
@@ -299,3 +368,5 @@ class GenericCommandWithoutMinMaxEdit(GenericCommand):
         self.maxLineEdit.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.maxLineEdit.setStyleSheet(styleSheet)
         self.maxLineEdit.setPalette(p)
+
+        self.pendingStateCheckbox.hide()

@@ -48,7 +48,7 @@ class TabWaterLineExperiment(QtGui.QWidget, Ui_tabWaterLineExperiment):
 
     def keyPressEvent(self, QKeyEvent):
         if QKeyEvent.key() == QtCore.Qt.Key_Space:
-            self.movePlot = not self.movePlot
+            self.plotter.keyPressEvent(QKeyEvent)
 
 
 

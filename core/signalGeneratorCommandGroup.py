@@ -14,3 +14,17 @@ class SignalGeneratorCommandGroup(object):
         self.sinAmplitudeCommand = None
         self.sinOmegaCommand = None
         self.sinOffsetCommand = None
+        self.squareLowCommand = None
+        self.squareHighCommand = None
+        self.squareFrequencyCommand = None
+        self.rampState = None
+        self.rampGradient = None
+        self.rampLow = None
+        self.rampHigh = None
+
+
+
+
+
+
+

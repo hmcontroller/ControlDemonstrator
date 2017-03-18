@@ -2,10 +2,10 @@
 
 from PyQt4 import QtCore, QtGui
 
-from gui.graphicItems.commandWidgets.genericCommand import GenericCommand
+from gui.graphicItems.commandWidgets.smallGenericCommand import SmallGenericCommand
 
 
-class ControllerGeneric(QtGui.QGraphicsView):
+class ControllerSmallGeneric(QtGui.QGraphicsView):
 
     parameterChanged = QtCore.pyqtSignal(int, float)
 
@@ -40,7 +40,7 @@ class ControllerGeneric(QtGui.QGraphicsView):
 
         self.items = list()
         for command in self.commands:
-            commandItem = GenericCommand(command)
+            commandItem = SmallGenericCommand(command)
             self.scene.addItem(commandItem)
             self.items.append(commandItem)
 
@@ -132,7 +132,6 @@ class ControllerGeneric(QtGui.QGraphicsView):
             else:
                 self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
-        #
         self.scene.setSceneRect(0, 0, totalWidth, totalHeight)
         self.scene.update()
         self.resize(self.width(), self.height())
@@ -141,5 +140,5 @@ class ControllerGeneric(QtGui.QGraphicsView):
         self.scene.update()
 
     def resizeEvent(self, QResizeEvent):
-        super(ControllerGeneric, self).resizeEvent(QResizeEvent)
+        super(ControllerSmallGeneric, self).resizeEvent(QResizeEvent)
         self.arrangeItems()

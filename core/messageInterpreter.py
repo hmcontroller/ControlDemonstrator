@@ -8,28 +8,27 @@ class MessageInterpreter():
         pass
 
     @staticmethod
-    def mapUserChannels(measurementDataModel, messages):
+    def mapUserChannels(measurementDataModel, message):
+        # check here if the controller has been reset and if so clear all buffers
+        newestTimeInSec = None
+        for messagePart in message:
+            if messagePart.name == "loopStartTime":
+                newestTimeInSec = float(messagePart.value) / 1000000.0
 
-        for message in messages:
+        lastTime = measurementDataModel.timeValues[len(measurementDataModel.timeValues) - 1]
 
-            # check here if the controller has been reset and if so clear all buffers
-            newestTimeInSec = None
-            for messagePart in message:
-                if messagePart.name == "loopStartTime":
-                    newestTimeInSec = float(messagePart.value) / 1000000.0
+        if measurementDataModel.isEmpty or newestTimeInSec < lastTime:
+            measurementDataModel.clear(newestTimeInSec)
+            measurementDataModel.isEmpty = False
 
-            lastTime = measurementDataModel.timeValues[len(measurementDataModel.timeValues) - 1]
+        # append incoming values to buffers
+        for i in range(0, len(message)):
+            if message[i].isUserChannel is True:
+                userChannelId = message[i].userChannelId
+                measurementDataModel.channels[userChannelId].append(message[i].value)
+            elif message[i].name == "loopStartTime":
+                measurementDataModel.timeValues.append(float(message[i].value) / 1000000.0)
 
-            if measurementDataModel.isEmpty or newestTimeInSec < lastTime:
-                measurementDataModel.clear(newestTimeInSec)
-                measurementDataModel.isEmpty = False
-
-            # append incoming values to buffers
-            for i in range(0, len(message)):
-                if message[i].isUserChannel is True:
-                    measurementDataModel.channels[i].append(message[i].value)
-                elif message[i].name == "loopStartTime":
-                    measurementDataModel.timeValues.append(float(message[i].value) / 1000000.0)
 
     @staticmethod
     def getLoopCycleDuration(messages):

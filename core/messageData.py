@@ -10,3 +10,4 @@ class MessageData():
         self.name = None
         self.value = 0
         self.isUserChannel = False
+        self.userChannelId = None

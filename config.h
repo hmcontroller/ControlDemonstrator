@@ -3,16 +3,16 @@
 
 // must have parameters
 #define LOOP_CYCLE_TIME_US                         5000
-#define FAST_PARAMETER_COUNT                         30
-#define REQUESTED_FAST_PARAMETER_COUNT               12
-#define CONTROLLED_PARAMETER_COUNT                   40
-#define REQUESTED_CONTROLLED_PARAMETER_COUNT         40
+#define AVAILABLE_CHANNEL_COUNT                      32
+#define REQUESTED_CHANNEL_COUNT                       9
+#define AVAILABLE_PARAMETER_COUNT                    62
+#define REQUESTED_PARAMETER_COUNT                    56
 
-// all available fast parameters
-// define names for parameters, that can be send to the connected pc.
+// All available channels
+// Define names for parameters, that can be send to the connected pc.
 // These names are referred to in the whole code.
-// The list is generated automatically from a python script
-// On the controller all values are stored in "float fastParameterValues[FAST_PARAMETER_COUNT]"
+// The list is generated automatically from a python script.
+// On the controller all values are stored in "float channels[AVAILABLE_CHANNEL_COUNT]."
 #define ANALOG_IN_0                                   0
 #define ANALOG_IN_1                                   1
 #define ANALOG_IN_2                                   2
@@ -43,12 +43,14 @@
 #define LAST_COMMAND_VALUE                           27
 #define LAST_COMMAND_FROM_ARRAY_VALUE                28
 #define DEBUG_TIMER                                  29
+#define SEND_TIMER                                   30
+#define RECEIVE_TIMER                                31
 
-// all available controlled parameters
-// define names for parameters, that can be set from the connected pc.
+// all available parameters
+// Define names for parameters, that can be set from the connected pc.
 // These names are referred to in the whole code.
-// The list is generated automatically from a python script
-// On the controller all values are stored in "float controlledParameterValues[CONTROLLED_PARAMETER_COUNT]"
+// The list is generated automatically from a python script.
+// On the controller all values are stored in "float parameters[AVAILABLE_PARAMETER_COUNT]."
 #define PID1_KP_SWITCH                                0
 #define PID1_KP_VALUE                                 1
 #define PID1_KI_SWITCH                                2
@@ -73,81 +75,45 @@
 #define SP_GEN1_SIN_AMPLITUDE                        21
 #define SP_GEN1_SIN_OMEGA                            22
 #define SP_GEN1_SIN_OFFSET                           23
-#define SLOW_PWM_ON                                  24
-#define SLOW_PWM_PERCENT                             25
-#define SP_GEN2_ON                                   26
-#define SP_GEN2_NUMBER                               27
-#define SP_GEN2_DIRAC_START_TIME                     28
-#define SP_GEN2_DIRAC_NOW                            29
-#define SP_GEN2_DIRAC_LOW                            30
-#define SP_GEN2_DIRAC_HIGH                           31
-#define SP_GEN2_DIRAC_DURATION                       32
-#define SP_GEN2_STEP_LOW                             33
-#define SP_GEN2_STEP_HIGH                            34
-#define SP_GEN2_STEP_STATE                           35
-#define SP_GEN2_SIN_AMPLITUDE                        36
-#define SP_GEN2_SIN_OMEGA                            37
-#define SP_GEN2_SIN_OFFSET                           38
-#define PID1_SENSOR_SOURCE                           39
+#define SP_GEN1_SQUARE_LOW                           24
+#define SP_GEN1_SQUARE_HIGH                          25
+#define SP_GEN1_SQUARE_FREQUENCY                     26
+#define SP_GEN1_SQUARE_STATE                         27
+#define SP_GEN1_SQUARE_LAST_TOGGLE                   28
+#define SP_GEN1_RAMP_START_TIME                      29
+#define SP_GEN1_RAMP_STATE                           30
+#define SP_GEN1_RAMP_LAST_STATE                      31
+#define SP_GEN1_RAMP_GRADIENT                        32
+#define SP_GEN1_RAMP_LOW                             33
+#define SP_GEN1_RAMP_HIGH                            34
+#define SLOW_PWM_ON                                  35
+#define SLOW_PWM_PERCENT                             36
+#define SP_GEN2_ON                                   37
+#define SP_GEN2_NUMBER                               38
+#define SP_GEN2_DIRAC_START_TIME                     39
+#define SP_GEN2_DIRAC_NOW                            40
+#define SP_GEN2_DIRAC_LOW                            41
+#define SP_GEN2_DIRAC_HIGH                           42
+#define SP_GEN2_DIRAC_DURATION                       43
+#define SP_GEN2_STEP_LOW                             44
+#define SP_GEN2_STEP_HIGH                            45
+#define SP_GEN2_STEP_STATE                           46
+#define SP_GEN2_SIN_AMPLITUDE                        47
+#define SP_GEN2_SIN_OMEGA                            48
+#define SP_GEN2_SIN_OFFSET                           49
+#define SP_GEN2_SQUARE_LOW                           50
+#define SP_GEN2_SQUARE_HIGH                          51
+#define SP_GEN2_SQUARE_FREQUENCY                     52
+#define SP_GEN2_SQUARE_STATE                         53
+#define SP_GEN2_SQUARE_LAST_TOGGLE                   54
+#define SP_GEN2_RAMP_START_TIME                      55
+#define SP_GEN2_RAMP_STATE                           56
+#define SP_GEN2_RAMP_LAST_STATE                      57
+#define SP_GEN2_RAMP_GRADIENT                        58
+#define SP_GEN2_RAMP_LOW                             59
+#define SP_GEN2_RAMP_HIGH                            60
+#define PID1_SENSOR_SOURCE                           61
 
-// parameters that will be send to the pc at every loop cycle
-int requestedFastParameters[REQUESTED_FAST_PARAMETER_COUNT] = {
-    ANALOG_IN_2,
-    ANALOG_IN_3,
-    PID1_ERROR,
-    FAST_PWM_ON,
-    FAST_PWM_PERCENT,
-    LOOP_DURATION,
-    RECEIVED_BYTES_COUNT,
-    SP_GEN_1_OUTPUT,
-    LAST_COMMAND_ID,
-    LAST_COMMAND_VALUE,
-    LAST_COMMAND_FROM_ARRAY_VALUE,
-    DEBUG_TIMER
-};
-
-// parameters that will be set from the pc
-int requestedControlledParameters[CONTROLLED_PARAMETER_COUNT] = {
-    PID1_KP_SWITCH,
-    PID1_KP_VALUE,
-    PID1_KI_SWITCH,
-    PID1_KI_VALUE,
-    PID1_KD_SWITCH,
-    PID1_KD_VALUE,
-    PID2_KP_SWITCH,
-    PID2_KP_VALUE,
-    PID2_KI_SWITCH,
-    PID2_KI_VALUE,
-    PID2_KD_SWITCH,
-    PID2_KD_VALUE,
-    SP_GEN1_NUMBER,
-    SP_GEN1_DIRAC_START_TIME,
-    SP_GEN1_DIRAC_NOW,
-    SP_GEN1_DIRAC_LOW,
-    SP_GEN1_DIRAC_HIGH,
-    SP_GEN1_DIRAC_DURATION,
-    SP_GEN1_STEP_LOW,
-    SP_GEN1_STEP_HIGH,
-    SP_GEN1_STEP_STATE,
-    SP_GEN1_SIN_AMPLITUDE,
-    SP_GEN1_SIN_OMEGA,
-    SP_GEN1_SIN_OFFSET,
-    SLOW_PWM_ON,
-    SLOW_PWM_PERCENT,
-    SP_GEN2_ON,
-    SP_GEN2_NUMBER,
-    SP_GEN2_DIRAC_START_TIME,
-    SP_GEN2_DIRAC_NOW,
-    SP_GEN2_DIRAC_LOW,
-    SP_GEN2_DIRAC_HIGH,
-    SP_GEN2_DIRAC_DURATION,
-    SP_GEN2_STEP_LOW,
-    SP_GEN2_STEP_HIGH,
-    SP_GEN2_STEP_STATE,
-    SP_GEN2_SIN_AMPLITUDE,
-    SP_GEN2_SIN_OMEGA,
-    SP_GEN2_SIN_OFFSET,
-    PID1_SENSOR_SOURCE
-};
-
+extern int requestedChannels[REQUESTED_CHANNEL_COUNT];
+extern int requestedParameters[REQUESTED_PARAMETER_COUNT];
 #endif

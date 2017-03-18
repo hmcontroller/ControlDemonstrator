@@ -16,10 +16,12 @@ class ValueChannel(QtCore.QObject):
         self.show = True
         self.colorRgbTuple = (0, 0, 0)
 
-    def append(self, value, suppressSignal=False):
+    def append(self, value):
+        self.appendSilently(value)
+        self.newValueArrived.emit(self)
+
+    def appendSilently(self, value):
         self._values.append(value)
-        if suppressSignal is False:
-            self.newValueArrived.emit(value)
 
     def __len__(self):
         return len(self._values)

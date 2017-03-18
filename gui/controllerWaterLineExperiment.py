@@ -64,6 +64,13 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         sigCommandGroup.sinAmplitudeCommand = self.commands.getCommandByName("SP_GEN1_SIN_AMPLITUDE")
         sigCommandGroup.sinOmegaCommand = self.commands.getCommandByName("SP_GEN1_SIN_OMEGA")
         sigCommandGroup.sinOffsetCommand = self.commands.getCommandByName("SP_GEN1_SIN_OFFSET")
+        sigCommandGroup.squareLowCommand = self.commands.getCommandByName("SP_GEN1_SQUARE_LOW")
+        sigCommandGroup.squareHighCommand = self.commands.getCommandByName("SP_GEN1_SQUARE_HIGH")
+        sigCommandGroup.squareFrequencyCommand = self.commands.getCommandByName("SP_GEN1_SQUARE_FREQUENCY")
+        sigCommandGroup.rampState = self.commands.getCommandByName("SP_GEN1_RAMP_STATE")
+        sigCommandGroup.rampGradient = self.commands.getCommandByName("SP_GEN1_RAMP_GRADIENT")
+        sigCommandGroup.rampLow = self.commands.getCommandByName("SP_GEN1_RAMP_LOW")
+        sigCommandGroup.rampHigh = self.commands.getCommandByName("SP_GEN1_RAMP_HIGH")
 
         signalGenerator = SignalGenerator(sigCommandGroup)
         self.scene.addItem(signalGenerator)
@@ -131,10 +138,18 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         distCommandGroup.sinAmplitudeCommand = self.commands.getCommandByName("SP_GEN2_SIN_AMPLITUDE")
         distCommandGroup.sinOmegaCommand = self.commands.getCommandByName("SP_GEN2_SIN_OMEGA")
         distCommandGroup.sinOffsetCommand = self.commands.getCommandByName("SP_GEN2_SIN_OFFSET")
+        distCommandGroup.squareLowCommand = self.commands.getCommandByName("SP_GEN2_SQUARE_LOW")
+        distCommandGroup.squareHighCommand = self.commands.getCommandByName("SP_GEN2_SQUARE_HIGH")
+        distCommandGroup.squareFrequencyCommand = self.commands.getCommandByName("SP_GEN2_SQUARE_FREQUENCY")
+        distCommandGroup.rampState = self.commands.getCommandByName("SP_GEN2_RAMP_STATE")
+        distCommandGroup.rampGradient = self.commands.getCommandByName("SP_GEN2_RAMP_GRADIENT")
+        distCommandGroup.rampLow = self.commands.getCommandByName("SP_GEN2_RAMP_LOW")
+        distCommandGroup.rampHigh = self.commands.getCommandByName("SP_GEN2_RAMP_HIGH")
 
         disturbanceGenerator = SignalGenerator(distCommandGroup)
         self.scene.addItem(disturbanceGenerator)
         disturbanceGenerator.setPos(800, 10)
+        # disturbanceGenerator.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True)
 
         disturbanceOnOffCommand = self.commands.getCommandByName("SP_GEN2_ON")
         disturbanceSwitch = Switch(disturbanceOnOffCommand)
@@ -159,7 +174,7 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         sumCircleControllerOut = SumCircle()
         self.scene.addItem(sumCircleControllerOut)
         sumCircleControllerOut.setPos(650, 200)
-
+        # sumCircleControllerOut.setFlag(QtGui.QGraphicsItem.ItemIsMovable, True)
 
         sumCircleDisturbance = SumCircle()
         self.scene.addItem(sumCircleDisturbance)
@@ -170,11 +185,11 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
 
         tankGaugeChannel1 = self.channels.getChannelByName("ANALOG_IN_3")
         tankGauge1 = TankGauge()
-        tankGauge1.lowerLimit = 30000
-        tankGauge1.upperLimit = 50000
+        tankGauge1.lowerLimit = 0
+        tankGauge1.upperLimit = 65536
         tankGauge1.isRelativeScale = True
         tankGauge1.setColor(tankGaugeChannel1.colorRgbTuple)
-        tankGaugeChannel1.newValueArrived.connect(tankGauge1.setValue)
+        tankGaugeChannel1.newValueArrived.connect(tankGauge1.newValueArrived)
         gauges.append(tankGauge1)
 
         tankGaugeChannel2 = self.channels.getChannelByName("ANALOG_IN_2")
@@ -183,7 +198,7 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         tankGauge2.upperLimit = 65536
         tankGauge2.isRelativeScale = True
         tankGauge2.setColor(tankGaugeChannel2.colorRgbTuple)
-        tankGaugeChannel2.newValueArrived.connect(tankGauge2.setValue)
+        tankGaugeChannel2.newValueArrived.connect(tankGauge2.newValueArrived)
         gauges.append(tankGauge2)
 
         gaugeSwitchCommand = self.commands.getCommandByName("PID1_SENSOR_SOURCE")

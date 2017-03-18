@@ -22,7 +22,7 @@ class SumCircle(QtGui.QGraphicsItem):
         QPainter.drawPath(self.painterPath)
 
     def boundingRect(self):
-        return QtCore.QRectF(-self.width/2, -self.height/2, self.width/2, self.height/2)
+        return QtCore.QRectF(-self.width/2, -self.height/2, self.width, self.height)
 
     def setWidthHeight(self, width, height):
         self.width = width

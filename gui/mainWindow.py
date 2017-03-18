@@ -11,6 +11,7 @@ from core.messageInterpreter import MessageInterpreter
 from gui.constants import *
 from gui.tabWaterLineExperiment import TabWaterLineExperiment
 from gui.tabGenericView import TabGenericView
+from gui.tabSmallGenericView import TabSmallGenericView
 
 class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def __init__(self, rootFolder):
@@ -37,20 +38,16 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         splashScreen = QtGui.QSplashScreen(splashMap)
         splashScreen.show()
         QtGui.qApp.processEvents()
-        splashScreen.showMessage(u"Regulator wird geladen...", QtCore.Qt.AlignCenter)
         QtGui.qApp.processEvents()
 
         # generate model objects according to the config file
         configFilePath = os.path.join(rootFolder, "config.txt")
         modelMaker = ModelMaker(configFilePath)
-        # self.sensorMapping = modelMaker.getSensorMapping()
-        self.settings = modelMaker.getMiscSettings()
+        self.settings = modelMaker.getApplicationSettings()
 
-        # TODO it is dirty how the messageData list will be generated in model maker - check single source problem
+        # TODO it is ugly how the messageData list will be generated in model maker - check single source problem
         self.messageFormat = modelMaker.getMessageFormatList()
 
-        # TODO - do not differentiate between analog channels and fastParameterChannels
-        # TODO remove sensorMapping from the config file
         self.channels = modelMaker.getMeasurementDataModel()
 
         self.commands = modelMaker.getCommands()
@@ -62,15 +59,18 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.tabWaterLineExperiment = TabWaterLineExperiment(self.commands, self.channels, self.settings)
         self.tabWaterLineExperimentLayout.addWidget(self.tabWaterLineExperiment)
 
-        # add a tab for generic control
+        # # add a tab for generic control
         self.tabGeneric = TabGenericView(self.commands, self.channels, self.settings)
         self.tabGenericViewLayout.addWidget(self.tabGeneric)
 
+        # add a tab for small generic control
+        self.tabGeneric = TabSmallGenericView(self.commands, self.channels, self.settings)
+        self.tabSmallGenericViewLayout.addWidget(self.tabGeneric)
 
         # setup a timer, that triggers to read from the controller
         self.receiveTimer = QtCore.QTimer()
         self.receiveTimer.setSingleShot(False)
-        self.receiveTimer.timeout.connect(self.receive)
+        self.receiveTimer.timeout.connect(self.receiveAndSend)
         self.receiveTimer.start(self.settings.receiveMessageIntervalLengthInMs)
 
         # # setup a timer, that triggers to send to the controller
@@ -115,10 +115,11 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.centralWidgetLayout.setMargin(0)
         self.centralWidgetLayout.setSpacing(0)
 
-        self.tabWidget = QtGui.QTabWidget(self.centralwidget)
         font = QtGui.QFont()
         font.setFamily("Arial")
-        font.setPointSize(8)
+        font.setPointSize(12)
+
+        self.tabWidget = QtGui.QTabWidget(self.centralwidget)
         self.tabWidget.setFont(font)
         self.tabWidget.setAutoFillBackground(False)
         self.tabWidget.setObjectName("tabWidget")
@@ -139,33 +140,42 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.tabGenericViewLayout.setObjectName("tabGenericView")
         self.tabWidget.addTab(self.tab_1, "generische Ansicht")
 
+        self.tab_2 = QtGui.QWidget()
+        self.tab_2.setObjectName("tab_2")
+        self.tabSmallGenericViewLayout = QtGui.QHBoxLayout(self.tab_2)
+        self.tabSmallGenericViewLayout.setSpacing(0)
+        self.tabSmallGenericViewLayout.setMargin(0)
+        self.tabSmallGenericViewLayout.setObjectName("tabSmallGenericView")
+        self.tabWidget.addTab(self.tab_2, "kleine generische Ansicht")
+
         self.centralWidgetLayout.addWidget(self.tabWidget)
         self.setCentralWidget(self.centralwidget)
 
+    def receiveAndSend(self):
+        self.receive()
+        self.send()
+
     def receive(self):
         messages = self.communicator.receive()
-        if messages is None:
-            return
-        self.handleNewData(messages)
-        self.calculateSomeStuff(messages)
-        self.send()
+        for message in messages:
+            self.handleNewData(message)
+            self.calculateSomeStuff(message)
 
     def send(self):
         self.communicator.send(self.commands)
 
     def refreshGui(self):
-        self.tabWaterLineExperiment.updateTab(self.channels)
+        pass
+        # self.tabWaterLineExperiment.updateTab(self.channels)
         self.tabGeneric.updateTab(self.channels)
 
-    def handleNewData(self, messages):
-        MessageInterpreter.mapUserChannels(self.channels, messages)
+    def handleNewData(self, message):
+        MessageInterpreter.mapUserChannels(self.channels, message)
+        returnedCommand = MessageInterpreter.getMicroControllerCommandReturned(message)
+        self.commands[returnedCommand.id].checkMicroControllerReturnValue(returnedCommand)
 
-        for message in messages:
-            returnedCommand = MessageInterpreter.getMicroControllerCommandReturned(message)
-            self.commands[returnedCommand.id].checkMicroControllerReturnValue(returnedCommand)
-
-    def calculateSomeStuff(self, messages):
-        loopCycleDuration = MessageInterpreter.getLoopCycleDuration(messages[-1])
+    def calculateSomeStuff(self, message):
+        loopCycleDuration = MessageInterpreter.getLoopCycleDuration(message)
         # calculate some statistics
         if loopCycleDuration < self.loopDurationMin:
             self.loopDurationMin = loopCycleDuration
@@ -177,7 +187,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.loopDurationAverage = self.loopDurationSum / float(self.loopDurationCounter)
 
     def printLoopPerformance(self):
-        print "min", self.loopDurationMin, "max", self.loopDurationMax, "avg", self.loopDurationAverage
+        pass
+        # print "min", self.loopDurationMin, "max", self.loopDurationMax, "avg", self.loopDurationAverage
 
     def closeEvent(self, *args, **kwargs):
         QtGui.QApplication.quit()

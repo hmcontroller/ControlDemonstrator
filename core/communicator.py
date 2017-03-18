@@ -6,24 +6,14 @@ import struct
 
 from core.messageData import MessageData
 
-class UdpCommunicator():
+
+class Communicator(object):
     def __init__(self, settings):
-        # TODO - check remotePort against txPort or what is more clear
         self.settings = settings
         self.messageSize = None
         self.messageMap = None
 
         self.commandSendBuffer = list()
-
-        self.sockRX = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sockRX.bind((self.settings.computerIP, self.settings.computerRxPort))
-        self.sockRX.setblocking(False)
-        self.sockRX.settimeout(0)
-
-        self.sockTX = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sockTX.bind((self.settings.computerIP, self.settings.controllerRxPort))
-        self.sockTX.setblocking(False)
-        self.sockTX.settimeout(0)
 
     def setMessageMap(self, formatList):
         self.messageMap = formatList
@@ -31,10 +21,26 @@ class UdpCommunicator():
         # print "size", self.messageSize
 
     def send(self, commandList):
+        raise NotImplementedError()
+
+    def receive(self):
+        raise NotImplementedError()
+
+
+class UdpCommunicator(Communicator):
+    def __init__(self, settings):
+        super(UdpCommunicator, self).__init__(settings)
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind((self.settings.computerIP, self.settings.udpPort))
+        self.socket.setblocking(False)
+        self.socket.settimeout(0)
+
+    def send(self, commandList):
         if len(commandList.changedCommands) > 0:
             commandToSend = commandList.changedCommands.popleft()
             packedData = self._packCommand(commandToSend)
-            self.sockTX.sendto(packedData, (self.settings.controllerIP, self.settings.controllerRxPort))
+            self.socket.sendto(packedData, (self.settings.controllerIP, self.settings.udpPort))
             print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue()
         # packedData = self._packCommandList(commandList)
         # self.sockTX.sendto(packedData, (self.settings.controllerIP, self.settings.controllerRxPort))
@@ -50,26 +56,20 @@ class UdpCommunicator():
         return struct.pack("<1i1f", command.id, command.getValue())
 
     def receive(self):
-        bufferContainsData = True
         packets = list()
-        isPacketReceived = False
-        while bufferContainsData is True:
+        while True:
             try:
-                data, address = self.sockRX.recvfrom(self.messageSize)
-                isPacketReceived = True
+                data, address = self.socket.recvfrom(self.messageSize)
                 packets.append(data)
             except socket.timeout:
-                bufferContainsData = False
+                break
             except socket.error, e:
                 if e.args[0] == errno.EWOULDBLOCK:
-                    bufferContainsData = False
+                    break
                 else:
                     raise
 
-        if isPacketReceived:
-            return self._unpack(packets)
-        else:
-            return None
+        return self._unpack(packets)
 
     def getData(self):
         pass
@@ -95,6 +95,7 @@ class UdpCommunicator():
                 messagePart.unpackString = messagePartInfo.unpackString
                 messagePart.name = messagePartInfo.name
                 messagePart.isUserChannel = messagePartInfo.isUserChannel
+                messagePart.userChannelId = messagePartInfo.userChannelId
 
                 message.append(messagePart)
 
@@ -104,3 +105,20 @@ class UdpCommunicator():
 
         return unpackedMessages
 
+
+
+class UsbHidCommunicator(Communicator):
+    def __init__(self, settings):
+        super(UsbHidCommunicator, self).__init__(settings)
+
+        self.settings = settings
+        self.messageSize = None
+        self.messageMap = None
+
+        self.commandSendBuffer = list()
+
+    def send(self, commandList):
+        pass
+
+    def receive(self):
+        pass

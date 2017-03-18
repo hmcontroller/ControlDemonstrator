@@ -11,8 +11,10 @@ class CommandList(QtCore.QObject):
 
         self.cmdList = list()
         self.changedCommands = deque()
+        self.pendingCommands = deque()
 
     def append(self, cmd):
+        cmd.valueChanged.connect(self.commandChanged)
         self.cmdList.append(cmd)
 
     def getCommandById(self, id):
@@ -28,7 +30,23 @@ class CommandList(QtCore.QObject):
         raise Exception("Command {} not found. Maybe you have to edit the config file.".format(name))
 
     def commandChanged(self, command):
-        self.changedCommands.append(command)
+        if command.getPendingSendMode() is True:
+            self.pendingCommands.append(command)
+        else:
+            self.changedCommands.append(command)
+
+    def movePendingCommandsToSendList(self):
+        while len(self.pendingCommands) > 0:
+            cmd = self.pendingCommands.popleft()
+            if cmd._pendingValue is not None:
+                cmd._value = cmd._pendingValue
+                cmd._pendingValue = None
+                self.changedCommands.append(cmd)
+
+    def cancelPendingCommands(self):
+        while len(self.pendingCommands) > 0:
+            cmd = self.pendingCommands.pop()
+            cmd._pendingValue = None
 
     def __len__(self):
         return len(self.cmdList)
@@ -73,11 +91,15 @@ class Command(QtCore.QObject):
         self.id = None
         self.name = ""
         self.displayName = None
-        self.timeOfSend = None
+        self.timeOfSend = datetime.datetime.now()
+        self._pendingSendMode = False
+        self._pendingValue = None
+        self._isSelectedAsActive = True
 
         self._lowerLimit = 0
         self._upperLimit = 1
         self._value = 0.0
+        self.rawArgumentString = None
 
         # This is needed to handle the fact, that float values may change a bit during send and receive.
         self.smallNumber = 0.00001
@@ -86,12 +108,7 @@ class Command(QtCore.QObject):
         self.timeOfLastResponse = datetime.datetime.now() - datetime.timedelta(hours=1)
         self.valueOfLastResponse = 0.0
 
-        # This timer is needed, as communication is asynchronous and a command confirmation might take a while.
-        # During this time, some old values may arrive from the controller, because of latency.
-        self.differentValueSuppressionDuration = 1000
-        self.differentValueSuppressionTimer = QtCore.QTimer()
-        self.differentValueSuppressionTimer.setSingleShot(True)
-        # self.differentValueSuppressionTimer.timeout.connect(self.differentValueSuppressionTimeout)
+        self.differentValueSuppressionDuration = datetime.timedelta(seconds=1)
 
         # this timer is reset on each call to checkMicroControllerReturnValue
         self.commCheckTimeOutDuration = 1000
@@ -100,49 +117,61 @@ class Command(QtCore.QObject):
         self.commCheckTimer.timeout.connect(self.commCheckTimeout)
         self.commCheckTimer.start(self.commCheckTimeOutDuration)
 
-        # set this at last
-        # self._value = 0.0
-
     def getValue(self):
         return self._value
 
-    def setValue(self, widgetInstance, value):
+    def setValue(self, value, widgetInstance=None):
+        if self._pendingSendMode is True:
+            self._setPendingValue(value)
+        else:
+            self._setDirectValue(value)
+
+        self.valueChanged.emit(self)
+
+        self.valueChangedPerWidget.emit(widgetInstance)
+
+    def _setDirectValue(self, value):
         if self._lowerLimit <= value <= self._upperLimit:
             self._value = value
-            self.differentValueSuppressionTimer.start(self.differentValueSuppressionDuration)
+            self.timeOfSend = datetime.datetime.now()
             print "Command change id {} name {} value {}".format(self.id, self.name, self._value)
         else:
             raise ValueError("value {} out of allowed range {} - {} for command {}".format(
                 value, self._lowerLimit, self._upperLimit, self.name))
-        self.valueChanged.emit(self)
-        self.valueChangedPerWidget.emit(widgetInstance)
+
+    def _setPendingValue(self, value):
+        if self._lowerLimit <= value <= self._upperLimit:
+            self._pendingValue = value
+            print "Command change pending: id {} name {} value {}".format(self.id, self.name, self._pendingValue)
+        else:
+            raise ValueError("pending value {} out of allowed range {} - {} for command {}".format(
+                value, self._lowerLimit, self._upperLimit, self.name))
 
     def getLowerLimit(self):
         return self._lowerLimit
 
-    def setLowerLimit(self, widgetInstance, value):
+    def setLowerLimit(self, value, widgetInstance=None):
         self._lowerLimit = value
 
         # adapt the value to still fit in the limits
         if self._value < self._lowerLimit:
-            self.setValue(self, self._lowerLimit)
+            self.setValue(self._lowerLimit)
 
             # # This is a bit dirty, as the value is changed from here, but it takes care of the gui elements to update.
             # self.valueChangedPerWidget.emit(self)
 
             # self.valueChanged.emit(self)
-
         self.minChangedPerWidget.emit(widgetInstance)
 
     def getUpperLimit(self):
         return self._upperLimit
 
-    def setUpperLimit(self, widgetInstance, value):
+    def setUpperLimit(self, value, widgetInstance=None):
         self._upperLimit = value
 
         # adapt the value to still fit in the limits
         if self._value > self._upperLimit:
-            self.setValue(self, self._upperLimit)
+            self.setValue(self._upperLimit)
 
             # # This is a bit dirty, as the value is changed from here, but it takes care of the gui elements to update.
             # self.valueChangedPerWidget.emit(self)
@@ -151,16 +180,30 @@ class Command(QtCore.QObject):
 
         self.maxChangedPerWidget.emit(widgetInstance)
 
+    def getPendingSendMode(self):
+        return self._pendingSendMode
+
+    def setPendingSendMode(self, value):
+        if isinstance(value, bool):
+            self._pendingSendMode = value
+            if value is False:
+                self._pendingValue = None
+
+    def getIsSelectedAsActive(self):
+        return self._isSelectedAsActive
+
+    def setIsSelectedAsActive(self, value):
+        self._isSelectedAsActive = value
+
     def checkMicroControllerReturnValue(self, commandConfirmation):
         self.timeOfLastResponse = datetime.datetime.now()
         self.valueOfLastResponse = commandConfirmation.returnValue
 
         # check if the returned value equals the own value
         if abs(commandConfirmation.returnValue - self._value) < self.smallNumber:
-            self.differentValueSuppressionTimer.stop()
             self.sameValueReceived.emit(self)
         else:
-            if self.differentValueSuppressionTimer.isActive():
+            if datetime.datetime.now() - self.timeOfSend < self.differentValueSuppressionDuration:
                 pass
             else:
                 # the value coming from the controller will be set to the gui
@@ -168,13 +211,17 @@ class Command(QtCore.QObject):
                 self._value = commandConfirmation.returnValue
                 self.differentValueReceived.emit(self)
 
+    def setValueWithLimitsAdaptation(self, value):
+        self.adaptLimitsToValue(value)
+        self.setValue(value)
+
     def commCheckTimeout(self):
         now = datetime.datetime.now()
         if now - self.timeOfLastResponse > datetime.timedelta(milliseconds=self.timeOutDuration):
             self.commTimeOut.emit(self)
 
     def adaptLimitsToValue(self, value):
-        # adjust the allowed limits of the command, that the given value is inside the limits
+        # adjust the allowed limits of the command, so that the given value is inside the limits
         # this is needed, when the user sets limits but the controller sends command values outside these limits.
         if self._lowerLimit > value:
             self._lowerLimit = value

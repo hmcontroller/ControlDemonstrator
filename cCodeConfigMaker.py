@@ -12,7 +12,8 @@ import ConfigParser
 import json
 
 P_CONFIG_FILE_PATH = "config.txt"
-C_CONFIG_FILE_PATH = "config.h"
+C_CONFIG_FILE_HEADER_PATH = "config.h"
+C_CONFIG_FILE_CPP_PATH = "config.cpp"
 
 
 
@@ -27,46 +28,32 @@ def run():
 
     loopCycleTime = config.getint("misc", "loopCycleTimeUS")
 
-    # # this feature has been removed
-    # # read the sensor mapping
-    # mappingString = config.get("Sensors", "mapping")
-    # mappingString = mappingString.replace("\n", "").replace(" ", "")
-    # sensorMapping = json.loads(mappingString)
-    #
-    # sensorCount = 0
-    # requSensorCount = 0
-    # for map in sensorMapping:
-    #     sensorCount += 1
-    #     if map[2] == 1:
-    #         requSensorCount += 1
+    availableChannels = list()
+    for i, section in enumerate(config.options('availableChannels')):
+        availableChannels.append(section)
+    availableChannelsCount = len(availableChannels)
 
-
-    availableFastParameters = list()
-    for i, section in enumerate(config.options('availableFastParameters')):
-        availableFastParameters.append(section)
-    availableFastParametersCount = len(availableFastParameters)
-
-    requestedFastParams = list()
-    for i, section in enumerate(config.options('requestedFastParameters')):
-        if section in availableFastParameters:
-            requestedFastParams.append(section)
+    requestedChannels = list()
+    for i, section in enumerate(config.options('requestedChannels')):
+        if section in availableChannels:
+            requestedChannels.append(section)
         else:
             raise Exception("channel {} not available".format(section))
-    requestedFastParamsCount = len(requestedFastParams)
+    requestedChannelCount = len(requestedChannels)
 
 
-    availableControlledParameters = list()
-    for i, section in enumerate(config.options('availableControlledParameters')):
-        availableControlledParameters.append(section)
-    availableControlledParameterCount = len(availableControlledParameters)
+    availableParameters = list()
+    for i, section in enumerate(config.options('availableParameters')):
+        availableParameters.append(section)
+    availableParameterCount = len(availableParameters)
 
-    requestedControlledParams = list()
-    for i, section in enumerate(config.options('requestedControlledParameters')):
-        if section in availableControlledParameters:
-            requestedControlledParams.append(section)
+    requestedParameters = list()
+    for i, section in enumerate(config.options('requestedParameters')):
+        if section in availableParameters:
+            requestedParameters.append(section)
         else:
             raise Exception("command {} not available".format(section))
-    requestedControlledParameterCount = len(requestedControlledParams)
+    requestedParameterCount = len(requestedParameters)
 
 
 
@@ -74,10 +61,10 @@ def run():
 
 
 
-    # now put all stuff in the new file C_CONFIG_FILE_PATH
+    # now put all defines in the new file C_CONFIG_FILE_HEADER_PATH, will be overwritten
+    # and all variables in C_CONFIG_FILE_CPP_PATH
 
-
-    with open(C_CONFIG_FILE_PATH, "w") as f:
+    with open(C_CONFIG_FILE_HEADER_PATH, "w") as f:
         # include guard
         f.write("#ifndef CONFIG_H\n"
                 "#define CONFIG_H\n")
@@ -88,67 +75,62 @@ def run():
         f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
             "LOOP_CYCLE_TIME_US", loopCycleTime, nameWidth=nameWidth, valueWidth=valueWidth))
 
-        # f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-        #     "SENSOR_COUNT", sensorCount, nameWidth=nameWidth, valueWidth=valueWidth))
-        # f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-        #     "REQUESTED_SENSOR_COUNT", requSensorCount, nameWidth=nameWidth, valueWidth=valueWidth))
+        f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "AVAILABLE_CHANNEL_COUNT", availableChannelsCount, nameWidth=nameWidth, valueWidth=valueWidth))
+        f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "REQUESTED_CHANNEL_COUNT", requestedChannelCount, nameWidth=nameWidth, valueWidth=valueWidth))
 
         f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "FAST_PARAMETER_COUNT", availableFastParametersCount, nameWidth=nameWidth, valueWidth=valueWidth))
+            "AVAILABLE_PARAMETER_COUNT", availableParameterCount, nameWidth=nameWidth, valueWidth=valueWidth))
         f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "REQUESTED_FAST_PARAMETER_COUNT", requestedFastParamsCount, nameWidth=nameWidth, valueWidth=valueWidth))
-
-        f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "CONTROLLED_PARAMETER_COUNT", availableControlledParameterCount, nameWidth=nameWidth, valueWidth=valueWidth))
-        f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "REQUESTED_CONTROLLED_PARAMETER_COUNT", requestedControlledParameterCount, nameWidth=nameWidth, valueWidth=valueWidth))
+            "REQUESTED_PARAMETER_COUNT", requestedParameterCount, nameWidth=nameWidth, valueWidth=valueWidth))
 
         f.write("\n")
 
 
-        # all available fast parameters
-        f.write('// all available fast parameters\n' +
-                '// define names for parameters, that can be send to the connected pc.\n' +
+        # all available channels
+        f.write('// All available channels\n' +
+                '// Define names for parameters, that can be send to the connected pc.\n' +
                 '// These names are referred to in the whole code.\n' +
-                '// The list is generated automatically from a python script\n' +
-                '// On the controller all values are stored in "float fastParameterValues[FAST_PARAMETER_COUNT]"\n'
+                '// The list is generated automatically from a python script.\n' +
+                '// On the controller all values are stored in "float channels[AVAILABLE_CHANNEL_COUNT]."\n'
                 )
-        for i, param in enumerate(availableFastParameters):
+        for i, param in enumerate(availableChannels):
             f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
                 param, i, nameWidth=nameWidth, valueWidth=valueWidth))
         f.write("\n")
 
-        # all available controlled parameters
-        f.write('// all available controlled parameters\n' +
-                '// define names for parameters, that can be set from the connected pc.\n' +
+        # all available parameters
+        f.write('// all available parameters\n' +
+                '// Define names for parameters, that can be set from the connected pc.\n' +
                 '// These names are referred to in the whole code.\n' +
-                '// The list is generated automatically from a python script\n' +
-                '// On the controller all values are stored in "float controlledParameterValues[CONTROLLED_PARAMETER_COUNT]"\n'
+                '// The list is generated automatically from a python script.\n' +
+                '// On the controller all values are stored in "float parameters[AVAILABLE_PARAMETER_COUNT]."\n'
                 )
-        for i, param in enumerate(availableControlledParameters):
+        for i, param in enumerate(availableParameters):
             f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
                 param, i, nameWidth=nameWidth, valueWidth=valueWidth))
         f.write("\n")
 
 
-        # # start creating the needed mapping arrays
+        # mark variables defined in the cpp file as extern
+        f.write("extern int requestedChannels[REQUESTED_CHANNEL_COUNT];\n")
+        f.write("extern int requestedParameters[REQUESTED_PARAMETER_COUNT];\n")
+
+        # include guard end
+        f.write("#endif")
+
+
+
+    with open(C_CONFIG_FILE_CPP_PATH, "w") as f:
         #
-        # # sensor mapping
-        # f.write('// sensor channels, that will be measured\n' +
-        #         '// [0]: switchCase for aquisition method, see "void aquireSensordata()"\n' +
-        #         '// [1]: a parameter for the aquistion method\n' +
-        #         '// [2]: storage destination (also used for messageOut position)\n' +
-        #         '// if storage destination is <0, the channel will not be send to the pc\n'
-        #         )
-        # f.write("int sensorMapping[SENSOR_COUNT][3] = \n")
-        # f.write(json.dumps(sensorMapping).replace("[", "{").replace("]", "}") + ";\n")
-        # f.write("\n")
+        f.write('#include "config.h"\n')
 
-        # fastParameter mapping
-        f.write("// parameters that will be send to the pc at every loop cycle\n")
-        f.write("int requestedFastParameters[REQUESTED_FAST_PARAMETER_COUNT] = {\n")
+        # channel mapping
+        f.write("// Channel values that will be send to the pc at every loop cycle\n")
+        f.write("int requestedChannels[REQUESTED_CHANNEL_COUNT] = {\n")
         tString = ""
-        for i, param in enumerate(requestedFastParams):
+        for i, param in enumerate(requestedChannels):
             tString += "    {},\n".format(param)
         tString = tString.rstrip(",\n")
         tString += "\n"
@@ -157,10 +139,10 @@ def run():
         f.write("\n")
 
         # controlledParameter mapping
-        f.write("// parameters that will be set from the pc\n")
-        f.write("int requestedControlledParameters[CONTROLLED_PARAMETER_COUNT] = {\n")
+        f.write("// Parameters that can be set from the pc.\n")
+        f.write("int requestedParameters[REQUESTED_PARAMETER_COUNT] = {\n")
         tString = ""
-        for i, param in enumerate(requestedControlledParams):
+        for i, param in enumerate(requestedParameters):
             tString += "    {},\n".format(param)
         tString = tString.rstrip(",\n")
         tString += "\n"
@@ -168,8 +150,6 @@ def run():
         f.write("};\n")
         f.write("\n")
 
-        # include guard end
-        f.write("#endif")
 
 if __name__ == "__main__":
     run()
