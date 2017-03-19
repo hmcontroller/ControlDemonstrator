@@ -3,76 +3,47 @@
 import socket
 import errno
 import struct
+from collections import deque
+
+from PyQt4 import QtCore
 
 from core.messageData import MessageData
 
 
-class Communicator(object):
+class Communicator(QtCore.QObject):
     def __init__(self, settings):
-        self.settings = settings
-        self.messageSize = None
-        self.messageMap = None
+        super(Communicator, self).__init__()
 
-        self.commandSendBuffer = list()
+        self._settings = settings
+        self._messageSize = None
+        self._messageMap = None
+
+        self._directCommandSendBuffer = deque()
+        self._pendingCommandSendBuffer = deque()
+
+        self._sendTimer = QtCore.QTimer()
+        self._sendTimer.setSingleShot(False)
+        self._sendTimer.timeout.connect(self.sendPerTimer)
+        self._sendTimer.start(settings.sendMessageIntervalLengthInMs)
 
     def setMessageMap(self, formatList):
-        self.messageMap = formatList
-        self.messageSize = self.messageMap[-1].positionInBytes + self.messageMap[-1].lengthInBytes
-        # print "size", self.messageSize
+        self._messageMap = formatList
+        self._messageSize = self._messageMap[-1].positionInBytes + self._messageMap[-1].lengthInBytes
 
     def send(self, commandList):
         raise NotImplementedError()
+
+    def sendPerTimer(self):
+        pass
+
+    def sendPendingCommands(self):
+        pass
 
     def receive(self):
         raise NotImplementedError()
-
-
-class UdpCommunicator(Communicator):
-    def __init__(self, settings):
-        super(UdpCommunicator, self).__init__(settings)
-
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind((self.settings.computerIP, self.settings.udpPort))
-        self.socket.setblocking(False)
-        self.socket.settimeout(0)
-
-    def send(self, commandList):
-        if len(commandList.changedCommands) > 0:
-            commandToSend = commandList.changedCommands.popleft()
-            packedData = self._packCommand(commandToSend)
-            self.socket.sendto(packedData, (self.settings.controllerIP, self.settings.udpPort))
-            print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue()
-        # packedData = self._packCommandList(commandList)
-        # self.sockTX.sendto(packedData, (self.settings.controllerIP, self.settings.controllerRxPort))
-
-    def _packCommandList(self, commandList):
-        formatString = "<{}f".format(len(commandList))
-        parameterValues = list()
-        for command in commandList:
-            parameterValues.append(command.getValue())
-        return struct.pack(formatString, *parameterValues)
 
     def _packCommand(self, command):
         return struct.pack("<1i1f", command.id, command.getValue())
-
-    def receive(self):
-        packets = list()
-        while True:
-            try:
-                data, address = self.socket.recvfrom(self.messageSize)
-                packets.append(data)
-            except socket.timeout:
-                break
-            except socket.error, e:
-                if e.args[0] == errno.EWOULDBLOCK:
-                    break
-                else:
-                    raise
-
-        return self._unpack(packets)
-
-    def getData(self):
-        pass
 
     def _unpack(self, rawPackets):
         # TODO - think about how to single source the packet configuration
@@ -82,7 +53,7 @@ class UdpCommunicator(Communicator):
 
         for rawPacket in rawPackets:
             message = list()
-            for messagePartInfo in self.messageMap:
+            for messagePartInfo in self._messageMap:
                 messagePart = MessageData()
                 rawPart = rawPacket[messagePartInfo.positionInBytes : messagePartInfo.positionInBytes + messagePartInfo.lengthInBytes]
 
@@ -99,23 +70,55 @@ class UdpCommunicator(Communicator):
 
                 message.append(messagePart)
 
-
-
             unpackedMessages.append(message)
 
         return unpackedMessages
+
+
+class UdpCommunicator(Communicator):
+    def __init__(self, settings):
+        super(UdpCommunicator, self).__init__(settings)
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind((self._settings.computerIP, self._settings.udpPort))
+        self.socket.setblocking(False)
+        self.socket.settimeout(0)
+
+    def send(self, commandList):
+        if len(commandList.changedCommands) > 0:
+            commandToSend = commandList.changedCommands.popleft()
+            packedData = self._packCommand(commandToSend)
+            self.socket.sendto(packedData, (self._settings.controllerIP, self._settings.udpPort))
+            print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue()
+
+    def sendPerTimer(self):
+        pass
+
+    def sendPendingCommands(self):
+        pass
+
+    def receive(self):
+        packets = list()
+        while True:
+            try:
+                data, address = self.socket.recvfrom(self._messageSize)
+                packets.append(data)
+            except socket.timeout:
+                break
+            except socket.error, e:
+                if e.args[0] == errno.EWOULDBLOCK:
+                    break
+                else:
+                    raise
+
+        return self._unpack(packets)
+
 
 
 
 class UsbHidCommunicator(Communicator):
     def __init__(self, settings):
         super(UsbHidCommunicator, self).__init__(settings)
-
-        self.settings = settings
-        self.messageSize = None
-        self.messageMap = None
-
-        self.commandSendBuffer = list()
 
     def send(self, commandList):
         pass

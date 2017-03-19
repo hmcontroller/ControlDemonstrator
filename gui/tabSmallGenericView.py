@@ -6,6 +6,7 @@ from gui.constants import *
 from gui.designerfiles.tabGenericView import Ui_tabGenericView
 from gui.controllerSmallGeneric import ControllerSmallGeneric
 from gui.plotWidget import PlotWidget
+from gui.globalControllerAndView import GlobalControllerAndView
 
 
 class TabSmallGenericView(QtGui.QWidget, Ui_tabGenericView):
@@ -30,18 +31,9 @@ class TabSmallGenericView(QtGui.QWidget, Ui_tabGenericView):
 
         self.controller = ControllerSmallGeneric(self.commands, self.channels)
 
-        self.headerLayout = QtGui.QHBoxLayout()
+        self.globalController = GlobalControllerAndView()
 
-        self.sendButton = QtGui.QPushButton("send now")
-        self.headerLayout.insertWidget(0, self.sendButton, 0)
-
-        self.cancelSendButton = QtGui.QPushButton("cancel")
-        self.headerLayout.insertWidget(1, self.cancelSendButton, 0)
-
-        self.headerLayout.insertStretch(2, 0)
-
-
-        self.commandViewLayout.insertLayout(0, self.headerLayout, 0)
+        self.commandViewLayout.insertWidget(0, self.globalController, 0)
 
         self.commandViewLayout.insertWidget(1, self.controller, 0)
 

@@ -16,6 +16,7 @@ class SymbolButton(QtGui.QGraphicsObject):
     RIGHT = 4
     SETTINGS = 5   
     OK = 6
+    PENDING = 7
 
     def __init__(self, symbol, parent=None):
         super(SymbolButton, self).__init__(parent)
@@ -24,7 +25,6 @@ class SymbolButton(QtGui.QGraphicsObject):
         self.drawBorder = True
 
         self.currentBackgroundBrush = None
-
 
         self.symbol = None
         
@@ -40,6 +40,8 @@ class SymbolButton(QtGui.QGraphicsObject):
             self.symbol = SettingsSymbol(parent=self)
         elif symbol == self.OK:
             self.symbol = OkSymbol(parent=self)
+        elif symbol == self.PENDING:
+            self.symbol = PendingSymbol(parent=self)
 
         self.symbol.setPos(0, 0)
 
@@ -79,6 +81,7 @@ class SymbolButton(QtGui.QGraphicsObject):
         # QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
 
         self.clicked.emit(QGraphicsSceneMouseEvent)
+
         self.clickReleaseTimer.start(50)
         self.update()
 
@@ -182,6 +185,43 @@ class OkSymbol(QtGui.QGraphicsItem):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
         QPainter.setPen(self.pen)
         QPainter.drawPath(self.path)
+
+    def boundingRect(self):
+        return QtCore.QRectF(0, 0, 25, 25)
+
+
+class PendingSymbol(QtGui.QGraphicsItem):
+    def __init__(self, parent=None):
+        super(PendingSymbol, self).__init__(parent)
+
+
+        self.pendingRect = QtCore.QRectF(0, 0, 25, 25)
+
+        self.grayPen = QtGui.QPen()
+        self.grayPen.setColor(QtCore.Qt.gray)
+
+        self.redPen = QtGui.QPen()
+        self.redPen.setColor(QtCore.Qt.red)
+
+        self.font =  QtGui.QFont("sans-serif", 12)
+        self.font.setBold(True)
+
+        self.currentPen = self.grayPen
+
+    def setToRed(self):
+        self.currentPen = self.redPen
+
+    def setToGray(self):
+        self.currentPen = self.grayPen
+
+    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
+        QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
+        QPainter.setPen(self.currentPen)
+
+        QPainter.setFont(self.font)
+        QPainter.drawText(self.pendingRect,
+                         QtCore.Qt.AlignCenter,
+                         QtCore.QString(u"P"))
 
     def boundingRect(self):
         return QtCore.QRectF(0, 0, 25, 25)

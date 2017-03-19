@@ -80,6 +80,8 @@ class Command(QtCore.QObject):
     valueChangedPerWidget = QtCore.pyqtSignal(object)
     minChangedPerWidget = QtCore.pyqtSignal(object)
     maxChangedPerWidget = QtCore.pyqtSignal(object)
+    pendingModeChanged = QtCore.pyqtSignal(object)
+    pendingValueCanceled = QtCore.pyqtSignal(object)
 
     # These signals allow the gui elements to signalize the user an uncommanded value change.
     commTimeOut = QtCore.pyqtSignal(object)
@@ -147,6 +149,10 @@ class Command(QtCore.QObject):
             raise ValueError("pending value {} out of allowed range {} - {} for command {}".format(
                 value, self._lowerLimit, self._upperLimit, self.name))
 
+    def clearPendingValue(self):
+        self._pendingValue = None
+        self.pendingValueCanceled.emit(self)
+
     def getLowerLimit(self):
         return self._lowerLimit
 
@@ -186,8 +192,12 @@ class Command(QtCore.QObject):
     def setPendingSendMode(self, value):
         if isinstance(value, bool):
             self._pendingSendMode = value
+
+            # clear a pending value if exists
             if value is False:
                 self._pendingValue = None
+
+            self.pendingModeChanged.emit(self)
 
     def getIsSelectedAsActive(self):
         return self._isSelectedAsActive

@@ -175,6 +175,7 @@ class GenericCommand(BaseCommand):
 
         # self.valueLineEdit.setText(str(self.command.getValue()))
         # self.valueLineEdit.setCursorPosition(0)
+        self.update()
 
     def valueEditingReturnPressed(self):
         self.valueLineEdit.selectAll()
@@ -252,6 +253,10 @@ class GenericCommand(BaseCommand):
             self.maxLineEdit.setText(str(self.command.getUpperLimit()))
             self.maxLineEdit.setCursorPosition(0)
             self.update()
+
+    def pendingModeChanged(self, command):
+        super(GenericCommand, self).pendingModeChanged(command)
+        self.pendingStateCheckbox.setChecked(self.command.getPendingSendMode())
 
     # overwrites method of super class
     def differentValueReceived(self):

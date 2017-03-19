@@ -48,26 +48,24 @@ class ControllerGeneric(QtGui.QGraphicsView):
 
         self.arrangeItems()
 
-        self.sendPendingCommandsButton = QtGui.QPushButton()
-        self.cancelPendingCommandsButton = QtGui.QPushButton()
+        # self.sendPendingCommandsButton = QtGui.QPushButton()
+        # self.cancelPendingCommandsButton = QtGui.QPushButton()
+        #
+        # self.sendPendingCommandsButtonProxy = self.scene.addWidget(self.sendPendingCommandsButton)
+        # self.sendPendingCommandsButton.setText("send now")
+        # self.sendPendingCommandsButton.clicked.connect(self.sendPendingCommands)
+        # self.sendPendingCommandsButton.setGeometry(10, 10, 80, 30)
+        #
+        # self.cancelPendingCommandsButtonProxy = self.scene.addWidget(self.cancelPendingCommandsButton)
+        # self.cancelPendingCommandsButton.setText("cancel")
+        # self.cancelPendingCommandsButton.clicked.connect(self.cancelPendingCommands)
+        # self.cancelPendingCommandsButton.setGeometry(100, 10, 80, 30)
 
-
-
-        self.sendPendingCommandsButtonProxy = self.scene.addWidget(self.sendPendingCommandsButton)
-        self.sendPendingCommandsButton.setText("send now")
-        self.sendPendingCommandsButton.clicked.connect(self.sendPendingCommands)
-        self.sendPendingCommandsButton.setGeometry(10, 10, 80, 30)
-
-        self.cancelPendingCommandsButtonProxy = self.scene.addWidget(self.cancelPendingCommandsButton)
-        self.cancelPendingCommandsButton.setText("cancel")
-        self.cancelPendingCommandsButton.clicked.connect(self.cancelPendingCommands)
-        self.cancelPendingCommandsButton.setGeometry(100, 10, 80, 30)
-
-    def sendPendingCommands(self):
-        self.commands.movePendingCommandsToSendList()
-
-    def cancelPendingCommands(self):
-        self.commands.cancelPendingCommands()
+    # def sendPendingCommands(self):
+    #     self.commands.movePendingCommandsToSendList()
+    #
+    # def cancelPendingCommands(self):
+    #     self.commands.cancelPendingCommands()
 
     def arrangeItems(self):
         """
@@ -97,7 +95,7 @@ class ControllerGeneric(QtGui.QGraphicsView):
                     column = 0
                     row += 1
                 positionX = column * item.width
-                positionY = row * item.height + 100
+                positionY = row * item.height # + 100
                 item.setPos(positionX, positionY)
                 column += 1
         else:

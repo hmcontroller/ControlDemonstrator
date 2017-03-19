@@ -35,6 +35,7 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.command.valueChangedPerWidget.connect(self.valueChangedPerWidget)
         self.command.minChangedPerWidget.connect(self.minChangedPerWidget)
         self.command.maxChangedPerWidget.connect(self.maxChangedPerWidget)
+        self.command.pendingModeChanged.connect(self.pendingModeChanged)
 
         # use these parameters to paint your warnings
         self.showHoverIndication = False
@@ -46,6 +47,7 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.command.sameValueReceived.connect(self.sameValueReceived)
         self.command.differentValueReceived.connect(self.differentValueReceived)
         self.command.commTimeOut.connect(self.commTimeOut)
+        self.command.pendingValueCanceled.connect(self.pendingValueCanceled)
 
         # here brushes are defined to give a constant look of all warnings
         self.userInputWarningBrush = QtGui.QBrush(USER_INPUT_WARNING_COLOR)
@@ -80,49 +82,64 @@ class BaseCommand(QtGui.QGraphicsObject):
 
     def activateUserInputWarning(self):
         self.showUserInputWarning = True
-        self.clearUserInputWarningTimer.start(self.userInputWarningDuration)
+        # self.clearUserInputWarningTimer.start(self.userInputWarningDuration)
+        self.update()
 
     def clearUserInputWarning(self):
         self.showUserInputWarning = False
+        self.update()
 
     def sameValueReceived(self):
         self.commFailureWarningBlinkTimer.stop()
         self.showCommFailureWarning = False
+        self.update()
 
     def differentValueReceived(self):
         self.differentValueReceivedWarningBlinkTimer.start(self.differentValueReceivedBlinkInterval)
         self.clearDifferentValueReceivedWarningTimer.start(self.differentValueReceivedWarningDuration)
+        self.update()
 
     def toggleDifferentValueReceivedWarningIndication(self):
         self.showDifferentValueReceivedWarning = not self.showDifferentValueReceivedWarning
+        self.update()
 
     def clearDifferentValueReceivedWarning(self):
         self.differentValueReceivedWarningBlinkTimer.stop()
         self.showDifferentValueReceivedWarning = False
+        self.update()
 
     def commTimeOut(self):
         self.commFailureWarningBlinkTimer.start(self.commFailureWarningBlinkInterval)
+        self.update()
 
     def toggleCommFailureIndication(self):
         self.showCommFailureWarning = not self.showCommFailureWarning
+        self.update()
 
     def valueChangedPerWidget(self, widgetInstance):
         """
         You must overwrite this method in your derived class.
         """
-        raise NotImplementedError("abstract method valueChangedPerWidget must be overwritten")
+        self.update()
+        # raise NotImplementedError("abstract method valueChangedPerWidget must be overwritten")
 
     def minChangedPerWidget(self, widgetInstance):
         """
         If needed, overwrite this method in your derived class.
         """
-        pass
+        self.update()
 
     def maxChangedPerWidget(self, widgetInstance):
         """
         If needed, overwrite this method in your derived class.
         """
-        pass
+        self.update()
+
+    def pendingModeChanged(self, command):
+        self.update()
+
+    def pendingValueCanceled(self, command):
+        self.update()
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         raise NotImplementedError("abstract method paint must be overwritten")

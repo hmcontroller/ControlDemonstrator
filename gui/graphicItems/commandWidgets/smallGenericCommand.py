@@ -19,7 +19,7 @@ class SmallGenericCommand(BaseCommand):
         super(SmallGenericCommand, self).__init__(command)
 
 
-        self.width = 400
+        self.width = 370
         self.height = 70
 
         self.hValueSpace = 100
@@ -39,6 +39,14 @@ class SmallGenericCommand(BaseCommand):
 
 
         self.valueLineEdit = self._layoutLineEdit(LineEditDoubleClickSpecial())
+
+        self.pendingButton = SymbolButton(SymbolButton.PENDING, parent=self)
+        self.pendingButton.setPos(50, self.editAreaHCenter - 0.5 * self.pendingButton.boundingRect().height())
+        self.pendingButton.clicked.connect(self.togglePendingMode)
+        if self.command.getPendingSendMode() is True:
+            self.pendingButton.symbol.setToRed()
+        self.pendingButton.drawBorder = False
+
         self.toggleButton = QtGui.QPushButton("1 -> 0")
         self.switchBox = QtGui.QCheckBox("1/0")
         self.switchBox.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -70,7 +78,7 @@ class SmallGenericCommand(BaseCommand):
         self.commandNameLabelRect = QtCore.QRectF(10, 0, self.width - 50, self.labelAreaHeight)
         self.inputLabelRect = QtCore.QRectF(10, self.labelAreaHeight, 50, self.editAreaHeight)
         self.pendingLabelRect = QtCore.QRectF(55, self.labelAreaHeight, 10, self.editAreaHeight)
-        self.returnLabelRect = QtCore.QRectF(230, self.labelAreaHeight, 50, self.editAreaHeight)
+        self.returnLabelRect = QtCore.QRectF(205, self.labelAreaHeight, 50, self.editAreaHeight)
         self.returnValueRect = QtCore.QRectF(self.width - 10 - self.hValueSpace,
                                              self.editAreaHCenter - 0.5 * self.vValueSpace,
                                              self.hValueSpace,
@@ -109,7 +117,19 @@ class SmallGenericCommand(BaseCommand):
         #                                      border-style: solid;
         #                                      border-color: black; }""")
 
+        self.userInputWarningStyleSheet = """.LineEditDoubleClickSpecial {
+                                             background-color: orange;
+                                             border: 1px solid black; }"""
 
+        self.normalStyleSheet = """.LineEditDoubleClickSpecial {
+                                   background-color: white;
+                                   border: 1px solid black; }"""
+
+        self.valuePendingStyleSheet = """.LineEditDoubleClickSpecial {
+                                         border: 3px solid red; }"""
+
+
+        self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
 
 
 
@@ -255,7 +275,7 @@ class SmallGenericCommand(BaseCommand):
         text = self.valueLineEdit.text()
         print "command given", text
 
-        # if nothing is in the textBox, the lower limit of the command will be set
+        # if nothing is in the textBox, the lower limit of the command will be set to the text box but not send
         if len(text) is 0:
             self.valueLineEdit.setText(str(self.command.getLowerLimit()))
             self.valueLineEdit.setCursorPosition(0)
@@ -278,6 +298,10 @@ class SmallGenericCommand(BaseCommand):
                 self.activateUserInputWarning()
             else:
                 self.command.setValue(number, self)
+                self.clearUserInputWarning()
+                if self.command.getPendingSendMode() is True:
+                    self.valueLineEdit.setStyleSheet(self.valuePendingStyleSheet)
+
 
         # TODO how to set color back to black
         # if self.command.getPendingSendMode() is True:
@@ -289,6 +313,7 @@ class SmallGenericCommand(BaseCommand):
         # self.valueLineEdit.setCursorPosition(0)
         self.valueLineEdit.selectAll()
 
+
     def valueChangedPerWidget(self, widgetInstance):
         pass
 
@@ -297,6 +322,23 @@ class SmallGenericCommand(BaseCommand):
 
     def maxChangedPerWidget(self, widgetInstance):
         pass
+
+    def togglePendingMode(self):
+        if self.command.getPendingSendMode() is True:
+            self.command.setPendingSendMode(False)
+            self.pendingButton.symbol.setToGray()
+        else:
+            self.command.setPendingSendMode(True)
+            self.pendingButton.symbol.setToRed()
+
+    def pendingModeChanged(self, command):
+        super(SmallGenericCommand, self).pendingModeChanged(command)
+        if self.command.getPendingSendMode() is False:
+            self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
+
+
+    def pendingValueCanceled(self, command):
+        self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
 
     def sameValueReceived(self):
         super(SmallGenericCommand, self).sameValueReceived()
@@ -321,6 +363,14 @@ class SmallGenericCommand(BaseCommand):
         # self.valueLineEdit.setText(str(self.command.getValue()))
         # self.valueLineEdit.setCursorPosition(0)
 
+    def activateUserInputWarning(self):
+        super(SmallGenericCommand, self).activateUserInputWarning()
+        self.valueLineEdit.setStyleSheet(self.userInputWarningStyleSheet)
+
+    def clearUserInputWarning(self):
+        super(SmallGenericCommand, self).clearUserInputWarning()
+        self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
+
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)
 
@@ -331,20 +381,21 @@ class SmallGenericCommand(BaseCommand):
         QPainter.fillPath(self.editAreaPath, self.editAreaBrush)
 
 
-        # draw a warning
-        if self.showUserInputWarning is True:
-            QPainter.fillPath(self.editAreaPath, self.userInputWarningBrush)
+        # # draw a warning
+        # if self.showUserInputWarning is True:
+        #     QPainter.fillPath(self.editAreaPath, self.userInputWarningBrush)
 
-        # draw a warning
-        if self.showCommFailureWarning is True:
-            QPainter.fillPath(self.editAreaPath, self.commFailureWarningBrush)
-
-        # draw this warning in front of all other colors
-        if self.showDifferentValueReceivedWarning is True:
-            QPainter.fillPath(self.editAreaPath, self.differentValueReceivedWarningBrush)
+        # # draw a warning
+        # if self.showCommFailureWarning is True:
+        #     QPainter.fillPath(self.editAreaPath, self.commFailureWarningBrush)
 
         # draw background of return value
         QPainter.fillPath(self.returnValueRectPath, QtGui.QBrush(QtGui.QColor(200, 200, 200)))
+
+        # draw a warning
+        if self.showDifferentValueReceivedWarning is True:
+            QPainter.fillRect(self.returnValueRect, self.differentValueReceivedWarningBrush)
+
 
         # draw return value
         QPainter.setFont(self.otherFont)
@@ -371,17 +422,17 @@ class SmallGenericCommand(BaseCommand):
                          QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                          QtCore.QString(u"Input"))
 
-        # draw pending mode indication
-        if self.command.getPendingSendMode() is True:
-            QPainter.setPen(self.pendingValuePen)
-        else:
-            QPainter.setPen(self.pendingValuePenGray)
-
-        QPainter.setFont(self.pendingIndicationFont)
-        QPainter.drawText(self.pendingLabelRect,
-                         QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-                         QtCore.QString(u"P"))
-        QPainter.setPen(self.blackPen)
+        # # draw pending mode indication
+        # if self.command.getPendingSendMode() is True:
+        #     QPainter.setPen(self.pendingValuePen)
+        # else:
+        #     QPainter.setPen(self.pendingValuePenGray)
+        #
+        # QPainter.setFont(self.pendingIndicationFont)
+        # QPainter.drawText(self.pendingLabelRect,
+        #                  QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
+        #                  QtCore.QString(u"P"))
+        # QPainter.setPen(self.blackPen)
 
 
         # # TODO very dirty hack here
