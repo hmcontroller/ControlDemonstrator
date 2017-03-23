@@ -16,7 +16,7 @@ class SymbolButton(QtGui.QGraphicsObject):
     RIGHT = 4
     SETTINGS = 5   
     OK = 6
-    PENDING = 7
+    TEXT = 7
 
     def __init__(self, symbol, parent=None):
         super(SymbolButton, self).__init__(parent)
@@ -40,8 +40,8 @@ class SymbolButton(QtGui.QGraphicsObject):
             self.symbol = SettingsSymbol(parent=self)
         elif symbol == self.OK:
             self.symbol = OkSymbol(parent=self)
-        elif symbol == self.PENDING:
-            self.symbol = PendingSymbol(parent=self)
+        elif symbol == self.TEXT:
+            self.symbol = TextSymbol(parent=self)
 
         self.symbol.setPos(0, 0)
 
@@ -53,7 +53,7 @@ class SymbolButton(QtGui.QGraphicsObject):
         self.borderPath.closeSubpath()
 
         self.borderPen = CABLE_PEN
-        
+
         self.normalBackgroundBrush = QtGui.QBrush(QtGui.QColor(200, 200, 200, 0))
         self.hoverBackgroundBrush = QtGui.QBrush(HOVER_COLOR)
         self.clickBackgroundBrush = QtGui.QBrush(MOUSE_DOWN_COLOR)
@@ -210,12 +210,14 @@ class PendingSymbol(QtGui.QGraphicsItem):
 
     def setToRed(self):
         self.currentPen = self.redPen
+        self.update()
 
     def setToGray(self):
         self.currentPen = self.grayPen
+        self.update()
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
+        # QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
         QPainter.setPen(self.currentPen)
 
         QPainter.setFont(self.font)
@@ -225,3 +227,46 @@ class PendingSymbol(QtGui.QGraphicsItem):
 
     def boundingRect(self):
         return QtCore.QRectF(0, 0, 25, 25)
+
+
+class TextSymbol(QtGui.QGraphicsItem):
+    def __init__(self, parent=None):
+        super(TextSymbol, self).__init__(parent)
+
+
+        self.textRect = QtCore.QRectF(0, 0, 25, 25)
+
+        self.font =  QtGui.QFont("sans-serif", 12)
+        self.font.setBold(True)
+        self.pen = QtGui.QPen(QtCore.Qt.black)
+        self.text = u"0"
+
+    def setText(self, text):
+        self.text = text
+        self.update()
+
+    def currentText(self):
+        return self.text
+
+    def setColor(self, color):
+        self.pen = QtGui.QPen(color)
+
+    def setFont(self, font):
+        self.font = font
+        self.font.setBold(True)
+
+    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
+        QPainter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+        QPainter.setPen(self.pen)
+        QPainter.setFont(self.font)
+
+        QPainter.drawText(self.textRect,
+                         QtCore.Qt.AlignCenter,
+                         QtCore.QString(self.text))
+
+    def boundingRect(self):
+        return QtCore.QRectF(0, 0, 25, 25)
+
+
+

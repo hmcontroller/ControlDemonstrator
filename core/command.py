@@ -4,6 +4,7 @@ from collections import deque
 
 from PyQt4 import QtCore
 
+
 # TODO make a good list inheritance
 class CommandList(QtCore.QObject):
     def __init__(self):
@@ -35,18 +36,18 @@ class CommandList(QtCore.QObject):
         else:
             self.changedCommands.append(command)
 
-    def movePendingCommandsToSendList(self):
+    def sendPendingCommands(self):
         while len(self.pendingCommands) > 0:
             cmd = self.pendingCommands.popleft()
             if cmd._pendingValue is not None:
                 cmd._value = cmd._pendingValue
-                cmd._pendingValue = None
+                cmd.clearPendingValue()
                 self.changedCommands.append(cmd)
 
     def cancelPendingCommands(self):
         while len(self.pendingCommands) > 0:
             cmd = self.pendingCommands.pop()
-            cmd._pendingValue = None
+            cmd.clearPendingValue()
 
     def __len__(self):
         return len(self.cmdList)
@@ -247,4 +248,16 @@ class CommandConfirmation():
         self.id = None
         self.returnValue = 0.0
         self.timeOfReceive = None
+
+
+
+class CommandProto(QtCore.QObject):
+    def __init__(self):
+        super(CommandProto, self).__init__()
+
+        self.id = None
+        self.value = 0.0
+        self.pendingSendMode = False
+        self.commandTypeId = None
+
 

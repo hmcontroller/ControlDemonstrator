@@ -33,25 +33,53 @@ class SmallGenericCommand(BaseCommand):
         self.commandNameFont = QtGui.QFont("sans-serif", 12, QtGui.QFont.Bold)
         self.otherFont = QtGui.QFont("sans-serif", 12)
         self.redFont = QtGui.QFont("sans-serif", 12)
-        self.pendingIndicationFont = QtGui.QFont("sans-serif", 12)
-        self.pendingIndicationFont.setBold(True)
+
         self.blackPen = QtGui.QPen(QtCore.Qt.black)
 
 
         self.valueLineEdit = self._layoutLineEdit(LineEditDoubleClickSpecial())
 
-        self.pendingButton = SymbolButton(SymbolButton.PENDING, parent=self)
-        self.pendingButton.setPos(50, self.editAreaHCenter - 0.5 * self.pendingButton.boundingRect().height())
+        self.pendingButton = SymbolButton(SymbolButton.TEXT, parent=self)
+        self.pendingButton.setPos(55, self.editAreaHCenter - 0.5 * self.pendingButton.boundingRect().height())
         self.pendingButton.clicked.connect(self.togglePendingMode)
         if self.command.getPendingSendMode() is True:
-            self.pendingButton.symbol.setToRed()
+            self.pendingButton.symbol.setColor(QtCore.Qt.red)
+        else:
+            self.pendingButton.symbol.setColor(QtCore.Qt.darkGray)
         self.pendingButton.drawBorder = False
+        self.pendingButton.symbol.setText(u"P")
 
-        self.toggleButton = QtGui.QPushButton("1 -> 0")
-        self.switchBox = QtGui.QCheckBox("1/0")
-        self.switchBox.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.switchBox.setFont(self.otherFont)
-        # self.switchBox.setStyleSheet(""".QCheckBox.indicator{ width:25px; height: 25px; } """)
+
+
+        self.toggleButton = SymbolButton(SymbolButton.TEXT, parent=self)
+        self.toggleButton.setPos(85, self.editAreaHCenter - 0.5 * self.pendingButton.boundingRect().height())
+        self.toggleButton.clicked.connect(self.switchToOneAndThenToZero)
+        self.toggleButton.symbol.setText(u"T")
+        self.toggleButton.hide()
+        # self.toggleButton.drawBorder = False
+
+        borderPen = QtGui.QPen()
+        borderPen.setColor(QtGui.QColor(0, 0, 0))
+        borderPen.setCosmetic(True)
+        borderPen.setWidth(1)
+        self.toggleButton.borderPen = borderPen
+
+
+
+        self.switchButton = SymbolButton(SymbolButton.TEXT, parent=self)
+        self.switchButton.setPos(85, self.editAreaHCenter - 0.5 * self.switchButton.boundingRect().height())
+        self.switchButton.clicked.connect(self.toggleOneAndZero)
+        self.switchButton.hide()
+        # self.switchButton.drawBorder = False
+        self.switchButton.borderPen = borderPen
+
+
+        self.switchBoxState = False
+        self.switchButton.symbol.setText(u"0")
+        if self.command.valueOfLastResponse > 0.5:
+            self.switchBoxState = True
+            self.switchButton.symbol.setText(u"1")
+
 
 
 
@@ -61,17 +89,6 @@ class SmallGenericCommand(BaseCommand):
 
         self.valueLineEditProxy = QtGui.QGraphicsProxyWidget(self)
         self.valueLineEditProxy.setWidget(self.valueLineEdit)
-
-        self.toggleButtonProxy = QtGui.QGraphicsProxyWidget(self)
-        self.toggleButtonProxy.setWidget(self.toggleButton)
-
-        self.switchBoxProxy = QtGui.QGraphicsProxyWidget(self)
-        self.switchBoxProxy.setWidget(self.switchBox)
-
-
-        # self.returnValueDisplayProxy = QtGui.QGraphicsProxyWidget(self)
-        # self.returnValueDisplayProxy.setWidget(self.returnValueDisplay)
-
 
 
 
@@ -85,7 +102,7 @@ class SmallGenericCommand(BaseCommand):
                                              self.vValueSpace)
 
 
-        self.valueLineEdit.move(75, self.editAreaHCenter - 0.5 * self.valueLineEdit.height())
+        self.valueLineEdit.move(85, self.editAreaHCenter - 0.5 * self.valueLineEdit.height())
         self.valueLineEditValidator = FloatValidator()
         self.valueLineEdit.setValidator(self.valueLineEditValidator)
         self.valueLineEdit.setText(str(self.command.getValue()))
@@ -93,29 +110,7 @@ class SmallGenericCommand(BaseCommand):
         self.valueLineEdit.returnPressed.connect(self.valueEditingReturnPressed)
         self.valueLineEdit.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
-        self.toggleButton.setGeometry(70, self.editAreaHCenter - 0.3 * self.editAreaHeight,
-                                      100, 0.6 * self.editAreaHeight)
-        self.toggleButton.clicked.connect(self.switchToOneAndThenToZero)
-        self.toggleButton.hide()
 
-
-        self.switchBox.setGeometry(70, self.editAreaHCenter - 0.3 * self.editAreaHeight,
-                                      100, 0.6 * self.editAreaHeight)
-
-        if self.command.getValue() > 0.5:
-            self.switchBox.setChecked(True)
-        else:
-            self.switchBox.setChecked(False)
-        self.switchBox.stateChanged.connect(self.toggleOneAndZero)
-        self.switchBox.hide()
-
-        # self.returnValueDisplay.move(self.width - 10 - self.returnValueDisplay.width(),
-        #                              self.editAreaHCenter - 0.5 * self.valueLineEdit.height())
-        # self.returnValueDisplay.setText(str(self.command.getValue()))
-        # self.returnValueDisplay.setStyleSheet(
-        #     """.LineEditDoubleClickSpecial { background-color: lightgray;
-        #                                      border-style: solid;
-        #                                      border-color: black; }""")
 
         self.userInputWarningStyleSheet = """.LineEditDoubleClickSpecial {
                                              background-color: orange;
@@ -191,18 +186,21 @@ class SmallGenericCommand(BaseCommand):
 
     def switchToOneAndThenToZero(self):
         self.command.setValue(1.0)
+        self.toggleButton.symbol.setText(u"1")
         self.littleTimer.start(100)
 
     def switchToZero(self):
         self.command.setValue(0.0)
+        self.toggleButton.symbol.setText(u"T")
 
     def toggleOneAndZero(self):
-        newState = self.switchBox.checkState()
-
-        if newState > 0:
+        if self.switchBoxState is False:
             self.command.setValue(1.0)
+            self.switchButton.symbol.setText(u"1")
         else:
             self.command.setValue(0.0)
+            self.switchButton.symbol.setText(u"0")
+        self.switchBoxState = not self.switchBoxState
 
     def showSettingsWindow(self):
         self.settingsWindow.lineEditDisplayName.setText(self.command.displayName)
@@ -213,7 +211,7 @@ class SmallGenericCommand(BaseCommand):
             self.settingsWindow.radioButtonValueMode.setChecked(True)
         elif self.toggleButton.isVisible():
             self.settingsWindow.radioButtonToggleMode.setChecked(True)
-        elif self.switchBox.isVisible():
+        elif self.switchButton.isVisible():
             self.settingsWindow.radioButtonSwitchMode.setChecked(True)
 
         self.settingsWindow.checkBoxPendingMode.setChecked(self.command.getPendingSendMode())
@@ -228,11 +226,11 @@ class SmallGenericCommand(BaseCommand):
 
         self.valueLineEdit.hide()
         self.toggleButton.hide()
-        self.switchBox.hide()
+        self.switchButton.hide()
         if self.settingsWindow.radioButtonValueMode.isChecked() is True:
             self.valueLineEdit.show()
         if self.settingsWindow.radioButtonSwitchMode.isChecked() is True:
-            self.switchBox.show()
+            self.switchButton.show()
         if self.settingsWindow.radioButtonToggleMode.isChecked() is True:
             self.toggleButton.show()
 
@@ -326,16 +324,16 @@ class SmallGenericCommand(BaseCommand):
     def togglePendingMode(self):
         if self.command.getPendingSendMode() is True:
             self.command.setPendingSendMode(False)
-            self.pendingButton.symbol.setToGray()
         else:
             self.command.setPendingSendMode(True)
-            self.pendingButton.symbol.setToRed()
 
     def pendingModeChanged(self, command):
         super(SmallGenericCommand, self).pendingModeChanged(command)
         if self.command.getPendingSendMode() is False:
             self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
-
+            self.pendingButton.symbol.setColor(QtCore.Qt.darkGray)
+        else:
+            self.pendingButton.symbol.setColor(QtCore.Qt.red)
 
     def pendingValueCanceled(self, command):
         self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
@@ -416,32 +414,13 @@ class SmallGenericCommand(BaseCommand):
                              QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                              QtCore.QString(self.command.name))
 
-        # draw some text
+        # draw input label
         QPainter.setFont(self.otherFont)
         QPainter.drawText(self.inputLabelRect,
                          QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                          QtCore.QString(u"Input"))
 
-        # # draw pending mode indication
-        # if self.command.getPendingSendMode() is True:
-        #     QPainter.setPen(self.pendingValuePen)
-        # else:
-        #     QPainter.setPen(self.pendingValuePenGray)
-        #
-        # QPainter.setFont(self.pendingIndicationFont)
-        # QPainter.drawText(self.pendingLabelRect,
-        #                  QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-        #                  QtCore.QString(u"P"))
-        # QPainter.setPen(self.blackPen)
-
-
-        # # TODO very dirty hack here
-        # self.returnValueDisplay.setText(str(self.command.valueOfLastResponse))
-        # self.returnValueDisplay.setCursorPosition(0)
-
-
-
-        # draw some text
+        # draw return value label
         QPainter.setFont(self.otherFont)
         QPainter.drawText(self.returnLabelRect,
                          QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,

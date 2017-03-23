@@ -1,5 +1,13 @@
 # -*- encoding: utf-8 -*-
 
+class CommandArguments(object):
+    def __init__(self):
+        self.value = None
+        self.min = None
+        self.max = None
+        self.name = None
+        self.pendingMode = None
+
 
 class CommandArgument(object):
 
@@ -13,6 +21,7 @@ class CommandArgument(object):
         self.uninterpretedValue = None
         self.dataType = dataType
         self.setterMethod = setterMethod
+
 
 AVAILABLE_COMMAND_ARGUMENTS = {
     "value": CommandArgument("value", None, float, "setValueWithLimitsAdaptation"),

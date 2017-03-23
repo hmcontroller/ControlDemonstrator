@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-from core.commandArgument import CommandArgument
+from core.commandArgument import CommandArgument, CommandArguments
 from core.commandArgument import AVAILABLE_COMMAND_ARGUMENTS
 
 class CommandArgumentsParser(object):
@@ -76,10 +76,13 @@ class CommandArgumentsParser(object):
                     raise Exception("Command has no attribute named {}".format(arg.attributeName))
             else:
                 if hasattr(self.command, arg.setterMethod):
-                    getattr(self.command, arg.setterMethod)(arg.value)
+                    method = getattr(self.command, arg.setterMethod)
+                    method(arg.value)
                 else:
                     raise Exception("Command has no setter method named {}".format(arg.setterMethod))
         return self.command
 
+    def createCommandArgumentsObject(self):
+        args = CommandArguments()
 
 

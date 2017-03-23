@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'globalControllerAndView.ui'
 #
-# Created: Sun Mar 19 07:12:55 2017
+# Created: Thu Mar 23 20:30:35 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -62,8 +62,7 @@ class Ui_GlobalControllerAndView(object):
         self.horizontalLayout_3.addWidget(self.commLabel)
         self.horizontalLayout_4.addLayout(self.horizontalLayout_3)
         self.horizontalLayout_5.addWidget(self.commGroupBox)
-        self.messageTextEdit = QtGui.QPlainTextEdit(GlobalControllerAndView)
-        self.messageTextEdit.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
+        self.messageTextEdit = QtGui.QTextEdit(GlobalControllerAndView)
         self.messageTextEdit.setObjectName(_fromUtf8("messageTextEdit"))
         self.horizontalLayout_5.addWidget(self.messageTextEdit)
         self.horizontalLayout_6.addLayout(self.horizontalLayout_5)

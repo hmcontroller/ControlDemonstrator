@@ -16,7 +16,6 @@ MOUSE_DOWN_COLOR = QtGui.QColor(150, 150, 150)
 
 PENDING_VALUE_COLOR = QtGui.QColor(210, 0, 0)
 
-# TODO unused
 CABLE_PEN = QtGui.QPen()
 CABLE_PEN.setColor(QtGui.QColor(0, 0, 0))
 CABLE_PEN.setCosmetic(True)

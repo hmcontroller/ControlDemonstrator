@@ -101,7 +101,7 @@ def findHIDDevice(mbed_usage, mbed_vendor_id):
 
                         buffer = list()
                         buffer.append(0)
-                        for i in range(1, 65):
+                        for i in range(1, 9):
                             buffer.append(i-1)
 
                         print report

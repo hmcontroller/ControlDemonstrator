@@ -54,6 +54,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         self.communicator = UdpCommunicator(self.settings)
         self.communicator.setMessageMap(self.messageFormat)
+        self.communicator.connectToController()
 
         # # add a tab for the waterLineExperiment
         self.tabWaterLineExperiment = TabWaterLineExperiment(self.commands, self.channels, self.settings)
@@ -64,7 +65,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.tabGenericViewLayout.addWidget(self.tabGeneric)
 
         # add a tab for small generic control
-        self.tabGeneric = TabSmallGenericView(self.commands, self.channels, self.settings)
+        self.tabGeneric = TabSmallGenericView(self.commands, self.channels, self.settings, self.communicator)
         self.tabSmallGenericViewLayout.addWidget(self.tabGeneric)
 
         # setup a timer, that triggers to read from the controller

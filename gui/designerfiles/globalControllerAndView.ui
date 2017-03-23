@@ -80,11 +80,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPlainTextEdit" name="messageTextEdit">
-       <property name="textInteractionFlags">
-        <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-       </property>
-      </widget>
+      <widget class="QTextEdit" name="messageTextEdit"/>
      </item>
     </layout>
    </item>
