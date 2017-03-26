@@ -12,8 +12,8 @@ import ConfigParser
 import json
 
 P_CONFIG_FILE_PATH = "config.txt"
-C_CONFIG_FILE_HEADER_PATH = "config.h"
-C_CONFIG_FILE_CPP_PATH = "config.cpp"
+C_FILE_HEADER_PATH = "controlDemonstrator.h"
+C_FILE_CPP_PATH = "controlDemonstrator.cpp"
 
 
 
@@ -30,14 +30,17 @@ def run():
 
     availableChannels = list()
     for i, section in enumerate(config.options('availableChannels')):
-        availableChannels.append(section)
+        availableChannels.append((i, section))
     availableChannelsCount = len(availableChannels)
 
     requestedChannels = list()
     for i, section in enumerate(config.options('requestedChannels')):
-        if section in availableChannels:
-            requestedChannels.append(section)
-        else:
+        foundOne = False
+        for channel in availableChannels:
+            if section == channel[1]:
+                requestedChannels.append(channel)
+                foundOne = True
+        if foundOne is False:
             raise Exception("channel {} not available".format(section))
     requestedChannelCount = len(requestedChannels)
 
@@ -61,10 +64,10 @@ def run():
 
 
 
-    # now put all defines in the new file C_CONFIG_FILE_HEADER_PATH, will be overwritten
-    # and all variables in C_CONFIG_FILE_CPP_PATH
+    # now put all defines in the new file C_FILE_HEADER_PATH, will be overwritten
+    # and all variables in C_FILE_CPP_PATH
 
-    with open(C_CONFIG_FILE_HEADER_PATH, "w") as f:
+    with open(C_FILE_HEADER_PATH, "w") as f:
         # include guard
         f.write("#ifndef CONFIG_H\n"
                 "#define CONFIG_H\n")
@@ -81,12 +84,15 @@ def run():
             "REQUESTED_CHANNEL_COUNT", requestedChannelCount, nameWidth=nameWidth, valueWidth=valueWidth))
 
         f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "AVAILABLE_PARAMETER_COUNT", availableParameterCount, nameWidth=nameWidth, valueWidth=valueWidth))
-        f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "REQUESTED_PARAMETER_COUNT", requestedParameterCount, nameWidth=nameWidth, valueWidth=valueWidth))
+            "PARAMETER_COUNT", availableParameterCount, nameWidth=nameWidth, valueWidth=valueWidth))
+        # f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+        #     "REQUESTED_PARAMETER_COUNT", requestedParameterCount, nameWidth=nameWidth, valueWidth=valueWidth))
 
         f.write("\n")
 
+        # mark variables defined in the cpp file as extern
+        f.write("extern int channels[REQUESTED_CHANNEL_COUNT];\n\n")
+        f.write("extern int parameters[PARAMETER_COUNT];\n\n")
 
         # all available channels
         f.write('// All available channels\n' +
@@ -96,8 +102,9 @@ def run():
                 '// On the controller all values are stored in "float channels[AVAILABLE_CHANNEL_COUNT]."\n'
                 )
         for i, param in enumerate(availableChannels):
+            macro = "(channels[{}])".format(i)
             f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-                param, i, nameWidth=nameWidth, valueWidth=valueWidth))
+                param[1], macro, nameWidth=nameWidth, valueWidth=valueWidth))
         f.write("\n")
 
         # all available parameters
@@ -108,21 +115,19 @@ def run():
                 '// On the controller all values are stored in "float parameters[AVAILABLE_PARAMETER_COUNT]."\n'
                 )
         for i, param in enumerate(availableParameters):
+            macro = "(parameters[{}])".format(i)
             f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-                param, i, nameWidth=nameWidth, valueWidth=valueWidth))
+                param, macro, nameWidth=nameWidth, valueWidth=valueWidth))
         f.write("\n")
 
 
-        # mark variables defined in the cpp file as extern
-        f.write("extern int requestedChannels[REQUESTED_CHANNEL_COUNT];\n")
-        f.write("extern int requestedParameters[REQUESTED_PARAMETER_COUNT];\n")
 
         # include guard end
         f.write("#endif")
 
 
 
-    with open(C_CONFIG_FILE_CPP_PATH, "w") as f:
+    with open(C_FILE_CPP_PATH, "w") as f:
         #
         f.write('#include "config.h"\n')
 
@@ -130,8 +135,8 @@ def run():
         f.write("// Channel values that will be send to the pc at every loop cycle\n")
         f.write("int requestedChannels[REQUESTED_CHANNEL_COUNT] = {\n")
         tString = ""
-        for i, param in enumerate(requestedChannels):
-            tString += "    {},\n".format(param)
+        for channel in requestedChannels:
+            tString += "    {},\n".format(channel[0])
         tString = tString.rstrip(",\n")
         tString += "\n"
         f.write(tString)
@@ -143,7 +148,7 @@ def run():
         f.write("int requestedParameters[REQUESTED_PARAMETER_COUNT] = {\n")
         tString = ""
         for i, param in enumerate(requestedParameters):
-            tString += "    {},\n".format(param)
+            tString += "    {},\n".format(i)
         tString = tString.rstrip(",\n")
         tString += "\n"
         f.write(tString)

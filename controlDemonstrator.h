@@ -5,8 +5,9 @@
 #define LOOP_CYCLE_TIME_US                         5000
 #define AVAILABLE_CHANNEL_COUNT                      32
 #define REQUESTED_CHANNEL_COUNT                       9
-#define AVAILABLE_PARAMETER_COUNT                    62
-#define REQUESTED_PARAMETER_COUNT                    56
+#define PARAMETER_COUNT                              62
+
+extern int requestedChannels[REQUESTED_CHANNEL_COUNT];
 
 // All available channels
 // Define names for parameters, that can be send to the connected pc.
@@ -114,6 +115,4 @@
 #define SP_GEN2_RAMP_HIGH                        (parameters[60])
 #define PID1_SENSOR_SOURCE                       (parameters[61])
 
-extern int requestedChannels[REQUESTED_CHANNEL_COUNT];
-extern int requestedParameters[REQUESTED_PARAMETER_COUNT];
 #endif

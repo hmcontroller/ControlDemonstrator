@@ -26,13 +26,16 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
             QLabel { color: red; font-weight: bold; }
             """
 
+        self.commStateChanged(self.communicator._commState)
+
     def commStateChanged(self, commState):
         if commState.communicationEstablished:
             self.commLabel.setText(u"Comm OK")
             self.commLabel.setStyleSheet(self.commOkStyleSheet)
-        if commState.communicationEstablished is False:
+        else:
             self.commLabel.setText(u"Comm FAILURE")
             self.commLabel.setStyleSheet(self.commFailureStyleSheet)
+
         if commState.commTimeOut is True:
             self.commLabel.setText(u"Comm TIMEOUT")
             self.commLabel.setStyleSheet(self.commFailureStyleSheet)

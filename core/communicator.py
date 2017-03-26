@@ -143,7 +143,7 @@ class UdpCommunicator(Communicator):
         except socket.error, e:
             if e.args[0] == 10049:
                 self.pauseCommunication()
-                self.commStateChanged(self._commState)
+                self.commStateChanged.emit(self._commState)
 
     def send(self, commandList):
         if len(commandList.changedCommands) > 0 \
