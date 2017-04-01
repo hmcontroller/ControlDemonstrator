@@ -14,8 +14,14 @@ import json
 P_CONFIG_FILE_PATH = "config.txt"
 C_FILE_HEADER_PATH = "controlDemonstrator.h"
 C_FILE_CPP_PATH = "controlDemonstrator.cpp"
+C_HEADER_TEMPLATE = "c_template.h"
+C_C_TEMPLATE = "c_template.c"
 
-
+AVAILABLE_FRAMEWORKS = {
+    "mbed_2_udp": "MBED_2_UDP",
+    "mbed_OS_udp": "MBED_OS_UDP",
+    "arduino_udp": "ARDUINO_UDP"
+}
 
 def run():
     nameWidth = 40
@@ -25,6 +31,12 @@ def run():
     config = ConfigParser.SafeConfigParser(allow_no_value=True)
     config.optionxform = str
     config.read(P_CONFIG_FILE_PATH)
+
+    frameworkAndInterface = config.get("misc", "microcontrollerFrameworkAndInterface")
+    if not frameworkAndInterface in AVAILABLE_FRAMEWORKS:
+        availables = ", ".join(AVAILABLE_FRAMEWORKS.iterkeys())
+        raise Exception("please specify a framework out of the following list: {}".format(availables))
+    # interface = config.get("misc", "commInterface")
 
     loopCycleTime = config.getint("misc", "loopCycleTimeUS")
 
@@ -73,6 +85,9 @@ def run():
                 "#define CONFIG_H\n")
         f.write("\n")
 
+        #
+        f.write("#define {}\n\n".format(AVAILABLE_FRAMEWORKS[frameworkAndInterface]))
+
         # some important variables here
         f.write("// must have parameters\n")
         f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
@@ -90,9 +105,9 @@ def run():
 
         f.write("\n")
 
-        # mark variables defined in the cpp file as extern
-        f.write("extern int channels[REQUESTED_CHANNEL_COUNT];\n\n")
-        f.write("extern int parameters[PARAMETER_COUNT];\n\n")
+        # # mark variables defined in the cpp file as extern
+        # f.write("extern int channels[REQUESTED_CHANNEL_COUNT];\n\n")
+        # f.write("extern int parameters[PARAMETER_COUNT];\n\n")
 
         # all available channels
         f.write('// All available channels\n' +
@@ -120,7 +135,12 @@ def run():
                 param, macro, nameWidth=nameWidth, valueWidth=valueWidth))
         f.write("\n")
 
-
+        with open(C_HEADER_TEMPLATE, "r") as headerTemplate:
+            lines = headerTemplate.readlines()
+        wholeText = "".join(lines)
+        f.write(wholeText)
+        f.write("\n")
+        f.write("\n")
 
         # include guard end
         f.write("#endif")
@@ -129,7 +149,7 @@ def run():
 
     with open(C_FILE_CPP_PATH, "w") as f:
         #
-        f.write('#include "config.h"\n')
+        f.write('#include "controlDemonstrator.h"\n\n')
 
         # channel mapping
         f.write("// Channel values that will be send to the pc at every loop cycle\n")
@@ -143,17 +163,10 @@ def run():
         f.write("};\n")
         f.write("\n")
 
-        # controlledParameter mapping
-        f.write("// Parameters that can be set from the pc.\n")
-        f.write("int requestedParameters[REQUESTED_PARAMETER_COUNT] = {\n")
-        tString = ""
-        for i, param in enumerate(requestedParameters):
-            tString += "    {},\n".format(i)
-        tString = tString.rstrip(",\n")
-        tString += "\n"
-        f.write(tString)
-        f.write("};\n")
-        f.write("\n")
+        with open(C_C_TEMPLATE, "r") as cTemplate:
+            lines = cTemplate.readlines()
+        wholeText = "".join(lines)
+        f.write(wholeText)
 
 
 if __name__ == "__main__":

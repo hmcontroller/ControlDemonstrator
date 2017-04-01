@@ -1,18 +1,3 @@
-#include "controlDemonstrator.h"
-
-// Channel values that will be send to the pc at every loop cycle
-int requestedChannels[REQUESTED_CHANNEL_COUNT] = {
-    2,
-    3,
-    6,
-    13,
-    25,
-    29,
-    30,
-    31,
-    21
-};
-
 #ifdef ARDUINO_UDP
 
 #include <SPI.h>

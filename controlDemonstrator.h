@@ -1,13 +1,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define ARDUINO_UDP
+
 // must have parameters
 #define LOOP_CYCLE_TIME_US                         5000
 #define AVAILABLE_CHANNEL_COUNT                      32
 #define REQUESTED_CHANNEL_COUNT                       9
 #define PARAMETER_COUNT                              62
-
-extern int requestedChannels[REQUESTED_CHANNEL_COUNT];
 
 // All available channels
 // Define names for parameters, that can be send to the connected pc.
@@ -114,5 +114,29 @@ extern int requestedChannels[REQUESTED_CHANNEL_COUNT];
 #define SP_GEN2_RAMP_LOW                         (parameters[59])
 #define SP_GEN2_RAMP_HIGH                        (parameters[60])
 #define PID1_SENSOR_SOURCE                       (parameters[61])
+
+void initControlDemonstrator();
+void communicate();
+
+// storage for channels
+extern float channels[AVAILABLE_CHANNEL_COUNT];
+
+// storage for parameters, that could be set from the pc
+extern float parameters[PARAMETER_COUNT];
+
+typedef struct MessageOut
+{
+    int loopStartTime;
+    int lastLoopDuration;
+    int parameterNumber;
+    float parameterValue;
+    float channels[REQUESTED_CHANNEL_COUNT];
+} MessageOut;
+
+typedef struct MessageIn
+{
+    int parameterNumber;
+    float value;
+} MessageIn;
 
 #endif
