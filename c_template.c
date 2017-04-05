@@ -32,7 +32,7 @@ SocketAddress dump_address(SERVER_IP, PORT);
 
 Timer dutyCycleTimer;
 Timer debugTimer;
-//Serial pcSerialPort(USBTX, USBRX);
+Serial pcSerialPort(USBTX, USBRX);
 
 DigitalOut greenLed(LED1);
 DigitalOut blueLed(LED2);
@@ -47,8 +47,8 @@ void receiveMessage();
 
 unsigned long lastTime = 0;
 
-// storage for channels
-float channels[AVAILABLE_CHANNEL_COUNT] = {0.0f};
+// storage for unrequested channels
+float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
 
 // storage for parameters, that could be set from the pc
 float parameters[PARAMETER_COUNT] = {0.0f};
@@ -110,17 +110,14 @@ void initControlDemonstrator() {
 
 void prepareOutMessage()
 {
-    // map channels
-    int i;
-    for (i = 0; i < REQUESTED_CHANNEL_COUNT; i++)
-    {
-        messageOutBuffer.channels[i] = channels[requestedChannels[i]];
-    }
-
     // now overwrite messageOutBuffer.loopStartTime with the actual loop start time
+
+#ifdef ARDUINO_UDP
     messageOutBuffer.loopStartTime = micros();
-
-
+#elif defined(MBED_OS_UDP)
+    messageOutBuffer.loopStartTime = dutyCycleTimer.read_us();
+#else
+#endif
 
     // TODO - check what happens on timer overflow (after approx. 30min)
 
@@ -157,7 +154,7 @@ void sendMessage()
     Udp.beginPacket(remoteIp, port);
     Udp.write((char *)&messageOutBuffer, sizeof(messageOutBuffer));
     Udp.endPacket();
-    SEND_TIMER = (float)(micros() - lastTime);
+    sendTimer = (float)(micros() - lastTime);
 }
 #elif defined(ARDUINO_SERIAL)
 void sendMessage() {
@@ -195,16 +192,11 @@ void receiveMessage() {
     if (availableBytes > 0) {
         Udp.read((char *)&messageInBuffer, sizeof(messageInBuffer));
         parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
-        // for debugging
-        LAST_COMMAND_ID = messageInBuffer.parameterNumber;
-        LAST_COMMAND_VALUE = messageInBuffer.value;
     }
     else {
     }
 
-    // for debugging
-    LAST_COMMAND_FROM_ARRAY_VALUE = parameters[messageInBuffer.parameterNumber];
-    RECEIVE_TIMER = (float)(micros() - lastTime);
+    receiveTimer = (float)(micros() - lastTime);
 }
 #elif defined(ARDUINO_SERIAL)
 void receiveMessage() {
@@ -236,9 +228,6 @@ void receiveMessage() {
         // red led on until next loop cycle
         redLed = 1;
     }
-
-    // for debugging
-    LAST_COMMAND_FROM_ARRAY_VALUE = parameters[messageInBuffer.parameterNumber];
 
     #ifdef DEBUG
     pcSerialPort.printf("RECV: %f %d %f\n", RECEIVED_BYTES_COUNT, messageInBuffer.parameterNumber, messageInBuffer.value);

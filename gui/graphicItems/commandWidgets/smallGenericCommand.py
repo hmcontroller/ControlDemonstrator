@@ -405,7 +405,7 @@ class SmallGenericCommand(BaseCommand):
 
         # draw the command name
         QPainter.setFont(self.commandNameFont)
-        if self.command.displayName is not None:
+        if len(self.command.displayName) > 0:
             QPainter.drawText(self.commandNameLabelRect,
                              QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                              QtCore.QString(self.command.displayName))

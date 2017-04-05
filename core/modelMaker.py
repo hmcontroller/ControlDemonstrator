@@ -18,22 +18,30 @@ class ModelMaker():
         self.config.optionxform = str
         self.config.read(self.configFilePath)
 
+    def getTabs(self):
+        tabs = list()
+        tabEntries = self.config.options('tabs')
+        for tabEntry in tabEntries:
+            options = self.config.get("tabs", tabEntry)
+            tabs.append((tabEntry, options))
+
+        return tabs
+
     def getCommands(self):
         commandList = CommandList()
 
         settings = self.getApplicationSettings()
 
-        availableParameters = self.config.options('availableParameters')
+        parameters = self.config.options('parameters')
 
-        requestedParameters = self.config.options('requestedParameters')
 
-        for i, name in enumerate(availableParameters):
+        for i, name in enumerate(parameters):
 
             cmd = Command()
             cmd.id = i
             cmd.name = name
 
-            if cmd.name in requestedParameters:
+            if cmd.name in parameters:
                 cmd.setIsSelectedAsActive(True)
 
             # cmd.displayName = args.displayName
@@ -45,7 +53,7 @@ class ModelMaker():
             commandList.append(cmd)
 
             try:
-                argsString = self.config.get("requestedParameters", name)
+                argsString = self.config.get("parameters", name)
                 cmd.rawArgumentString = argsString
                 parser = CommandArgumentsParser(cmd)
                 cmd = parser.setCommandAttributesFromConfigFileArguments()

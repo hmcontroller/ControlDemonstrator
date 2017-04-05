@@ -56,19 +56,26 @@ def run():
             raise Exception("channel {} not available".format(section))
     requestedChannelCount = len(requestedChannels)
 
+    unrequestedChannels = list()
+    for channel in availableChannels:
+        if channel in requestedChannels:
+            continue
+        else:
+            unrequestedChannels.append(channel)
+    unrequestedChannelCount = len(unrequestedChannels)
 
     availableParameters = list()
-    for i, section in enumerate(config.options('availableParameters')):
+    for i, section in enumerate(config.options('parameters')):
         availableParameters.append(section)
     availableParameterCount = len(availableParameters)
 
-    requestedParameters = list()
-    for i, section in enumerate(config.options('requestedParameters')):
-        if section in availableParameters:
-            requestedParameters.append(section)
-        else:
-            raise Exception("command {} not available".format(section))
-    requestedParameterCount = len(requestedParameters)
+    # requestedParameters = list()
+    # for i, section in enumerate(config.options('requestedParameters')):
+    #     if section in availableParameters:
+    #         requestedParameters.append(section)
+    #     else:
+    #         raise Exception("command {} not available".format(section))
+    # requestedParameterCount = len(requestedParameters)
 
 
 
@@ -91,12 +98,15 @@ def run():
         # some important variables here
         f.write("// must have parameters\n")
         f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "LOOP_CYCLE_TIME_US", loopCycleTime, nameWidth=nameWidth, valueWidth=valueWidth))
+            "loopCycleTimeUs", loopCycleTime, nameWidth=nameWidth, valueWidth=valueWidth))
 
         f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "AVAILABLE_CHANNEL_COUNT", availableChannelsCount, nameWidth=nameWidth, valueWidth=valueWidth))
+            "CHANNELS_AVAILABLE_COUNT", availableChannelsCount, nameWidth=nameWidth, valueWidth=valueWidth))
         f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "REQUESTED_CHANNEL_COUNT", requestedChannelCount, nameWidth=nameWidth, valueWidth=valueWidth))
+            "CHANNELS_REQUESTED_COUNT", requestedChannelCount, nameWidth=nameWidth, valueWidth=valueWidth))
+        f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "CHANNELS_UNREQUESTED_COUNT", unrequestedChannelCount, nameWidth=nameWidth, valueWidth=valueWidth))
+
 
         f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
             "PARAMETER_COUNT", availableParameterCount, nameWidth=nameWidth, valueWidth=valueWidth))
@@ -109,26 +119,27 @@ def run():
         # f.write("extern int channels[REQUESTED_CHANNEL_COUNT];\n\n")
         # f.write("extern int parameters[PARAMETER_COUNT];\n\n")
 
-        # all available channels
-        f.write('// All available channels\n' +
-                '// Define names for parameters, that can be send to the connected pc.\n' +
-                '// These names are referred to in the whole code.\n' +
-                '// The list is generated automatically from a python script.\n' +
-                '// On the controller all values are stored in "float channels[AVAILABLE_CHANNEL_COUNT]."\n'
-                )
-        for i, param in enumerate(availableChannels):
-            macro = "(channels[{}])".format(i)
+        # all requested channels
+        f.write('// All requested channels\n')
+        for i, param in enumerate(requestedChannels):
+            macro = "(messageOutBuffer.channels[{}])".format(i)
             f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
                 param[1], macro, nameWidth=nameWidth, valueWidth=valueWidth))
         f.write("\n")
 
-        # all available parameters
-        f.write('// all available parameters\n' +
-                '// Define names for parameters, that can be set from the connected pc.\n' +
-                '// These names are referred to in the whole code.\n' +
-                '// The list is generated automatically from a python script.\n' +
-                '// On the controller all values are stored in "float parameters[AVAILABLE_PARAMETER_COUNT]."\n'
-                )
+
+        # all unrequested channels
+        f.write('// All unrequested channels\n')
+        for i, param in enumerate(unrequestedChannels):
+            macro = "(unrequestedChannels[{}])".format(i)
+            f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+                param[1], macro, nameWidth=nameWidth, valueWidth=valueWidth))
+        f.write("\n")
+
+
+
+        # all parameters
+        f.write('// all parameters\n')
         for i, param in enumerate(availableParameters):
             macro = "(parameters[{}])".format(i)
             f.write("#define {:{nameWidth}} {:>{valueWidth}}\n".format(
@@ -151,17 +162,17 @@ def run():
         #
         f.write('#include "controlDemonstrator.h"\n\n')
 
-        # channel mapping
-        f.write("// Channel values that will be send to the pc at every loop cycle\n")
-        f.write("int requestedChannels[REQUESTED_CHANNEL_COUNT] = {\n")
-        tString = ""
-        for channel in requestedChannels:
-            tString += "    {},\n".format(channel[0])
-        tString = tString.rstrip(",\n")
-        tString += "\n"
-        f.write(tString)
-        f.write("};\n")
-        f.write("\n")
+        # # channel mapping
+        # f.write("// Channel values that will be send to the pc at every loop cycle\n")
+        # f.write("int requestedChannels[CHANNELS_REQUESTED_COUNT] = {\n")
+        # tString = ""
+        # for channel in requestedChannels:
+        #     tString += "    {},\n".format(channel[0])
+        # tString = tString.rstrip(",\n")
+        # tString += "\n"
+        # f.write(tString)
+        # f.write("};\n")
+        # f.write("\n")
 
         with open(C_C_TEMPLATE, "r") as cTemplate:
             lines = cTemplate.readlines()

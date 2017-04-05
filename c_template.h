@@ -1,11 +1,6 @@
 void initControlDemonstrator();
 void communicate();
 
-// storage for channels
-extern float channels[AVAILABLE_CHANNEL_COUNT];
-
-// storage for parameters, that could be set from the pc
-extern float parameters[PARAMETER_COUNT];
 
 typedef struct MessageOut
 {
@@ -13,7 +8,7 @@ typedef struct MessageOut
     int lastLoopDuration;
     int parameterNumber;
     float parameterValue;
-    float channels[REQUESTED_CHANNEL_COUNT];
+    float channels[CHANNELS_REQUESTED_COUNT];
 } MessageOut;
 
 typedef struct MessageIn
@@ -21,3 +16,11 @@ typedef struct MessageIn
     int parameterNumber;
     float value;
 } MessageIn;
+
+// storage for channels
+extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
+
+// storage for parameters, that could be set from the pc
+extern float parameters[PARAMETER_COUNT];
+
+extern MessageOut messageOutBuffer;

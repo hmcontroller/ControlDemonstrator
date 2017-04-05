@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import os
 import logging
+from importlib import import_module
 
 from PyQt4 import QtCore, QtGui
 
@@ -9,9 +10,9 @@ from core.communicator import UdpCommunicator
 from core.messageInterpreter import MessageInterpreter
 
 from gui.constants import *
-from gui.tabWaterLineExperiment import TabWaterLineExperiment
-from gui.tabGenericView import TabGenericView
-from gui.tabSmallGenericView import TabSmallGenericView
+from gui.TabWaterLineExperiment import TabWaterLineExperiment
+from gui.TabGenericView import TabGenericView
+from gui.TabSmallGenericView import TabSmallGenericView
 
 class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def __init__(self, rootFolder):
@@ -56,17 +57,10 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.communicator.setMessageMap(self.messageFormat)
         self.communicator.connectToController()
 
-        # # add a tab for the waterLineExperiment
-        self.tabWaterLineExperiment = TabWaterLineExperiment(self.commands, self.channels, self.settings)
-        self.tabWaterLineExperimentLayout.addWidget(self.tabWaterLineExperiment)
+        tabs = modelMaker.getTabs()
 
-        # # add a tab for generic control
-        self.tabGeneric = TabGenericView(self.commands, self.channels, self.settings)
-        self.tabGenericViewLayout.addWidget(self.tabGeneric)
+        self.addTabs(tabs)
 
-        # add a tab for small generic control
-        self.tabGeneric = TabSmallGenericView(self.commands, self.channels, self.settings, self.communicator)
-        self.tabSmallGenericViewLayout.addWidget(self.tabGeneric)
 
         # setup a timer, that triggers to read from the controller
         self.receiveTimer = QtCore.QTimer()
@@ -116,6 +110,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.centralWidgetLayout.setMargin(0)
         self.centralWidgetLayout.setSpacing(0)
 
+        self.setCentralWidget(self.centralwidget)
+
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(12)
@@ -125,32 +121,29 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.tabWidget.setAutoFillBackground(False)
         self.tabWidget.setObjectName("tabWidget")
 
-        self.tab = QtGui.QWidget()
-        self.tab.setObjectName("tab")
-        self.tabWaterLineExperimentLayout = QtGui.QHBoxLayout(self.tab)
-        self.tabWaterLineExperimentLayout.setSpacing(0)
-        self.tabWaterLineExperimentLayout.setMargin(0)
-        self.tabWaterLineExperimentLayout.setObjectName("tabWaterLineExperimentLayout")
-        self.tabWidget.addTab(self.tab, "Wasserstandexperiment")
-
-        self.tab_1 = QtGui.QWidget()
-        self.tab_1.setObjectName("tab_1")
-        self.tabGenericViewLayout = QtGui.QHBoxLayout(self.tab_1)
-        self.tabGenericViewLayout.setSpacing(0)
-        self.tabGenericViewLayout.setMargin(0)
-        self.tabGenericViewLayout.setObjectName("tabGenericView")
-        self.tabWidget.addTab(self.tab_1, "generische Ansicht")
-
-        self.tab_2 = QtGui.QWidget()
-        self.tab_2.setObjectName("tab_2")
-        self.tabSmallGenericViewLayout = QtGui.QHBoxLayout(self.tab_2)
-        self.tabSmallGenericViewLayout.setSpacing(0)
-        self.tabSmallGenericViewLayout.setMargin(0)
-        self.tabSmallGenericViewLayout.setObjectName("tabSmallGenericView")
-        self.tabWidget.addTab(self.tab_2, "kleine generische Ansicht")
-
         self.centralWidgetLayout.addWidget(self.tabWidget)
-        self.setCentralWidget(self.centralwidget)
+
+
+    def addTabs(self, tabs):
+        for givenTab in tabs:
+            tabContentClassName = givenTab[0]
+            if givenTab[1] is None:
+                raise Exception("Please specify a name for the entry {} in the config file under section tabs".format(tabContentClassName))
+            tabDisplayName = givenTab[1].decode('utf-8')
+
+
+            tab = QtGui.QWidget()
+            tabLayout = QtGui.QHBoxLayout(tab)
+            tabLayout.setSpacing(0)
+            tabLayout.setMargin(0)
+            self.tabWidget.addTab(tab, tabDisplayName)
+
+            tabContentClass = getattr(import_module('gui.' + tabContentClassName), tabContentClassName)
+            tabContentClassInstance = tabContentClass(self.commands, self.channels, self.settings, self.communicator)
+
+            tabLayout.addWidget(tabContentClassInstance)
+
+
 
     def receiveAndSend(self):
         self.receive()
@@ -168,7 +161,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def refreshGui(self):
         pass
         # self.tabWaterLineExperiment.updateTab(self.channels)
-        self.tabGeneric.updateTab(self.channels)
+        # self.tabGeneric.updateTab(self.channels)
 
     def handleNewData(self, message):
         MessageInterpreter.mapUserChannels(self.channels, message)

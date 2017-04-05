@@ -93,7 +93,7 @@ class Command(QtCore.QObject):
         super(Command, self).__init__()
         self.id = None
         self.name = ""
-        self.displayName = None
+        self.displayName = ""
         self.timeOfSend = datetime.datetime.now()
         self._pendingSendMode = False
         self._pendingValue = None
