@@ -25,10 +25,16 @@ class SmallGenericCommand(BaseCommand):
         self.hValueSpace = 100
         self.vValueSpace = 25
 
+
         self.labelAreaHeight = 30
         self.editAreaHeight = self.height - self.labelAreaHeight
 
         self.editAreaHCenter = self.labelAreaHeight + 0.5 * self.editAreaHeight
+
+        self.separatingLinePath = QtGui.QPainterPath()
+        self.separatingLinePath.moveTo(1, self.labelAreaHeight)
+        self.separatingLinePath.lineTo(self.width - 2, self.labelAreaHeight)
+
 
         self.commandNameFont = QtGui.QFont("sans-serif", 12, QtGui.QFont.Bold)
         self.otherFont = QtGui.QFont("sans-serif", 12)
@@ -105,7 +111,7 @@ class SmallGenericCommand(BaseCommand):
         self.valueLineEdit.move(85, self.editAreaHCenter - 0.5 * self.valueLineEdit.height())
         self.valueLineEditValidator = FloatValidator()
         self.valueLineEdit.setValidator(self.valueLineEditValidator)
-        self.valueLineEdit.setText(str(self.command.getValue()))
+        # self.valueLineEdit.setText(str(self.command.getValue()))
         self.valueLineEdit.editingFinished.connect(self.valueEditingFinished)
         self.valueLineEdit.returnPressed.connect(self.valueEditingReturnPressed)
         self.valueLineEdit.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -144,8 +150,14 @@ class SmallGenericCommand(BaseCommand):
 
         self.onePixelGrayPen = QtGui.QPen()
         self.onePixelGrayPen.setWidth(1)
-        self.onePixelGrayPen.setCosmetic(True)
-        self.onePixelGrayPen.setColor(QtCore.Qt.darkGray)
+        # self.onePixelGrayPen.setCosmetic(True)
+        self.onePixelGrayPen.setColor(QtGui.QColor(50, 50, 50))
+
+        self.onePixelLightGrayPen = QtGui.QPen()
+        self.onePixelLightGrayPen.setWidth(1)
+        self.onePixelLightGrayPen.setCosmetic(True)
+        self.onePixelLightGrayPen.setColor(QtGui.QColor(200, 200, 200))
+        # self.onePixelLightGrayPen.setColor(QtCore.Qt.black)
 
         self.pendingValuePen = QtGui.QPen()
         self.pendingValuePen.setColor(PENDING_VALUE_COLOR)
@@ -162,6 +174,13 @@ class SmallGenericCommand(BaseCommand):
         self.editAreaPath = QtGui.QPainterPath()
         self.editAreaPath.addRect(0, self.labelAreaHeight, self.width, self.editAreaHeight)
         self.editAreaBrush = QtGui.QBrush(QtGui.QColor(0, 153, 250, 30))
+
+        self.outerPath = QtGui.QPainterPath()
+        self.outerPath.moveTo(0, 0)
+        self.outerPath.lineTo(self.width, 0)
+        self.outerPath.lineTo(self.width, self.height)
+        self.outerPath.lineTo(0, self.height)
+        self.outerPath.closeSubpath()
 
         self.returnValueRectPath = QtGui.QPainterPath()
         self.returnValueRectPath.addRect(self.returnValueRect)
@@ -267,17 +286,22 @@ class SmallGenericCommand(BaseCommand):
             self.command.setUpperLimit(max, self)
 
     def valueEditingFinished(self):
-        pass
+        if self.command.getPendingValue() is None and self.valueLineEdit.hasFocus() is False:
+            self.valueLineEdit.clear()
+            self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
+
 
     def valueEditingReturnPressed(self):
         text = self.valueLineEdit.text()
         print "command given", text
 
+        self.command.clearPendingValue()
+
         # if nothing is in the textBox, the lower limit of the command will be set to the text box but not send
         if len(text) is 0:
             self.valueLineEdit.setText(str(self.command.getLowerLimit()))
-            self.valueLineEdit.setCursorPosition(0)
-            self.valueLineEdit.selectAll()
+            self.valueLineEdit.setCursorPosition(len(self.valueLineEdit.text()))
+            # self.valueLineEdit.selectAll()
             self.activateUserInputWarning()
         else:
             # allowed for the decimal point are a comma and a dot
@@ -286,19 +310,21 @@ class SmallGenericCommand(BaseCommand):
             number = float(text)
             if number < self.command.getLowerLimit():
                 self.valueLineEdit.setText(str(self.command.getLowerLimit()))
-                self.valueLineEdit.setCursorPosition(0)
-                self.valueLineEdit.selectAll()
+                self.valueLineEdit.setCursorPosition(len(self.valueLineEdit.text()))
+                # self.valueLineEdit.selectAll()
                 self.activateUserInputWarning()
             elif number > self.command.getUpperLimit():
                 self.valueLineEdit.setText(str(self.command.getUpperLimit()))
-                self.valueLineEdit.setCursorPosition(0)
-                self.valueLineEdit.selectAll()
+                self.valueLineEdit.setCursorPosition(len(self.valueLineEdit.text()))
+                # self.valueLineEdit.selectAll()
                 self.activateUserInputWarning()
             else:
                 self.command.setValue(number, self)
                 self.clearUserInputWarning()
+                self.valueLineEdit.clear()
                 if self.command.getPendingSendMode() is True:
                     self.valueLineEdit.setStyleSheet(self.valuePendingStyleSheet)
+                    self.valueLineEdit.setText(str(self.command.getPendingValue()))
 
 
         # TODO how to set color back to black
@@ -309,7 +335,7 @@ class SmallGenericCommand(BaseCommand):
 
         # self.valueLineEdit.setText(str(self.command.getValue()))
         # self.valueLineEdit.setCursorPosition(0)
-        self.valueLineEdit.selectAll()
+        # self.valueLineEdit.selectAll()
 
 
     def valueChangedPerWidget(self, widgetInstance):
@@ -331,11 +357,13 @@ class SmallGenericCommand(BaseCommand):
         super(SmallGenericCommand, self).pendingModeChanged(command)
         if self.command.getPendingSendMode() is False:
             self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
+            self.valueLineEdit.clear()
             self.pendingButton.symbol.setColor(QtCore.Qt.darkGray)
         else:
             self.pendingButton.symbol.setColor(QtCore.Qt.red)
 
     def pendingValueCanceled(self, command):
+        self.valueLineEdit.clear()
         self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
 
     def sameValueReceived(self):
@@ -428,9 +456,14 @@ class SmallGenericCommand(BaseCommand):
 
         # draw bounding paths
         QPainter.setPen(self.onePixelGrayPen)
-        QPainter.drawPath(self.headerAreaPath)
-        QPainter.drawPath(self.editAreaPath)
+        # QPainter.drawPath(self.headerAreaPath)
+        # QPainter.drawPath(self.editAreaPath)
+        QPainter.drawPath(self.outerPath)
 
+        # draw a line to separate edit area and header area
+        QPainter.setRenderHint(QtGui.QPainter.Antialiasing, False)
+        QPainter.setPen(self.onePixelLightGrayPen)
+        QPainter.drawPath(self.separatingLinePath)
 
     def boundingRect(self):
         return QtCore.QRectF(0, 0, self.width, self.height)

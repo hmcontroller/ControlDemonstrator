@@ -10,9 +10,9 @@ from core.communicator import UdpCommunicator
 from core.messageInterpreter import MessageInterpreter
 
 from gui.constants import *
-from gui.TabWaterLineExperiment import TabWaterLineExperiment
-from gui.TabGenericView import TabGenericView
-from gui.TabSmallGenericView import TabSmallGenericView
+# from gui.TabWaterLineExperiment import TabWaterLineExperiment
+# from gui.TabGenericView import TabGenericView
+# from gui.TabSmallGenericView import TabSmallGenericView
 
 class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def __init__(self, rootFolder):
@@ -125,6 +125,12 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
 
     def addTabs(self, tabs):
+
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        font.setPointSize(10)
+
+
         for givenTab in tabs:
             tabContentClassName = givenTab[0]
             if givenTab[1] is None:
@@ -133,6 +139,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
 
             tab = QtGui.QWidget()
+            tab.setFont(font)
             tabLayout = QtGui.QHBoxLayout(tab)
             tabLayout.setSpacing(0)
             tabLayout.setMargin(0)

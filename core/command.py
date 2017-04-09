@@ -150,6 +150,9 @@ class Command(QtCore.QObject):
             raise ValueError("pending value {} out of allowed range {} - {} for command {}".format(
                 value, self._lowerLimit, self._upperLimit, self.name))
 
+    def getPendingValue(self):
+        return self._pendingValue
+
     def clearPendingValue(self):
         self._pendingValue = None
         self.pendingValueCanceled.emit(self)

@@ -12,10 +12,16 @@ from core.messageData import MessageData
 
 
 class CommState(object):
+
+    UNKNOWN = 0
+    COMM_ESTABLISHED = 1
+    COMM_PAUSED = 2
+    COMM_TIMEOUT = 3
+    WRONG_CONFIG = 4
+    NO_CONN = 5
+
     def __init__(self):
-        self.communicationEstablished = False
-        self.communicationPaused = False
-        self.commTimeOut = False
+        self.state = self.UNKNOWN
         self.timeOfLastReceive = datetime.datetime.now() - datetime.timedelta(hours=1000)
 
 
@@ -32,6 +38,7 @@ class Communicator(QtCore.QObject):
         self._messageMap = None
 
         self._commState = CommState()
+        self._commState.state = CommState.UNKNOWN
 
         self._directCommandSendBuffer = deque()
         self._pendingCommandSendBuffer = deque()
@@ -46,6 +53,10 @@ class Communicator(QtCore.QObject):
         self._commTimeOutChecker.timeout.connect(self.checkCommTimeOut)
         self._commTimeOutChecker.start(500)
 
+        self._connectionPollTimer = QtCore.QTimer()
+        self._connectionPollTimer.setSingleShot(True)
+        self._connectionPollTimer.timeout.connect(self.connectToController)
+
     def setMessageMap(self, formatList):
         self._messageMap = formatList
         self._messageSize = self._messageMap[-1].positionInBytes + self._messageMap[-1].lengthInBytes
@@ -54,27 +65,25 @@ class Communicator(QtCore.QObject):
         raise NotImplementedError()
 
     def pauseCommunication(self):
-        self._commState.communicationPaused = True
+        self._commState.state = CommState.COMM_PAUSED
 
     def continueCommunication(self):
-        self._commState.communicationPaused = False
+        self._commState.state = CommState.COMM_ESTABLISHED
 
     def checkCommTimeOut(self):
-        if self._commState.communicationPaused is True:
+        if self._commState.state == CommState.COMM_PAUSED:
             return
 
 
         if datetime.datetime.now() - self._commState.timeOfLastReceive > datetime.timedelta(seconds=2):
-            if self._commState.commTimeOut is True:
+            if self._commState.state == CommState.COMM_TIMEOUT:
                 return
             else:
-                self._commState.commTimeOut = True
+                self._commState.state = CommState.COMM_TIMEOUT
                 self.commStateChanged.emit(self._commState)
         else:
-            if self._commState.commTimeOut is False:
-                return
-            else:
-                self._commState.commTimeOut = False
+            if self._commState.state != CommState.COMM_ESTABLISHED:
+                self._commState.state = CommState.COMM_ESTABLISHED
                 self.commStateChanged.emit(self._commState)
 
 
@@ -136,20 +145,16 @@ class UdpCommunicator(Communicator):
             self._socket.bind((self._settings.computerIP, self._settings.udpPort))
             self._socket.setblocking(False)
             self._socket.settimeout(0)
-            self._commState.communicationEstablished = True
-            self._commState.communicationPaused = False
-
+            self._commState.state = CommState.COMM_ESTABLISHED
             self.commStateChanged.emit(self._commState)
         except socket.error, e:
-            if e.args[0] == 10049:
-                self.pauseCommunication()
+            if e.args[0] == errno.WSAEADDRNOTAVAIL:
+                self._commState.state = CommState.NO_CONN
                 self.commStateChanged.emit(self._commState)
+                self._connectionPollTimer.start(1000)
 
     def send(self, commandList):
-        if len(commandList.changedCommands) > 0 \
-                and self._commState.communicationEstablished is True \
-                and self._commState.communicationPaused is False:
-
+        if len(commandList.changedCommands) > 0 and self._commState.state == CommState.COMM_ESTABLISHED:
             commandToSend = commandList.changedCommands.popleft()
             packedData = self._packCommand(commandToSend)
             self._socket.sendto(packedData, (self._settings.controllerIP, self._settings.udpPort))
@@ -165,11 +170,8 @@ class UdpCommunicator(Communicator):
     def receive(self):
         packets = list()
 
-        if self._commState.communicationEstablished is False:
-            return packets
-
-        if self._commState.communicationPaused is True:
-            return packets
+        # if self._commState.state != CommState.COMM_ESTABLISHED:
+        #     return packets
 
         while True:
             try:
@@ -179,12 +181,21 @@ class UdpCommunicator(Communicator):
                 break
             except socket.error, e:
                 if e.args[0] == errno.EWOULDBLOCK:
-                    break
-                elif e.args[0] == 10049:
-                    self._pauseComm = True
-
+                    pass
+                elif e.args[0] == errno.WSAEADDRNOTAVAIL:
+                    self._commState.state = CommState.NO_CONN
+                    self.commStateChanged.emit(self._commState)
+                    self._connectionPollTimer.start(1000)
+                elif e.args[0] == errno.WSAEMSGSIZE:
+                    self._commState.state = CommState.WRONG_CONFIG
+                    self.commStateChanged.emit(self._commState)
+                elif e.args[0] == errno.WSAEINVAL:
+                    self._commState.state = CommState.NO_CONN
+                    self.commStateChanged.emit(self._commState)
+                    self._connectionPollTimer.start(1000)
                 else:
                     raise
+                break
 
         if len(packets) > 0:
             self._commState.timeOfLastReceive = datetime.datetime.now()
@@ -196,6 +207,17 @@ class UdpCommunicator(Communicator):
 class UsbHidCommunicator(Communicator):
     def __init__(self, settings):
         super(UsbHidCommunicator, self).__init__(settings)
+
+    def send(self, commandList):
+        pass
+
+    def receive(self):
+        pass
+
+
+class SerialCommunicator(Communicator):
+    def __init__(self, settings):
+        super(SerialCommunicator, self).__init__(settings)
 
     def send(self, commandList):
         pass

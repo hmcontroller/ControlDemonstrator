@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'globalControllerAndView.ui'
 #
-# Created: Thu Mar 23 20:30:35 2017
+# Created: Sun Apr 09 09:22:35 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,13 +26,19 @@ except AttributeError:
 class Ui_GlobalControllerAndView(object):
     def setupUi(self, GlobalControllerAndView):
         GlobalControllerAndView.setObjectName(_fromUtf8("GlobalControllerAndView"))
-        GlobalControllerAndView.resize(1554, 73)
+        GlobalControllerAndView.resize(1554, 57)
+        GlobalControllerAndView.setMaximumSize(QtCore.QSize(16777215, 57))
         self.horizontalLayout_6 = QtGui.QHBoxLayout(GlobalControllerAndView)
         self.horizontalLayout_6.setMargin(0)
         self.horizontalLayout_6.setObjectName(_fromUtf8("horizontalLayout_6"))
         self.horizontalLayout_5 = QtGui.QHBoxLayout()
         self.horizontalLayout_5.setObjectName(_fromUtf8("horizontalLayout_5"))
         self.pendingGroupBox = QtGui.QGroupBox(GlobalControllerAndView)
+        self.pendingGroupBox.setMinimumSize(QtCore.QSize(0, 55))
+        self.pendingGroupBox.setMaximumSize(QtCore.QSize(16777215, 55))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.pendingGroupBox.setFont(font)
         self.pendingGroupBox.setObjectName(_fromUtf8("pendingGroupBox"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.pendingGroupBox)
         self.horizontalLayout_2.setMargin(6)
@@ -47,22 +53,16 @@ class Ui_GlobalControllerAndView(object):
         self.horizontalLayout.addWidget(self.pendingCancelButton)
         self.horizontalLayout_2.addLayout(self.horizontalLayout)
         self.horizontalLayout_5.addWidget(self.pendingGroupBox)
-        self.commGroupBox = QtGui.QGroupBox(GlobalControllerAndView)
-        self.commGroupBox.setObjectName(_fromUtf8("commGroupBox"))
-        self.horizontalLayout_4 = QtGui.QHBoxLayout(self.commGroupBox)
-        self.horizontalLayout_4.setMargin(6)
-        self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
-        self.horizontalLayout_3 = QtGui.QHBoxLayout()
-        self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
-        self.commToggleButton = QtGui.QPushButton(self.commGroupBox)
-        self.commToggleButton.setObjectName(_fromUtf8("commToggleButton"))
-        self.horizontalLayout_3.addWidget(self.commToggleButton)
-        self.commLabel = QtGui.QLabel(self.commGroupBox)
-        self.commLabel.setObjectName(_fromUtf8("commLabel"))
-        self.horizontalLayout_3.addWidget(self.commLabel)
-        self.horizontalLayout_4.addLayout(self.horizontalLayout_3)
-        self.horizontalLayout_5.addWidget(self.commGroupBox)
+        self.singleLineTextEdit = QtGui.QTextEdit(GlobalControllerAndView)
+        self.singleLineTextEdit.setMaximumSize(QtCore.QSize(400, 16777215))
+        self.singleLineTextEdit.setReadOnly(True)
+        self.singleLineTextEdit.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
+        self.singleLineTextEdit.setObjectName(_fromUtf8("singleLineTextEdit"))
+        self.horizontalLayout_5.addWidget(self.singleLineTextEdit)
         self.messageTextEdit = QtGui.QTextEdit(GlobalControllerAndView)
+        self.messageTextEdit.setMinimumSize(QtCore.QSize(0, 25))
+        self.messageTextEdit.setMaximumSize(QtCore.QSize(16777215, 57))
+        self.messageTextEdit.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.messageTextEdit.setObjectName(_fromUtf8("messageTextEdit"))
         self.horizontalLayout_5.addWidget(self.messageTextEdit)
         self.horizontalLayout_6.addLayout(self.horizontalLayout_5)
@@ -75,7 +75,4 @@ class Ui_GlobalControllerAndView(object):
         self.pendingGroupBox.setTitle(_translate("GlobalControllerAndView", "pending Commands", None))
         self.pendingSendButton.setText(_translate("GlobalControllerAndView", "send", None))
         self.pendingCancelButton.setText(_translate("GlobalControllerAndView", "cancel", None))
-        self.commGroupBox.setTitle(_translate("GlobalControllerAndView", "communication", None))
-        self.commToggleButton.setText(_translate("GlobalControllerAndView", "pause", None))
-        self.commLabel.setText(_translate("GlobalControllerAndView", "communication is established", None))
 
