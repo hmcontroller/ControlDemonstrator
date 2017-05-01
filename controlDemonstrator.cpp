@@ -2,6 +2,7 @@
 
 #ifdef ARDUINO_UDP
 
+#include <arduino.h>
 #include <SPI.h>
 #include <Ethernet2.h>
 #include <EthernetUdp2.h>
@@ -13,6 +14,16 @@ unsigned int port = 10000;
 EthernetUDP Udp;
 
 #elif defined(ARDUINO_SERIAL)
+#include <arduino.h>
+#define BAUD_RATE 115200
+
+void dumpOldMessages();
+void copyOldMessageToIncomingBuffer();
+void readIncomingBytesIntoBuffer();
+void processMessage(int);
+int findMessageAndProcess();
+void storeForNextLoop(int);
+
 
 #elif defined(MBED_2_USBHID)
 
@@ -72,6 +83,7 @@ void initControlDemonstrator()
 }
 #elif defined(ARDUINO_SERIAL)
 void initControlDemonstrator() {
+    Serial.begin(BAUD_RATE);
 }
 
 #elif defined(MBED_2_USBHID)
@@ -112,12 +124,15 @@ void initControlDemonstrator() {
 
 void prepareOutMessage()
 {
-    // now overwrite messageOutBuffer.loopStartTime with the actual loop start time
-
-#ifdef ARDUINO_UDP
+#ifdef ARDUINO_SERIAL
     messageOutBuffer.loopStartTime = micros();
+
+#elif defined(ARDUINO_UDP)
+    messageOutBuffer.loopStartTime = micros();
+
 #elif defined(MBED_OS_UDP)
     messageOutBuffer.loopStartTime = dutyCycleTimer.read_us();
+
 #else
 #endif
 
@@ -158,8 +173,27 @@ void sendMessage()
     Udp.endPacket();
     sendTimer = (float)(micros() - lastTime);
 }
+
 #elif defined(ARDUINO_SERIAL)
 void sendMessage() {
+    prepareOutMessage();
+    lastTime = micros();
+
+    // Serial.write(messageOutBuffer.loopStartTime);
+    // Serial.write(messageOutBuffer.lastLoopDuration);
+    // Serial.write(messageOutBuffer.parameterNumber);
+    // Serial.write(messageOutBuffer.parameterValue);
+    //
+    // int i = 0;
+    // for (i; i < CHANNELS_REQUESTED_COUNT; i++) {
+    //     Serial.write(messageOutBuffer.channels[i]);
+    // }
+
+    Serial.write(7);
+    Serial.write((byte *)&messageOutBuffer, sizeof(messageOutBuffer));
+    Serial.write(8);
+
+    sendTimer = (float)(micros() - lastTime);
 }
 
 #elif defined(MBED_2_USBHID)
@@ -201,8 +235,106 @@ void receiveMessage() {
     receiveTimer = (float)(micros() - lastTime);
 }
 #elif defined(ARDUINO_SERIAL)
+
+#define START_BYTE (char)7
+#define STOP_BYTE (char)57
+#define IN_MESSAGE_SIZE 8
+#define BUFFER_SIZE ((IN_MESSAGE_SIZE+2)*2)
+
+int16_t availableBytes = 0;
+
+uint8_t remainderBuffer[BUFFER_SIZE];
+int16_t bytesInRemainderBuffer = 0;
+
+uint8_t dataToProcess[BUFFER_SIZE];
+int16_t bytesInDataToProcess = 0;
+int16_t dataToProcessPosition = 0;
+int16_t searchPosition = 0;
+int16_t lastPositionProcessed = -1;
+
+
 void receiveMessage() {
+    lastTime = micros();
+    //dumpOldMessages();
+    copyOldMessageToIncomingBuffer();
+    readIncomingBytesIntoBuffer();
+    lastPositionProcessed = findMessageAndProcess();
+    storeForNextLoop(lastPositionProcessed);
+
+    dummy1 = (float)bytesInDataToProcess;
+
+    receiveTimer = (float)(micros() - lastTime);
 }
+
+
+void dumpOldMessages() {
+    while(Serial.available() > BUFFER_SIZE) {
+        Serial.read();
+    }
+}
+
+void copyOldMessageToIncomingBuffer() {
+    for (dataToProcessPosition = 0; dataToProcessPosition < bytesInRemainderBuffer; dataToProcessPosition++) {
+        dataToProcess[dataToProcessPosition] = remainderBuffer[dataToProcessPosition];
+        bytesInDataToProcess++;
+    }
+    bytesInRemainderBuffer = 0;
+}
+
+void readIncomingBytesIntoBuffer() {
+//    dataToProcessPosition = bytesInDataToProcess;
+    while ((Serial.available() > 0) && (dataToProcessPosition < BUFFER_SIZE)) {
+        dataToProcess[dataToProcessPosition] = Serial.read();
+        dataToProcessPosition++;
+        bytesInDataToProcess++;
+    }
+}
+
+int findMessageAndProcess() {
+    for (searchPosition = 0; searchPosition < bytesInDataToProcess; searchPosition++) {
+        searchPositionDebug = dataToProcess[searchPosition];
+        if (dataToProcess[searchPosition] == START_BYTE) {
+            int expectedStopBytePosition = searchPosition + IN_MESSAGE_SIZE + 1;
+            if (expectedStopBytePosition < BUFFER_SIZE) {
+                if (dataToProcess[expectedStopBytePosition] == STOP_BYTE) {
+                    dummy1 = 10000.0f;
+                    processMessage(searchPosition + 1);
+                    startPosition = searchPosition;
+                    endPosition = expectedStopBytePosition;
+                    return expectedStopBytePosition;
+                }
+            }
+            else {
+                // do something meaningful
+            }
+        }
+    }
+    return -1;
+}
+
+void processMessage(int messageStartPosition) {
+    paramNumber = (float) (*(int *)&dataToProcess[messageStartPosition]);
+    paramNumber = 12.0f;
+    //paramValue = (float *)&dataToProcess[messageStartPosition + 4];
+    memcpy(&messageInBuffer.parameterNumber, &dataToProcess[messageStartPosition], 4);
+    memcpy(&messageInBuffer.value, &dataToProcess[messageStartPosition + 4], 4);
+    parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
+}
+
+
+
+void storeForNextLoop(int lastPositionProcessed) {
+    int positionResidueBuffer = 0;
+    int positionInBuffer = lastPositionProcessed + 1;
+    while (positionInBuffer < bytesInDataToProcess) {
+        remainderBuffer[positionResidueBuffer] = dataToProcess[positionInBuffer];
+        bytesInRemainderBuffer++;
+        positionResidueBuffer++;
+        positionInBuffer++;
+    }
+    bytesInDataToProcess = 0;
+}
+
 #elif defined(MBED_2_USBHID)
 void receiveMessage() {
 }

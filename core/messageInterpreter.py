@@ -35,7 +35,7 @@ class MessageInterpreter():
         for i, message in enumerate(messages):
             if message.name == "lastLoopDuration":
                 return message.value
-        return None
+        return 0
 
     @staticmethod
     def getMicroControllerCommandReturned(message):

@@ -104,7 +104,8 @@ class Gain(BaseCommand):
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         QPainter.setRenderHint(QtGui.QPainter.Antialiasing, True)
 
-        if self.showHoverIndication is True and self.lineEditProxy.hasFocus() is False:
+        # if self.showHoverIndication is True and self.lineEditProxy.hasFocus() is False:
+        if self.isUnderMouse() is True:
             QPainter.fillPath(self.path, self.hoverBrush)
 
         # draw wrong user input warning

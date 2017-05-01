@@ -64,15 +64,15 @@ class SymbolButton(QtGui.QGraphicsObject):
         self.clickReleaseTimer.setSingleShot(True)
         self.clickReleaseTimer.timeout.connect(self.clickRelease)
 
-    def hoverEnterEvent(self, QGraphicsSceneMouseEvent):
-        self.currentBackgroundBrush = self.hoverBackgroundBrush
-        QtGui.QGraphicsItem.hoverEnterEvent(self, QGraphicsSceneMouseEvent)
-        self.update()
-
-    def hoverLeaveEvent(self, QGraphicsSceneMouseEvent):
-        self.currentBackgroundBrush = self.normalBackgroundBrush
-        QtGui.QGraphicsItem.hoverLeaveEvent(self, QGraphicsSceneMouseEvent)
-        self.update()
+    # def hoverEnterEvent(self, QGraphicsSceneMouseEvent):
+    #     self.currentBackgroundBrush = self.hoverBackgroundBrush
+    #     QtGui.QGraphicsItem.hoverEnterEvent(self, QGraphicsSceneMouseEvent)
+    #     self.update()
+    #
+    # def hoverLeaveEvent(self, QGraphicsSceneMouseEvent):
+    #     self.currentBackgroundBrush = self.normalBackgroundBrush
+    #     QtGui.QGraphicsItem.hoverLeaveEvent(self, QGraphicsSceneMouseEvent)
+    #     self.update()
 
     def mousePressEvent(self, QGraphicsSceneMouseEvent):
         self.currentBackgroundBrush = self.clickBackgroundBrush
@@ -80,19 +80,24 @@ class SymbolButton(QtGui.QGraphicsObject):
         # this causes the buttons to react slow while clicking them at a fast interval
         # QtGui.QGraphicsItem.mousePressEvent(self, QGraphicsSceneMouseEvent)
 
-        self.clicked.emit(QGraphicsSceneMouseEvent)
-
         self.clickReleaseTimer.start(50)
         self.update()
+        self.clicked.emit(QGraphicsSceneMouseEvent)
+
 
     def clickRelease(self):
-        self.currentBackgroundBrush = self.hoverBackgroundBrush
+        self.currentBackgroundBrush = self.normalBackgroundBrush
         self.update()
 
     def paint(self, qPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
         
         qPainter.setRenderHint(QtGui.QPainter.Antialiasing)
         qPainter.setPen(self.borderPen)
+
+        if self.isUnderMouse() is True:
+            qPainter.fillPath(self.borderPath, self.hoverBackgroundBrush)
+
+
         qPainter.fillPath(self.borderPath, self.currentBackgroundBrush)
         if self.drawBorder is True:
             qPainter.drawPath(self.borderPath)

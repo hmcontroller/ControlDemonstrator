@@ -2,12 +2,16 @@
 import os
 import logging
 from importlib import import_module
+import json
+import pickle
 
 from PyQt4 import QtCore, QtGui
 
 from core.modelMaker import ModelMaker
 from core.communicator import UdpCommunicator
+from core.communicator import SerialCommunicator
 from core.messageInterpreter import MessageInterpreter
+from core.configFileManager import ConfigFileManager
 
 from gui.constants import *
 # from gui.TabWaterLineExperiment import TabWaterLineExperiment
@@ -53,7 +57,11 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         self.commands = modelMaker.getCommands()
 
-        self.communicator = UdpCommunicator(self.settings)
+
+
+        self.communicator = modelMaker.getCommunicator()
+
+
         self.communicator.setMessageMap(self.messageFormat)
         self.communicator.connectToController()
 
@@ -96,6 +104,10 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         splashScreen.finish(self)
         logging.info("GUI load complete")
 
+        cFM = ConfigFileManager(self.settings, self.channels, self.commands)
+        cFM.save()
+
+
     def setupUi(self):
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setEnabled(True)
@@ -112,6 +124,17 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         self.setCentralWidget(self.centralwidget)
 
+
+        self.setupMainMenu()
+
+
+    def addTabs(self, tabs):
+
+
+        if len(tabs) == 1:
+            self.addOnlyOneWidget(tabs)
+            return
+
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(12)
@@ -123,20 +146,25 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         self.centralWidgetLayout.addWidget(self.tabWidget)
 
-
-    def addTabs(self, tabs):
-
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(10)
 
 
         for givenTab in tabs:
-            tabContentClassName = givenTab[0]
-            if givenTab[1] is None:
-                raise Exception("Please specify a name for the entry {} in the config file under section tabs".format(tabContentClassName))
-            tabDisplayName = givenTab[1].decode('utf-8')
 
+            tabPath = givenTab[0]
+
+            arguments = givenTab[1].split(";")
+            for arg in arguments:
+                arg = arg.strip()
+
+            if arguments is None or len(arguments) != 2:
+                raise Exception("Please specify the class name and a display name separated "
+                                "by a ';' for the entry {} in the config file under section tabs".format(tabPath))
+
+            tabContentClassName = arguments[0]
+            tabDisplayName = arguments[1].decode('utf-8')
 
             tab = QtGui.QWidget()
             tab.setFont(font)
@@ -145,12 +173,97 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
             tabLayout.setMargin(0)
             self.tabWidget.addTab(tab, tabDisplayName)
 
-            tabContentClass = getattr(import_module('gui.' + tabContentClassName), tabContentClassName)
+            tabContentClass = getattr(import_module(tabPath), tabContentClassName)
             tabContentClassInstance = tabContentClass(self.commands, self.channels, self.settings, self.communicator)
 
             tabLayout.addWidget(tabContentClassInstance)
 
+    def addOnlyOneWidget(self, tabs):
+        tabPath = tabs[0][0]
+        arguments = tabs[0][1].split(";")
+        for arg in arguments:
+            arg = arg.strip()
 
+        if arguments is None or len(arguments) != 2:
+            raise Exception("Please specify the class name and a display name separated "
+                            "by a ';' for the entry {} in the config file under section tabs".format(tabPath))
+
+        tabContentClassName = arguments[0]
+
+        tabContentClass = getattr(import_module(tabPath), tabContentClassName)
+        tabContentClassInstance = tabContentClass(self.commands, self.channels, self.settings, self.communicator)
+
+        self.centralWidgetLayout.addWidget(tabContentClassInstance)
+
+
+    def setupMainMenu(self):
+        newProjectAction = QtGui.QAction(u"Neues Projekt...", self)
+        newProjectAction.setShortcut("Ctrl+N")
+        newProjectAction.setStatusTip(u"Legt ein neues Projekt an.")
+        newProjectAction.triggered.connect(self.newProject)
+
+        openAction = QtGui.QAction(u"Öffnen...", self)
+        openAction.setShortcut("Ctrl+O")
+        openAction.triggered.connect(self.open)
+
+        saveAction = QtGui.QAction(u"Speichern", self)
+        saveAction.setShortcut("Ctrl+S")
+        saveAction.triggered.connect(self.save)
+
+        saveAsAction = QtGui.QAction(u"Speichern unter...", self)
+        saveAsAction.setShortcut("Shift+Ctrl+N")
+        saveAsAction.triggered.connect(self.saveAs)
+
+        closeAction = QtGui.QAction(u"Programm beenden...", self)
+        closeAction.setShortcut("Ctrl+Q")
+        closeAction.triggered.connect(self.close)
+
+
+
+
+        showHelpAction = QtGui.QAction(u"Hilfe anzeigen...", self)
+        showHelpAction.setShortcut("Ctrl+H")
+        showHelpAction.setStatusTip(u"todo")
+        showHelpAction.triggered.connect(self.showHelp)
+
+        aboutAction = QtGui.QAction(u"Über das Programm...", self)
+        aboutAction.triggered.connect(self.showAboutWindow)
+
+
+
+
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu("Datei")
+        fileMenu.addAction(newProjectAction)
+        fileMenu.addAction(openAction)
+        fileMenu.addAction(saveAction)
+        fileMenu.addAction(saveAsAction)
+        fileMenu.addAction(closeAction)
+
+        helpMenu = mainMenu.addMenu("Hilfe")
+        helpMenu.addAction(showHelpAction)
+        helpMenu.addAction(aboutAction)
+
+    def newProject(self):
+        print "new Project"
+
+    def open(self):
+        print "open"
+
+    def save(self):
+        print "save"
+
+    def saveAs(self):
+        print "save AS"
+
+    def close(self):
+        print "close"
+
+    def showHelp(self):
+        print "Help"
+
+    def showAboutWindow(self):
+        print "About"
 
     def receiveAndSend(self):
         self.receive()

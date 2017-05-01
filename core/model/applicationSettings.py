@@ -12,3 +12,4 @@ class ApplicationSettings():
         self.controllerIP = ""
         self.computerRxPort = 1
         self.controllerRxPort = 1
+        self.controllerFrameworkAndInterface = ""

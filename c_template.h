@@ -2,18 +2,31 @@ void initControlDemonstrator();
 void communicate();
 
 
+#ifdef ARDUINO_SERIAL
+#include <stdint.h>
 typedef struct MessageOut
 {
-    int loopStartTime;
-    int lastLoopDuration;
-    int parameterNumber;
+    uint32_t loopStartTime;
+    uint32_t parameterNumber;
     float parameterValue;
     float channels[CHANNELS_REQUESTED_COUNT];
 } MessageOut;
 
+#else
+#include <stdint.h>
+typedef struct MessageOut
+{
+    uint32_t loopStartTime;
+    uint32_t parameterNumber;
+    float parameterValue;
+    float channels[CHANNELS_REQUESTED_COUNT];
+} MessageOut;
+#endif
+
+
 typedef struct MessageIn
 {
-    int parameterNumber;
+    uint32_t parameterNumber;
     float value;
 } MessageIn;
 
@@ -24,3 +37,5 @@ extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
 extern float parameters[PARAMETER_COUNT];
 
 extern MessageOut messageOutBuffer;
+
+

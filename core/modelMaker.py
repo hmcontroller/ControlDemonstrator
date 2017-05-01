@@ -7,6 +7,7 @@ from core.command import CommandList
 from core.messageData import MessageData
 from core.measurementData import MeasurementData
 from core.valueChannel import ValueChannel
+from core.communicator import *
 from core.constants import *
 from core.commandArgumentsParser import CommandArgumentsParser
 
@@ -83,6 +84,19 @@ class ModelMaker():
 
         return model
 
+    def getCommunicator(self):
+        settings = self.getApplicationSettings()
+
+        serialCases = ["arduino_serial"]
+        udpCases = ["mbed_OS_udp", "arduino_udp"]
+
+        if settings.controllerFrameworkAndInterface in serialCases:
+            return SerialCommunicator(settings)
+        elif settings.controllerFrameworkAndInterface in udpCases:
+            return UdpCommunicator(settings)
+        else:
+            raise Exception("parameter 'controllerFrameworkAndInterface' not valid.")
+
     def getMessageFormatList(self):
         messagePartsList = list()
 
@@ -99,24 +113,28 @@ class ModelMaker():
         # mData.id = channelCounter
         channelCounter += 1
         mData.positionInBytes = positionCounter
+        # mData.lengthInBytes = 2
         mData.lengthInBytes = 4
         positionCounter += mData.lengthInBytes
         mData.dataType = int
-        mData.unpackString = "<i"
+        # mData.unpackString = "<h"
+        mData.unpackString = "<I"
         mData.name = "loopStartTime"
         messagePartsList.append(mData)
 
-        # lastLoopDuration
-        mData1 = MessageData()
-        # mData1.id = channelCounter
-        channelCounter += 1
-        mData1.positionInBytes = positionCounter
-        mData1.lengthInBytes = 4
-        positionCounter += mData1.lengthInBytes
-        mData1.dataType = int
-        mData1.unpackString = "<i"
-        mData1.name = "lastLoopDuration"
-        messagePartsList.append(mData1)
+        # # lastLoopDuration
+        # mData1 = MessageData()
+        # # mData1.id = channelCounter
+        # channelCounter += 1
+        # mData1.positionInBytes = positionCounter
+        # mData1.lengthInBytes = 2
+        # # mData1.lengthInBytes = 4
+        # positionCounter += mData1.lengthInBytes
+        # mData1.dataType = int
+        # mData1.unpackString = "<h"
+        # # mData1.unpackString = "<i"
+        # mData1.name = "lastLoopDuration"
+        # messagePartsList.append(mData1)
 
         # parameterNumber
         mData2 = MessageData()
@@ -124,9 +142,11 @@ class ModelMaker():
         channelCounter += 1
         mData2.positionInBytes = positionCounter
         mData2.lengthInBytes = 4
+        # mData2.lengthInBytes = 4
         positionCounter += mData2.lengthInBytes
         mData2.dataType = int
-        mData2.unpackString = "<i"
+        mData2.unpackString = "<I"
+        # mData2.unpackString = "<i"
         mData2.name = "parameterNumber"
         messagePartsList.append(mData2)
 
@@ -169,5 +189,6 @@ class ModelMaker():
         settings.computerIP = self.config.get("misc", "computerIP")
         settings.controllerIP = self.config.get("misc", "controllerIP")
         settings.udpPort = self.config.getint("misc", "udpPort")
+        settings.controllerFrameworkAndInterface = self.config.get("misc", "microcontrollerFrameworkAndInterface")
         return settings
 

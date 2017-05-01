@@ -3,6 +3,8 @@
 import socket
 import errno
 import struct
+import serial
+import time
 from collections import deque
 import datetime
 
@@ -81,6 +83,7 @@ class Communicator(QtCore.QObject):
             else:
                 self._commState.state = CommState.COMM_TIMEOUT
                 self.commStateChanged.emit(self._commState)
+                # self._connectionPollTimer.start(1000)
         else:
             if self._commState.state != CommState.COMM_ESTABLISHED:
                 self._commState.state = CommState.COMM_ESTABLISHED
@@ -219,8 +222,152 @@ class SerialCommunicator(Communicator):
     def __init__(self, settings):
         super(SerialCommunicator, self).__init__(settings)
 
+
+        self.messageLength = 42
+
+        self.lastMessageRemainder = b""
+        self.startByte = 7
+        self.stopByte = 8
+
+        self.ser = serial.Serial()
+
+    def connectToController(self):
+        print "connecting"
+        if self.ser.isOpen():
+            print "serial open, closing"
+            self.ser.close()
+            time.sleep(1)
+
+        self.ser.baudrate = 115200
+        self.ser.port = '\\.\COM5'  # für Windows (einen kleiner als im Hardwaremanager angezeigt nehmen)
+        self.ser.timeout = 0.1
+        try:
+            self.ser.open()
+            self._commState.state = CommState.COMM_ESTABLISHED
+            self.commStateChanged.emit(self._commState)
+        except serial.SerialException:
+            self._commState.state = CommState.NO_CONN
+            self.commStateChanged.emit(self._commState)
+            self._connectionPollTimer.start(1000)
+
     def send(self, commandList):
-        pass
+        # return
+        if len(commandList.changedCommands) > 0 and self._commState.state == CommState.COMM_ESTABLISHED:
+            commandToSend = commandList.changedCommands.popleft()
+
+            startByte = struct.pack("<1B", 7)
+            packedData = self._packCommand(commandToSend)
+            stopByte = struct.pack("<1B", 57)
+
+            self.ser.write(startByte)
+            time.sleep(0.0005)
+            for aChar in packedData:
+                self.ser.write(aChar)
+                # print aChar
+                time.sleep(0.0005)
+            self.ser.write(stopByte)
+            # self.ser.write(packedData)
+
+            # print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue(), packedData, len(packedData)
+
+            self.commandSend.emit(commandToSend)
 
     def receive(self):
-        pass
+        messages = list()
+        messagePositions = list()
+
+        try:
+            if self.ser.in_waiting > 0:
+                incomingMessage = self.ser.read(self.ser.in_waiting)
+
+                messageToProcess = self.lastMessageRemainder + incomingMessage
+
+                unpackedBytes = self.unpackAsBytes(messageToProcess)
+                backupedUnpackedBytes = self.unpackAsBytes(messageToProcess)
+
+                messagePositions.append(self.findNextFullMessagePosition(0, unpackedBytes))
+
+                # message still too short or no message inside, store it for next try
+                if len(messageToProcess) < self._messageSize + 2 or messagePositions[0][0] == -1:
+                    self.lastMessageRemainder = messageToProcess
+                    return messages
+
+
+                while True:
+                    lastStopPosition = messagePositions[-1][1]
+                    newPosition = self.findNextFullMessagePosition(lastStopPosition, unpackedBytes)
+                    if newPosition[0] > -1:
+                        messagePositions.append(newPosition)
+                    else:
+                        self.lastMessageRemainder = messageToProcess[lastStopPosition : ]
+                        break
+
+
+
+
+                for messagePosition in messagePositions:
+                    start = messagePosition[0]
+                    stop = messagePosition[1]
+                    messages.append(messageToProcess[start : stop])
+        except serial.SerialException:
+            self._commState.state = CommState.NO_CONN
+            self.commStateChanged.emit(self._commState)
+            return list()
+
+
+        unpackedMessages = self._unpack(messages)
+
+        if len(unpackedMessages) > 0:
+            self._commState.timeOfLastReceive = datetime.datetime.now()
+
+        return unpackedMessages
+
+
+
+    def findNextPossibleStartByte(self, startPosition, bytes):
+        for i, unpackedByte in enumerate(bytes):
+            if i < startPosition:
+                continue
+            if unpackedByte == self.startByte:
+                return i
+        return -1
+
+    def findFirstPossibleStopByte(self, bytes):
+        for i, unpackedByte in enumerate(bytes):
+            if unpackedByte == self.stopByte:
+                return i
+        return -1
+
+    def findFirstMessageBorderPosition(self, bytes):
+        for i, unpackedByte in enumerate(bytes):
+            if unpackedByte == self.stopByte:
+                if i + 1 < len(bytes):
+                    if bytes[i + 1] == self.startByte:
+                        return i
+        return -1
+
+    def findNextFullMessagePosition(self, startPosition, bytes):
+        start = -1
+        stop = -1
+        startBytePos = self.findNextPossibleStartByte(startPosition, bytes)
+        if startBytePos > -1:
+            remainingBytes = bytes[startBytePos:]
+            if len(remainingBytes) > (self._messageSize + 1):
+                expectedStopBytePos = startBytePos + self._messageSize + 1
+                if bytes[expectedStopBytePos] == self.stopByte:
+                    start = startBytePos + 1
+                    stop = expectedStopBytePos
+        return start, stop
+
+    def getRemainderOfLastMessagePosition(self, bytes):
+        messageBorder = self.findFirstMessageBorderPosition(bytes)
+        if messageBorder > -1:
+            return 0, messageBorder
+        else:
+            return 0, len(bytes) - 1
+
+    def unpackAsBytes(self, byteArray):
+        unpackedBytes = list()
+        for aByte in byteArray:
+            unpackedBytes.append(struct.unpack("B", aByte)[0])
+        return unpackedBytes

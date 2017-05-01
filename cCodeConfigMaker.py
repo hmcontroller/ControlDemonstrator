@@ -10,6 +10,8 @@ which one can copy to the microcontroller sourcecode directory.
 
 import ConfigParser
 import json
+import serial.tools.list_ports
+import os
 
 P_CONFIG_FILE_PATH = "config.txt"
 C_FILE_HEADER_PATH = "controlDemonstrator.h"
@@ -17,13 +19,23 @@ C_FILE_CPP_PATH = "controlDemonstrator.cpp"
 C_HEADER_TEMPLATE = "c_template.h"
 C_C_TEMPLATE = "c_template.c"
 
+DESTINATION_FOLDER_PATH = "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\ArduinoSerial\\src"
+
 AVAILABLE_FRAMEWORKS = {
     "mbed_2_udp": "MBED_2_UDP",
     "mbed_OS_udp": "MBED_OS_UDP",
-    "arduino_udp": "ARDUINO_UDP"
+    "arduino_udp": "ARDUINO_UDP",
+    "arduino_serial": "ARDUINO_SERIAL"
 }
 
 def run():
+
+
+    ports = serial.tools.list_ports.comports()
+
+    for port in ports:
+        print port
+
     nameWidth = 40
     valueWidth = 6
 
@@ -86,7 +98,10 @@ def run():
     # now put all defines in the new file C_FILE_HEADER_PATH, will be overwritten
     # and all variables in C_FILE_CPP_PATH
 
-    with open(C_FILE_HEADER_PATH, "w") as f:
+    fullDestinationPathHeaderFile = os.path.join(DESTINATION_FOLDER_PATH, C_FILE_HEADER_PATH)
+    fullDestinationPathCFile = os.path.join(DESTINATION_FOLDER_PATH, C_FILE_CPP_PATH)
+
+    with open(fullDestinationPathHeaderFile, "w") as f:
         # include guard
         f.write("#ifndef CONFIG_H\n"
                 "#define CONFIG_H\n")
@@ -158,7 +173,7 @@ def run():
 
 
 
-    with open(C_FILE_CPP_PATH, "w") as f:
+    with open(fullDestinationPathCFile, "w") as f:
         #
         f.write('#include "controlDemonstrator.h"\n\n')
 
