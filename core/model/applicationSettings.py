@@ -13,3 +13,4 @@ class ApplicationSettings():
         self.computerRxPort = 1
         self.controllerRxPort = 1
         self.controllerFrameworkAndInterface = ""
+        self.tabs = list()

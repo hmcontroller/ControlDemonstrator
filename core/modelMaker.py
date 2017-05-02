@@ -10,6 +10,7 @@ from core.valueChannel import ValueChannel
 from core.communicator import *
 from core.constants import *
 from core.commandArgumentsParser import CommandArgumentsParser
+from core.model.tabDescription import TabDescription
 
 
 class ModelMaker():
@@ -19,14 +20,6 @@ class ModelMaker():
         self.config.optionxform = str
         self.config.read(self.configFilePath)
 
-    def getTabs(self):
-        tabs = list()
-        tabEntries = self.config.options('tabs')
-        for tabEntry in tabEntries:
-            options = self.config.get("tabs", tabEntry)
-            tabs.append((tabEntry, options))
-
-        return tabs
 
     def getCommands(self):
         commandList = CommandList()
@@ -190,5 +183,46 @@ class ModelMaker():
         settings.controllerIP = self.config.get("misc", "controllerIP")
         settings.udpPort = self.config.getint("misc", "udpPort")
         settings.controllerFrameworkAndInterface = self.config.get("misc", "microcontrollerFrameworkAndInterface")
+
+        settings.tabs = self.getTabConfigList()
+
         return settings
+
+    def getTabDescriptions(self):
+        tabs = list()
+        tabEntries = self.config.options('tabs')
+        for tabEntry in tabEntries:
+            options = self.config.get("tabs", tabEntry)
+            tabs.append((tabEntry, options))
+
+        return tabs
+
+
+    def getTabConfigList(self):
+
+
+        tabDescriptions = self.getTabDescriptions()
+
+        tabConfigList = list()
+
+        for givenTab in tabDescriptions:
+            tabDescription = TabDescription()
+
+            tabDescription.pathToClassFile = givenTab[0]
+
+            arguments = givenTab[1].split(";")
+            for arg in arguments:
+                arg = arg.strip()
+
+            if arguments is None or len(arguments) != 2:
+                raise Exception("Please specify the class name and a display name separated "
+                                "by a ';' for the entry {} in the config file under section tabs".format(tabDescription.pathToClassFile))
+
+            tabDescription.className = arguments[0]
+            tabDescription.displayName = arguments[1].decode('utf-8')
+
+            tabConfigList.append(tabDescription)
+
+        return tabConfigList
+
 

@@ -65,7 +65,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.communicator.setMessageMap(self.messageFormat)
         self.communicator.connectToController()
 
-        tabs = modelMaker.getTabs()
+        tabs = modelMaker.getTabConfigList()
 
         self.addTabs(tabs)
 
@@ -107,6 +107,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         cFM = ConfigFileManager(self.settings, self.channels, self.commands)
         cFM.save()
 
+        cFM.buildModelFromConfigFile("D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\ControlDemonstrator\\testConfig.txt")
 
     def setupUi(self):
         self.centralwidget = QtGui.QWidget(self)
@@ -152,45 +153,22 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
 
         for givenTab in tabs:
-
-            tabPath = givenTab[0]
-
-            arguments = givenTab[1].split(";")
-            for arg in arguments:
-                arg = arg.strip()
-
-            if arguments is None or len(arguments) != 2:
-                raise Exception("Please specify the class name and a display name separated "
-                                "by a ';' for the entry {} in the config file under section tabs".format(tabPath))
-
-            tabContentClassName = arguments[0]
-            tabDisplayName = arguments[1].decode('utf-8')
-
             tab = QtGui.QWidget()
             tab.setFont(font)
             tabLayout = QtGui.QHBoxLayout(tab)
             tabLayout.setSpacing(0)
             tabLayout.setMargin(0)
-            self.tabWidget.addTab(tab, tabDisplayName)
+            self.tabWidget.addTab(tab, givenTab.displayName)
 
-            tabContentClass = getattr(import_module(tabPath), tabContentClassName)
+            tabContentClass = getattr(import_module(givenTab.pathToClassFile), givenTab.className)
             tabContentClassInstance = tabContentClass(self.commands, self.channels, self.settings, self.communicator)
 
             tabLayout.addWidget(tabContentClassInstance)
 
     def addOnlyOneWidget(self, tabs):
-        tabPath = tabs[0][0]
-        arguments = tabs[0][1].split(";")
-        for arg in arguments:
-            arg = arg.strip()
+        tab = tabs[0]
 
-        if arguments is None or len(arguments) != 2:
-            raise Exception("Please specify the class name and a display name separated "
-                            "by a ';' for the entry {} in the config file under section tabs".format(tabPath))
-
-        tabContentClassName = arguments[0]
-
-        tabContentClass = getattr(import_module(tabPath), tabContentClassName)
+        tabContentClass = getattr(import_module(tab.pathToClassFile), tab.className)
         tabContentClassInstance = tabContentClass(self.commands, self.channels, self.settings, self.communicator)
 
         self.centralWidgetLayout.addWidget(tabContentClassInstance)

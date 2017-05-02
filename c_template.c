@@ -258,9 +258,6 @@ void receiveMessage() {
     readIncomingBytesIntoBuffer();
     lastPositionProcessed = findMessageAndProcess();
     storeForNextLoop(lastPositionProcessed);
-
-    dummy1 = (float)bytesInDataToProcess;
-
     receiveTimer = (float)(micros() - lastTime);
 }
 
@@ -290,15 +287,11 @@ void readIncomingBytesIntoBuffer() {
 
 int findMessageAndProcess() {
     for (searchPosition = 0; searchPosition < bytesInDataToProcess; searchPosition++) {
-        searchPositionDebug = dataToProcess[searchPosition];
         if (dataToProcess[searchPosition] == START_BYTE) {
             int expectedStopBytePosition = searchPosition + IN_MESSAGE_SIZE + 1;
             if (expectedStopBytePosition < BUFFER_SIZE) {
                 if (dataToProcess[expectedStopBytePosition] == STOP_BYTE) {
-                    dummy1 = 10000.0f;
                     processMessage(searchPosition + 1);
-                    startPosition = searchPosition;
-                    endPosition = expectedStopBytePosition;
                     return expectedStopBytePosition;
                 }
             }
@@ -311,9 +304,6 @@ int findMessageAndProcess() {
 }
 
 void processMessage(int messageStartPosition) {
-    paramNumber = (float) (*(int *)&dataToProcess[messageStartPosition]);
-    paramNumber = 12.0f;
-    //paramValue = (float *)&dataToProcess[messageStartPosition + 4];
     memcpy(&messageInBuffer.parameterNumber, &dataToProcess[messageStartPosition], 4);
     memcpy(&messageInBuffer.value, &dataToProcess[messageStartPosition + 4], 4);
     parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
