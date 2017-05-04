@@ -1,0 +1,115 @@
+{
+    "channels": [
+        {
+            "color": [
+                190, 
+                0, 
+                0
+            ], 
+            "isRequested": false, 
+            "id": 0, 
+            "name": "analogIn0", 
+            "show": true
+        }, 
+        {
+            "color": [
+                0, 
+                150, 
+                0
+            ], 
+            "isRequested": false, 
+            "id": 1, 
+            "name": "dummy1", 
+            "show": true
+        }, 
+        {
+            "color": [
+                0, 
+                153, 
+                255
+            ], 
+            "isRequested": false, 
+            "id": 2, 
+            "name": "testParameterChannel", 
+            "show": true
+        }, 
+        {
+            "color": [
+                255, 
+                165, 
+                0
+            ], 
+            "isRequested": false, 
+            "id": 3, 
+            "name": "superSinusFunction", 
+            "show": true
+        }, 
+        {
+            "color": [
+                222, 
+                184, 
+                135
+            ], 
+            "isRequested": false, 
+            "id": 4, 
+            "name": "loopDuration", 
+            "show": true
+        }, 
+        {
+            "color": [
+                0, 
+                139, 
+                139
+            ], 
+            "isRequested": false, 
+            "id": 5, 
+            "name": "sendTimer", 
+            "show": true
+        }, 
+        {
+            "color": [
+                143, 
+                188, 
+                143
+            ], 
+            "isRequested": false, 
+            "id": 6, 
+            "name": "receiveTimer", 
+            "show": true
+        }
+    ], 
+    "commands": [
+        {
+            "displayName": "", 
+            "name": "testParameter", 
+            "min": 0, 
+            "max": 1, 
+            "value": 0.0, 
+            "pendingMode": false, 
+            "id": 0
+        }, 
+        {
+            "displayName": "", 
+            "name": "anotherTestParameter", 
+            "min": 0, 
+            "max": 1, 
+            "value": 0.0, 
+            "pendingMode": false, 
+            "id": 1
+        }
+    ], 
+    "miscSettings": {
+        "controllerFrameworkAndInterface": "arduino_serial", 
+        "tabs": [
+            {
+                "className": "TabSmallGenericView", 
+                "pathToClassFile": "gui.tabSmallGenericView", 
+                "displayName": " Generische Ansicht"
+            }
+        ], 
+        "computerIP": "192.168.0.133", 
+        "udpPort": 10000, 
+        "controllerLoopCycleTimeInUs": 10000, 
+        "controllerIP": "192.168.0.15"
+    }
+}

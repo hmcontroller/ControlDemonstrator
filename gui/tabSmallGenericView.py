@@ -13,13 +13,14 @@ class TabSmallGenericView(QtGui.QWidget, Ui_tabGenericView):
 
     changingName = QtCore.pyqtSignal(str)
 
-    def __init__(self, commands, channels, settings, communicator, parent=None):
+    def __init__(self, commands, channels, applicationSettings, projectSettings, communicator, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setupUi(self)
 
         self.commands = commands
         self.channels = channels
-        self.settings = settings
+        self.applicationSettings = applicationSettings
+        self.projectSettings = projectSettings
         self.communicator = communicator
 
         self.movePlot = True
@@ -41,7 +42,7 @@ class TabSmallGenericView(QtGui.QWidget, Ui_tabGenericView):
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self.controller.setSizePolicy(sizePolicy)
 
-        self.plotter = PlotWidget(self.channels, self.settings)
+        self.plotter = PlotWidget(self.channels, self.applicationSettings, self.projectSettings)
         self.plotLayout.insertWidget(0, self.plotter, 0)
 
         self.splitter.splitterMoved.connect(self.splitterMoved)

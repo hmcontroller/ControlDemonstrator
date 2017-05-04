@@ -8,12 +8,15 @@ from gui.constants import *
 
 
 class PlotWidget(QtGui.QWidget):
-    def __init__(self, channels, settings, parent=None):
+    def __init__(self, channels, applicationSettings, projectSettings, parent=None):
         QtGui.QWidget.__init__(self, parent)
 
         self.channels = channels
         self.channels.channelChanged.connect(self.updateCurve)
-        self.settings = settings
+
+        self.applicationSettings = applicationSettings
+        self.projectSettings = projectSettings
+
 
         self.movePlot = True
 
@@ -24,8 +27,9 @@ class PlotWidget(QtGui.QWidget):
         pyqtgraph.setConfigOptions(antialias=False)
 
         self.plotWidget = pyqtgraph.PlotWidget()
-        self.plotWidget.setXRange(-float(self.settings.bufferLength)*(self.settings.controllerLoopCycleTimeInUs / float(1000000)), 0)
-        self.plotWidget.setYRange(0, 60000)
+        self.plotWidget.setXRange(-float(self.applicationSettings.bufferLength)*(self.projectSettings.controllerLoopCycleTimeInUs / float(1000000)), 0)
+        self.plotWidget.setYRange(-1000, 1000)
+        self.plotWidget.showGrid(x=True, y=True)
         self.horizontalLayoutPlotArea.insertWidget(0, self.plotWidget, 0)
 
         self.verticalLayoutPlotSwitcher = QtGui.QVBoxLayout()
@@ -57,7 +61,7 @@ class PlotWidget(QtGui.QWidget):
         self.plotUpdateTimer = QtCore.QTimer()
         self.plotUpdateTimer.setSingleShot(False)
         self.plotUpdateTimer.timeout.connect(self.updatePlots)
-        self.plotUpdateTimer.start(self.settings.guiUpdateIntervalLengthInMs)
+        self.plotUpdateTimer.start(self.applicationSettings.guiUpdateIntervalLengthInMs)
 
     def curveHideShow(self, number, state):
         if state == 2:
@@ -68,7 +72,7 @@ class PlotWidget(QtGui.QWidget):
     def updatePlots(self):
         if self.movePlot is True and self.isVisible() is True:
             # update all curves
-            biggestTime = self.channels.timeValues[self.settings.bufferLength - 1]
+            biggestTime = self.channels.timeValues[self.applicationSettings.bufferLength - 1]
             for id, curve in self.plotCurves.items():
                 curve.setData(self.channels.timeValues, self.channels.channels[id])
                 curve.setPos(-biggestTime, 0)

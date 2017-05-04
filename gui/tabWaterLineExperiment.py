@@ -12,13 +12,14 @@ class TabWaterLineExperiment(QtGui.QWidget, Ui_tabWaterLineExperiment):
 
     changingName = QtCore.pyqtSignal(str)
 
-    def __init__(self, commands, channels, settings, communicator, parent=None):
+    def __init__(self, commands, channels, applicationSettings, projectSettings, communicator, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setupUi(self)
 
         self.commands = commands
         self.channels = channels
-        self.settings = settings
+        self.applicationSettings = applicationSettings
+        self.projectSettings = projectSettings
 
         self.movePlot = True
 
@@ -31,7 +32,7 @@ class TabWaterLineExperiment(QtGui.QWidget, Ui_tabWaterLineExperiment):
         self.verticalLayoutCommandView.insertWidget(0, self.controller, 0)
         self.verticalLayoutCommandView.setMargin(6)
 
-        self.plotter = PlotWidget(self.channels, self.settings)
+        self.plotter = PlotWidget(self.channels, self.applicationSettings, self.projectSettings)
         self.horizontalLayoutPlotArea.insertWidget(0, self.plotter, 0)
         self.horizontalLayoutPlotArea.setMargin(0)
 

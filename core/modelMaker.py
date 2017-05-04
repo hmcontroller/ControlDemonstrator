@@ -11,7 +11,7 @@ from core.communicator import *
 from core.constants import *
 from core.commandArgumentsParser import CommandArgumentsParser
 from core.model.tabDescription import TabDescription
-
+from core.model.projectSettings import ProjectSettings
 
 class ModelMaker():
     def __init__(self, configFilePath):
@@ -187,6 +187,23 @@ class ModelMaker():
         settings.tabs = self.getTabConfigList()
 
         return settings
+
+    def getProjectMiscSettings(self):
+        settings = ProjectSettings()
+        settings.controllerLoopCycleTimeInUs = self.config.getint("misc", "loopCycleTimeUS")
+        settings.bufferLength = self.config.getint("misc", "bufferSizePC")
+        settings.guiUpdateIntervalLengthInMs = self.config.getint("misc", "guiUpdateIntervalLengthInMs")
+        settings.receiveMessageIntervalLengthInMs = self.config.getint("misc", "receiveMessageIntervalLengthInMs")
+        settings.sendMessageIntervalLengthInMs = self.config.getint("misc", "sendMessageIntervalLengthInMs")
+        settings.computerIP = self.config.get("misc", "computerIP")
+        settings.controllerIP = self.config.get("misc", "controllerIP")
+        settings.udpPort = self.config.getint("misc", "udpPort")
+        settings.controllerFrameworkAndInterface = self.config.get("misc", "microcontrollerFrameworkAndInterface")
+
+        settings.tabs = self.getTabConfigList()
+
+        return settings
+
 
     def getTabDescriptions(self):
         tabs = list()

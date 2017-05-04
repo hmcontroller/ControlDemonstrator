@@ -1,0 +1,8 @@
+{
+    "miscSettings": {
+        "receiveMessageIntervalLengthInMs": 10, 
+        "guiUpdateIntervalLengthInMs": 100, 
+        "sendMessageIntervalLengthInMs": 15, 
+        "bufferLength": 10000
+    }
+}

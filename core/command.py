@@ -98,6 +98,7 @@ class Command(QtCore.QObject):
         self._pendingSendMode = False
         self._pendingValue = None
         self._isSelectedAsActive = True
+        self.timeOutDuration = 1000
 
         self._lowerLimit = 0
         self._upperLimit = 1

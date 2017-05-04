@@ -12,6 +12,8 @@ from core.communicator import UdpCommunicator
 from core.communicator import SerialCommunicator
 from core.messageInterpreter import MessageInterpreter
 from core.configFileManager import ConfigFileManager
+from core.applicationSettingsManager import ApplicationSettingsManager
+
 
 from gui.constants import *
 # from gui.TabWaterLineExperiment import TabWaterLineExperiment
@@ -45,36 +47,55 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         QtGui.qApp.processEvents()
         QtGui.qApp.processEvents()
 
+
+
+
+
+
+
+
         # generate model objects according to the config file
+
+
         configFilePath = os.path.join(rootFolder, "config.txt")
         modelMaker = ModelMaker(configFilePath)
-        self.settings = modelMaker.getApplicationSettings()
+
+
+        appSettingsManager = ApplicationSettingsManager("testAppConfig.json")
+        self.applicationSettings = appSettingsManager.restoreSettingsFromFile()
+
+        projectConfigManager = ConfigFileManager(self.applicationSettings)
+        self.projectSettings, self.channels, self.commands, self.messageFormatList = projectConfigManager.buildModelFromConfigFile("testProjectConfig.json")
+
+
 
         # TODO it is ugly how the messageData list will be generated in model maker - check single source problem
-        self.messageFormat = modelMaker.getMessageFormatList()
-
-        self.channels = modelMaker.getMeasurementDataModel()
-
-        self.commands = modelMaker.getCommands()
-
-
 
         self.communicator = modelMaker.getCommunicator()
-
-
-        self.communicator.setMessageMap(self.messageFormat)
+        self.communicator.setMessageMap(self.messageFormatList)
         self.communicator.connectToController()
 
-        tabs = modelMaker.getTabConfigList()
+        self.addTabs(self.projectSettings.tabs)
 
-        self.addTabs(tabs)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         # setup a timer, that triggers to read from the controller
         self.receiveTimer = QtCore.QTimer()
         self.receiveTimer.setSingleShot(False)
         self.receiveTimer.timeout.connect(self.receiveAndSend)
-        self.receiveTimer.start(self.settings.receiveMessageIntervalLengthInMs)
+        self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
 
         # # setup a timer, that triggers to send to the controller
         # self.sendTimer = QtCore.QTimer()
@@ -86,7 +107,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.guiUpdateTimer = QtCore.QTimer()
         self.guiUpdateTimer.setSingleShot(False)
         self.guiUpdateTimer.timeout.connect(self.refreshGui)
-        self.guiUpdateTimer.start(self.settings.guiUpdateIntervalLengthInMs)
+        self.guiUpdateTimer.start(self.applicationSettings.guiUpdateIntervalLengthInMs)
 
         # for debugging purpose
         self.loopReportTimer = QtCore.QTimer()
@@ -104,10 +125,9 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         splashScreen.finish(self)
         logging.info("GUI load complete")
 
-        cFM = ConfigFileManager(self.settings, self.channels, self.commands)
-        cFM.save()
 
-        cFM.buildModelFromConfigFile("D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\ControlDemonstrator\\testConfig.txt")
+
+
 
     def setupUi(self):
         self.centralwidget = QtGui.QWidget(self)
@@ -161,7 +181,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
             self.tabWidget.addTab(tab, givenTab.displayName)
 
             tabContentClass = getattr(import_module(givenTab.pathToClassFile), givenTab.className)
-            tabContentClassInstance = tabContentClass(self.commands, self.channels, self.settings, self.communicator)
+            tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
 
             tabLayout.addWidget(tabContentClassInstance)
 
@@ -169,7 +189,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         tab = tabs[0]
 
         tabContentClass = getattr(import_module(tab.pathToClassFile), tab.className)
-        tabContentClassInstance = tabContentClass(self.commands, self.channels, self.settings, self.communicator)
+        tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
 
         self.centralWidgetLayout.addWidget(tabContentClassInstance)
 
@@ -283,5 +303,6 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         # print "min", self.loopDurationMin, "max", self.loopDurationMax, "avg", self.loopDurationAverage
 
     def closeEvent(self, *args, **kwargs):
+        print "bye bye"
         QtGui.QApplication.quit()
 
