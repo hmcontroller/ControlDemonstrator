@@ -9,6 +9,7 @@ from gui.graphicItems.commandWidgets.baseCommand import BaseCommand
 from gui.graphicItems.button import SymbolButton
 from gui.genericCommandEditorWindow import GenericCommandEditorWindow
 
+
 class SignalGenerator(BaseCommand):
     def __init__(self, signalGeneratorCommandGroup):
         if not isinstance(signalGeneratorCommandGroup, SignalGeneratorCommandGroup):
@@ -261,6 +262,7 @@ class SignalGenerator(BaseCommand):
 
     def boundingRect(self):
         return QtCore.QRectF(0, 0, 150, 100)
+
 
 
 class SignalGeneratorConstantShape(QtGui.QGraphicsItem):

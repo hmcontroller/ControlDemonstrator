@@ -4,6 +4,8 @@ import time
 
 from PyQt4 import QtGui, QtCore
 
+from core.command import Command
+
 from baseCommand import BaseCommand
 from gui.graphicItems.floatValidator import FloatValidator
 from gui.graphicItems.lineEditDoubleClickSpecial import LineEditDoubleClickSpecial
@@ -131,7 +133,7 @@ class SmallGenericCommand(BaseCommand):
 
 
         self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
-
+        self.valueLineEdit.hide()
 
 
 
@@ -189,6 +191,12 @@ class SmallGenericCommand(BaseCommand):
         self.littleTimer.setSingleShot(True)
         self.littleTimer.timeout.connect(self.switchToZero)
 
+        if self.command.inputMethod == Command.VALUE_INPUT:
+            self.valueLineEdit.show()
+        if self.command.inputMethod == Command.SWITCH_INPUT:
+            self.switchButton.show()
+        if self.command.inputMethod == Command.TOGGLE_INPUT:
+            self.toggleButton.show()
 
     def _layoutLineEdit(self, lineEdit):
 

@@ -69,7 +69,7 @@ class TankGauge(QtGui.QGraphicsItem):
 
     def setColor(self, color):
         # accepts a tuple with three int values or a QtGui.QColor
-        if isinstance(color, tuple):
+        if isinstance(color, tuple) or isinstance(color, list):
             self.tankColor = QtGui.QColor(color[0], color[1], color[2])
         else:
             self.tankColor = color

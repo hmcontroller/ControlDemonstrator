@@ -1,0 +1,15 @@
+{
+    "miscSettings": {
+        "receiveMessageIntervalLengthInMs": 10, 
+        "guiUpdateIntervalLengthInMs": 100, 
+        "sendMessageIntervalLengthInMs": 15, 
+        "recentProjects": [
+            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/ControlDemonstratorProjects/testUnoSerial.json", 
+            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/ControlDemonstratorProjects/wasserstand.json", 
+            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/ControlDemonstratorProjects/wasserEins.json", 
+            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/ControlDemonstratorProjects/robot_Serial.json", 
+            "testProjectConfig.json"
+        ], 
+        "bufferLength": 10000
+    }
+}

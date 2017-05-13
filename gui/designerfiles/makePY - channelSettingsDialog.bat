@@ -1,0 +1,1 @@
+pyuic4 -o channelSettingsDialog.py channelSettingsDialog.ui

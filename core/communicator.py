@@ -4,6 +4,7 @@ import socket
 import errno
 import struct
 import serial
+import serial.tools.list_ports
 import time
 from collections import deque
 import datetime
@@ -32,10 +33,11 @@ class Communicator(QtCore.QObject):
     commStateChanged = QtCore.pyqtSignal(object)
     commandSend = QtCore.pyqtSignal(object)
 
-    def __init__(self, settings):
+    def __init__(self, applicationSettings, projectSettings):
         super(Communicator, self).__init__()
 
-        self._settings = settings
+        self._applicationSettings = applicationSettings
+        self._projectSettings = projectSettings
         self._messageSize = None
         self._messageMap = None
 
@@ -48,7 +50,7 @@ class Communicator(QtCore.QObject):
         self._sendTimer = QtCore.QTimer()
         self._sendTimer.setSingleShot(False)
         self._sendTimer.timeout.connect(self.sendPerTimer)
-        self._sendTimer.start(settings.sendMessageIntervalLengthInMs)
+        self._sendTimer.start(self._applicationSettings.sendMessageIntervalLengthInMs)
 
         self._commTimeOutChecker = QtCore.QTimer()
         self._commTimeOutChecker.setSingleShot(False)
@@ -137,15 +139,15 @@ class Communicator(QtCore.QObject):
 
 
 class UdpCommunicator(Communicator):
-    def __init__(self, settings):
-        super(UdpCommunicator, self).__init__(settings)
+    def __init__(self, applicationSettings, projectSettings):
+        super(UdpCommunicator, self).__init__(applicationSettings, projectSettings)
         self._socket = None
 
 
     def connectToController(self):
         try:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self._socket.bind((self._settings.computerIP, self._settings.udpPort))
+            self._socket.bind((self._projectSettings.computerIP, self._projectSettings.udpPort))
             self._socket.setblocking(False)
             self._socket.settimeout(0)
             self._commState.state = CommState.COMM_ESTABLISHED
@@ -160,7 +162,7 @@ class UdpCommunicator(Communicator):
         if len(commandList.changedCommands) > 0 and self._commState.state == CommState.COMM_ESTABLISHED:
             commandToSend = commandList.changedCommands.popleft()
             packedData = self._packCommand(commandToSend)
-            self._socket.sendto(packedData, (self._settings.controllerIP, self._settings.udpPort))
+            self._socket.sendto(packedData, (self._projectSettings.controllerIP, self._projectSettings.udpPort))
             print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue()
             self.commandSend.emit(commandToSend)
 
@@ -208,8 +210,8 @@ class UdpCommunicator(Communicator):
 
 
 class UsbHidCommunicator(Communicator):
-    def __init__(self, settings):
-        super(UsbHidCommunicator, self).__init__(settings)
+    def __init__(self, applicationSettings, projectSettings):
+        super(UsbHidCommunicator, self).__init__(applicationSettings, projectSettings)
 
     def send(self, commandList):
         pass
@@ -219,9 +221,10 @@ class UsbHidCommunicator(Communicator):
 
 
 class SerialCommunicator(Communicator):
-    def __init__(self, settings):
-        super(SerialCommunicator, self).__init__(settings)
+    def __init__(self, applicationSettings, projectSettings):
+        super(SerialCommunicator, self).__init__(applicationSettings, projectSettings)
 
+        projectSettings.changed.connect(self.projectSettingsChanged)
 
         self.messageLength = 42
 
@@ -231,15 +234,36 @@ class SerialCommunicator(Communicator):
 
         self.ser = serial.Serial()
 
+    @QtCore.pyqtSlot(object)
+    def projectSettingsChanged(self, newSettings):
+        ports = self.getOpenPorts()
+        for port in ports:
+            if port.description == newSettings.comPortDescription:
+                if self.ser.port == port.device:
+                    return
+        else:
+            self.connectToController()
+
     def connectToController(self):
-        print "connecting"
         if self.ser.isOpen():
-            print "serial open, closing"
+            # print "serial open, closing"
             self.ser.close()
-            time.sleep(1)
+            # time.sleep(1)
+
+        ports = serial.tools.list_ports.comports()
+        if len(ports) == 0:
+            self._commState.state = CommState.NO_CONN
+            self.commStateChanged.emit(self._commState)
+            self._connectionPollTimer.start(1000)
+            return
+
+        portToConnectTo = ports[0]
+        for port in ports:
+            if port.description == self._projectSettings.comPortDescription:
+                portToConnectTo = port
 
         self.ser.baudrate = 115200
-        self.ser.port = '\\.\COM5'  # für Windows (einen kleiner als im Hardwaremanager angezeigt nehmen)
+        self.ser.port = portToConnectTo.device
         self.ser.timeout = 0.1
         try:
             self.ser.open()
@@ -249,6 +273,10 @@ class SerialCommunicator(Communicator):
             self._commState.state = CommState.NO_CONN
             self.commStateChanged.emit(self._commState)
             self._connectionPollTimer.start(1000)
+
+    def getOpenPorts(self):
+        return serial.tools.list_ports.comports()
+
 
     def send(self, commandList):
         # return

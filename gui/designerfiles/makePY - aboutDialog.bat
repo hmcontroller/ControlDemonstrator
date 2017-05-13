@@ -1,0 +1,1 @@
+pyuic4 -o aboutDialog.py aboutDialog.ui

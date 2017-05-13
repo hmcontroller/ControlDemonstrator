@@ -89,33 +89,40 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.showUserInputWarning = False
         self.update()
 
+    @QtCore.pyqtSlot()
     def sameValueReceived(self):
         self.commFailureWarningBlinkTimer.stop()
         self.showCommFailureWarning = False
         self.update()
 
+    @QtCore.pyqtSlot()
     def differentValueReceived(self):
         self.differentValueReceivedWarningBlinkTimer.start(self.differentValueReceivedBlinkInterval)
         self.clearDifferentValueReceivedWarningTimer.start(self.differentValueReceivedWarningDuration)
         self.update()
 
+    @QtCore.pyqtSlot()
     def toggleDifferentValueReceivedWarningIndication(self):
         self.showDifferentValueReceivedWarning = not self.showDifferentValueReceivedWarning
         self.update()
 
+    @QtCore.pyqtSlot()
     def clearDifferentValueReceivedWarning(self):
         self.differentValueReceivedWarningBlinkTimer.stop()
         self.showDifferentValueReceivedWarning = False
         self.update()
 
+    @QtCore.pyqtSlot()
     def commTimeOut(self):
         self.commFailureWarningBlinkTimer.start(self.commFailureWarningBlinkInterval)
         self.update()
 
+    @QtCore.pyqtSlot()
     def toggleCommFailureIndication(self):
         self.showCommFailureWarning = not self.showCommFailureWarning
         self.update()
 
+    @QtCore.pyqtSlot()
     def valueChangedPerWidget(self, widgetInstance):
         """
         You must overwrite this method in your derived class.
@@ -123,21 +130,25 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.update()
         # raise NotImplementedError("abstract method valueChangedPerWidget must be overwritten")
 
-    def minChangedPerWidget(self, widgetInstance):
+    @QtCore.pyqtSlot()
+    def minChangedPerWidget(self, widgetInstance=None):
         """
         If needed, overwrite this method in your derived class.
         """
         self.update()
 
-    def maxChangedPerWidget(self, widgetInstance):
+    @QtCore.pyqtSlot()
+    def maxChangedPerWidget(self, widgetInstance=None):
         """
         If needed, overwrite this method in your derived class.
         """
         self.update()
 
+    @QtCore.pyqtSlot()
     def pendingModeChanged(self, command):
         self.update()
 
+    @QtCore.pyqtSlot()
     def pendingValueCanceled(self, command):
         self.update()
 
@@ -154,3 +165,10 @@ class BaseCommand(QtGui.QGraphicsObject):
     def hoverLeaveEvent(self, QGraphicsSceneMouseEvent):
         self.showHoverIndication = False
         self.update()
+
+    # def __del__(self):
+        # del self.command
+    #     self.clearDifferentValueReceivedWarningTimer.stop()
+
+    #     self.clearUserInputWarningTimer.stop()
+    #     self.commFailureWarningBlinkTimer.stop()

@@ -9,6 +9,7 @@ from core.measurementData import MeasurementData
 from core.model.projectSettings import ProjectSettings
 from core.command import CommandList
 from core.messageData import MessageData
+from core.communicator import *
 
 class ConfigFileManager(object):
     def __init__(self, applicationSettings):
@@ -17,7 +18,7 @@ class ConfigFileManager(object):
         # self.channels = channels
         # self.commands = commands
 
-    def save(self, pathToFile, projectSettings, channels, commands):
+    def save(self, projectSettings, channels, commands, newPath=None):
         channelDescriptions = list()
         for channel in channels.channels:
             channelDict = dict()
@@ -38,19 +39,23 @@ class ConfigFileManager(object):
             commandDict["max"] = command._upperLimit
             commandDict["value"] = command._value
             commandDict["pendingMode"] = command._pendingSendMode
+            commandDict["inputMethod"] = command.inputMethod
             commandDescriptions.append(commandDict)
 
 
         projectSettingsDescriptions = dict()
 
+        projectSettingsDescriptions["projectName"] = projectSettings.projectName
         projectSettingsDescriptions["controllerLoopCycleTimeInUs"] = projectSettings.controllerLoopCycleTimeInUs
         projectSettingsDescriptions["computerIP"] = projectSettings.computerIP
         projectSettingsDescriptions["controllerIP"] = projectSettings.controllerIP
         projectSettingsDescriptions["udpPort"] = projectSettings.udpPort
         projectSettingsDescriptions["controllerFrameworkAndInterface"] = projectSettings.controllerFrameworkAndInterface
+        projectSettingsDescriptions["pathToControllerCodeFolder"] = projectSettings.pathToControllerCodeFolder
+        projectSettingsDescriptions["comPortDescription"] = projectSettings.comPortDescription
 
         tabSettings = list()
-        for aTabSetting in projectSettings.tabs:
+        for aTabSetting in projectSettings.tabSettingsDescriptions:
             tabSettingDict = dict()
             tabSettingDict["pathToClassFile"] = aTabSetting.pathToClassFile
             tabSettingDict["className"] = aTabSetting.className
@@ -61,12 +66,20 @@ class ConfigFileManager(object):
 
         everythingDict = dict()
         everythingDict["miscSettings"] = projectSettingsDescriptions
-        everythingDict["channels"] = channels
-        everythingDict["commands"] = commands
+        everythingDict["channels"] = channelDescriptions
+        everythingDict["commands"] = commandDescriptions
 
+        path = ""
+        if newPath is None:
+            path = projectSettings.openedFrom
+        else:
+            path = newPath
 
-        with open(pathToFile, "w") as f:
+        with open(path, "w") as f:
             f.write(json.dumps(everythingDict, indent=4))
+
+    def saveAs(self, path, projectSettings, channels, commands):
+        self.save(projectSettings, channels, commands, newPath=path)
 
     def open(self, path):
         with open(path, "r") as f:
@@ -74,10 +87,21 @@ class ConfigFileManager(object):
             return json.loads(content)
 
 
+    def buildEmptyModel(self):
+        newProjectMiscSettings = ProjectSettings()
+        newChannelObjects = MeasurementData()
+        newCommandObjects = CommandList()
+        newMessageFormatList = list()
+        communicator = None
+
+
+        return newProjectMiscSettings, newChannelObjects, newCommandObjects, newMessageFormatList, communicator
+
     def buildModelFromConfigFile(self, pathToConfigFile):
         jsonStuff = self.open(pathToConfigFile)
 
         newProjectMiscSettings = self.makeProjectMiscSettings(jsonStuff["miscSettings"])
+        newProjectMiscSettings.openedFrom = pathToConfigFile
 
         newChannelObjects = self.makeChannelObjects(jsonStuff["channels"], self.applicationSettings.bufferLength)
         newCommandObjects = self.makeCommandObjects(jsonStuff["commands"])
@@ -85,7 +109,21 @@ class ConfigFileManager(object):
         newMessageFormatList = self.getMessageFormatList(jsonStuff["channels"])
 
 
-        return newProjectMiscSettings, newChannelObjects, newCommandObjects, newMessageFormatList
+        communicator = self.makeCommunicator(newProjectMiscSettings)
+
+        return newProjectMiscSettings, newChannelObjects, newCommandObjects, newMessageFormatList, communicator
+
+    def makeCommunicator(self, projectMiscSettings):
+        serialCases = ["arduino_serial", "ARDUINO_SERIAL", "MBED_OS_SERIAL", "MBED_2_SERIAL"]
+        udpCases = ["mbed_OS_udp", "arduino_udp", "MBED_OS_UDP", "MBED_2_UDP", "ARDUINO_SERIAL"]
+
+        if projectMiscSettings.controllerFrameworkAndInterface in serialCases:
+            return SerialCommunicator(self.applicationSettings, projectMiscSettings)
+        elif projectMiscSettings.controllerFrameworkAndInterface in udpCases:
+            return UdpCommunicator(self.applicationSettings, projectMiscSettings)
+        else:
+            raise Exception("parameter 'controllerFrameworkAndInterface' not valid.")
+
 
     def makeChannelObjects(self, channelDescriptions, bufferLength):
 
@@ -93,14 +131,20 @@ class ConfigFileManager(object):
 
         channels = list()
         for channelDescription in channelDescriptions:
-            print channelDescription
             channel = ValueChannel(bufferLength)
-            channel.colorRgbTuple = channelDescription["color"]
-            channel.show = channelDescription["show"]
-            channel.id = channelDescription["id"]
-            channel.name = channelDescription["name"]
-            channel.isRequested = channelDescription["isRequested"]
+            if "color" in channelDescription:
+                channel.colorRgbTuple = channelDescription["color"]
+            if "show" in channelDescription:
+                channel.show = channelDescription["show"]
+            if "id" in channelDescription:
+                channel.id = channelDescription["id"]
+            if "name" in channelDescription:
+                channel.name = channelDescription["name"]
+            if "isRequested" in channelDescription:
+                channel.isRequested = channelDescription["isRequested"]
+
             channels.append(channel)
+
             for n in range(0, bufferLength):
                 channel.appendSilently(0.0)
 
@@ -120,24 +164,59 @@ class ConfigFileManager(object):
             # add it to the commandList before setting values so that value changes will be transmitted
             commandList.append(command)
 
-            command.id = commandDescription["id"]
-            command.name = commandDescription["name"]
-            command.displayName = commandDescription["displayName"]
-            command._lowerLimit = commandDescription["min"]
-            command._upperLimit = commandDescription["max"]
-            command._value = commandDescription["value"]
-            command._pendingSendMode = commandDescription["pendingMode"]
+            if "id" in commandDescription:
+                command.id = commandDescription["id"]
+
+            if "name" in commandDescription:
+                command.name = commandDescription["name"]
+
+            if "displayName" in commandDescription:
+                command.displayName = commandDescription["displayName"]
+
+            if "min" in commandDescription:
+                command._lowerLimit = commandDescription["min"]
+
+            if "max" in commandDescription:
+                command._upperLimit = commandDescription["max"]
+
+            if "value" in commandDescription:
+                command._value = commandDescription["value"]
+
+            if "pendingMode" in commandDescription:
+                command._pendingSendMode = commandDescription["pendingMode"]
+
+            if "inputMethod" in commandDescription:
+                command.inputMethod = commandDescription["inputMethod"]
 
         return commandList
 
     def makeProjectMiscSettings(self, settingsDescriptions):
         projectMiscSettings = ProjectSettings()
 
-        projectMiscSettings.controllerLoopCycleTimeInUs = settingsDescriptions["controllerLoopCycleTimeInUs"]
-        projectMiscSettings.computerIP = settingsDescriptions["computerIP"]
-        projectMiscSettings.controllerIP = settingsDescriptions["controllerIP"]
-        projectMiscSettings.udpPort = settingsDescriptions["udpPort"]
-        projectMiscSettings.controllerFrameworkAndInterface = settingsDescriptions["controllerFrameworkAndInterface"]
+        if "projectName" in settingsDescriptions:
+            projectMiscSettings.projectName = settingsDescriptions["projectName"]
+
+        if "controllerLoopCycleTimeInUs" in settingsDescriptions:
+            projectMiscSettings.controllerLoopCycleTimeInUs = settingsDescriptions["controllerLoopCycleTimeInUs"]
+
+        if "pathToControllerCodeFolder" in settingsDescriptions:
+            projectMiscSettings.pathToControllerCodeFolder = settingsDescriptions["pathToControllerCodeFolder"]
+
+        if "computerIP" in settingsDescriptions:
+            projectMiscSettings.computerIP = settingsDescriptions["computerIP"]
+
+        if "controllerIP" in settingsDescriptions:
+            projectMiscSettings.controllerIP = settingsDescriptions["controllerIP"]
+
+        if "udpPort" in settingsDescriptions:
+            projectMiscSettings.udpPort = settingsDescriptions["udpPort"]
+
+        if "controllerFrameworkAndInterface" in settingsDescriptions:
+            projectMiscSettings.controllerFrameworkAndInterface = settingsDescriptions["controllerFrameworkAndInterface"]
+
+        if "comPortDescription" in settingsDescriptions:
+            projectMiscSettings.comPortDescription = settingsDescriptions["comPortDescription"]
+
 
         tabSettingsDescriptions = settingsDescriptions["tabs"]
 
@@ -151,7 +230,7 @@ class ConfigFileManager(object):
 
             tabDescriptionObjects.append(tabDescription)
 
-        projectMiscSettings.tabs = tabDescriptionObjects
+        projectMiscSettings.tabSettingsDescriptions = tabDescriptionObjects
 
         return projectMiscSettings
 

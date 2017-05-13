@@ -4,8 +4,11 @@ import logging
 from importlib import import_module
 import json
 import pickle
+import collections
+import webbrowser
 
 from PyQt4 import QtCore, QtGui
+import sip
 
 from core.modelMaker import ModelMaker
 from core.communicator import UdpCommunicator
@@ -13,7 +16,12 @@ from core.communicator import SerialCommunicator
 from core.messageInterpreter import MessageInterpreter
 from core.configFileManager import ConfigFileManager
 from core.applicationSettingsManager import ApplicationSettingsManager
+from core.model.projectSettings import ProjectSettings
 
+from gui.aboutDialog import AboutDialog
+from gui.projectMiscSettingsDialog import ProjectMiscSettingsDialog
+from gui.channelSettingsDialog import ChannelSettingsDialog
+from gui.commandSettingsDialog import CommandSettingsDialog
 
 from gui.constants import *
 # from gui.TabWaterLineExperiment import TabWaterLineExperiment
@@ -23,7 +31,22 @@ from gui.constants import *
 class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def __init__(self, rootFolder):
         QtGui.QMainWindow.__init__(self)
+
+        self.appSettingsManager = ApplicationSettingsManager(PATH_TO_APPLICATION_SETTINGS)
+        self.applicationSettings = self.appSettingsManager.restoreSettingsFromFile()
+        self.applicationSettings.changed.connect(self.appSettingsChanged)
+
+        # setup a timer, that triggers to read from the controller
+        self.receiveTimer = QtCore.QTimer()
+        self.receiveTimer.setSingleShot(False)
+        self.receiveTimer.timeout.connect(self.receiveAndSend)
+
+
+        self.projectConfigManager = ConfigFileManager(self.applicationSettings)
+
+
         self.setupUi()
+
 
         self.setWindowTitle("ControlDemonstrator")
 
@@ -54,28 +77,9 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
 
 
-        # generate model objects according to the config file
 
-
-        configFilePath = os.path.join(rootFolder, "config.txt")
-        modelMaker = ModelMaker(configFilePath)
-
-
-        appSettingsManager = ApplicationSettingsManager("testAppConfig.json")
-        self.applicationSettings = appSettingsManager.restoreSettingsFromFile()
-
-        projectConfigManager = ConfigFileManager(self.applicationSettings)
-        self.projectSettings, self.channels, self.commands, self.messageFormatList = projectConfigManager.buildModelFromConfigFile("testProjectConfig.json")
-
-
-
-        # TODO it is ugly how the messageData list will be generated in model maker - check single source problem
-
-        self.communicator = modelMaker.getCommunicator()
-        self.communicator.setMessageMap(self.messageFormatList)
-        self.communicator.connectToController()
-
-        self.addTabs(self.projectSettings.tabs)
+        if len(self.applicationSettings.recentProjectFilePathes) > 0:
+            self.loadProject(self.applicationSettings.recentProjectFilePathes[0])
 
 
 
@@ -88,26 +92,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
 
 
+        # self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
 
-
-
-        # setup a timer, that triggers to read from the controller
-        self.receiveTimer = QtCore.QTimer()
-        self.receiveTimer.setSingleShot(False)
-        self.receiveTimer.timeout.connect(self.receiveAndSend)
-        self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
-
-        # # setup a timer, that triggers to send to the controller
-        # self.sendTimer = QtCore.QTimer()
-        # self.sendTimer.setSingleShot(False)
-        # self.sendTimer.timeout.connect(self.send)
-        # self.sendTimer.start(self.settings.sendMessageIntervalLengthInMs)
-
-        # setup a timer, that runs a loop to update the gui
-        self.guiUpdateTimer = QtCore.QTimer()
-        self.guiUpdateTimer.setSingleShot(False)
-        self.guiUpdateTimer.timeout.connect(self.refreshGui)
-        self.guiUpdateTimer.start(self.applicationSettings.guiUpdateIntervalLengthInMs)
 
         # for debugging purpose
         self.loopReportTimer = QtCore.QTimer()
@@ -216,7 +202,34 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         closeAction.setShortcut("Ctrl+Q")
         closeAction.triggered.connect(self.close)
 
+        mainMenu = self.menuBar()
+        self.fileMenu = mainMenu.addMenu("Datei")
+        self.fileMenu.addAction(newProjectAction)
+        self.fileMenu.addAction(openAction)
 
+        self.openRecentMenu = self.fileMenu.addMenu("Letze Projekte...")
+        self.refreshRecentProjectsMenu()
+
+        self.fileMenu.addAction(saveAction)
+        self.fileMenu.addAction(saveAsAction)
+        self.fileMenu.addAction(closeAction)
+
+
+        editProjectMiscSettingsAction = QtGui.QAction(u"Projekteinstellungen...", self)
+        editProjectMiscSettingsAction.triggered.connect(self.editProjectMiscSettings)
+
+        editChannelsAction = QtGui.QAction(u"Kanaleinstellungen...", self)
+        editChannelsAction.triggered.connect(self.editChannels)
+
+        editCommandsAction = QtGui.QAction(u"Parametereinstellungen...", self)
+        editCommandsAction.triggered.connect(self.editCommands)
+
+
+
+        editMenu = mainMenu.addMenu("Bearbeiten")
+        editMenu.addAction(editProjectMiscSettingsAction)
+        editMenu.addAction(editChannelsAction)
+        editMenu.addAction(editCommandsAction)
 
 
         showHelpAction = QtGui.QAction(u"Hilfe anzeigen...", self)
@@ -227,41 +240,150 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         aboutAction = QtGui.QAction(u"Über das Programm...", self)
         aboutAction.triggered.connect(self.showAboutWindow)
 
-
-
-
-        mainMenu = self.menuBar()
-        fileMenu = mainMenu.addMenu("Datei")
-        fileMenu.addAction(newProjectAction)
-        fileMenu.addAction(openAction)
-        fileMenu.addAction(saveAction)
-        fileMenu.addAction(saveAsAction)
-        fileMenu.addAction(closeAction)
-
         helpMenu = mainMenu.addMenu("Hilfe")
         helpMenu.addAction(showHelpAction)
         helpMenu.addAction(aboutAction)
 
+    def refreshRecentProjectsMenu(self):
+        self.openRecentMenu.clear()
+        for i, recentPath in enumerate(self.applicationSettings.recentProjectFilePathes):
+            displayPath = recentPath
+            displayPath = displayPath.split("/")
+            displayPath = displayPath[-1]
+            displayPath = displayPath.replace(".json", "")
+            action = QtGui.QAction(u"{}".format(displayPath), self)
+            action.triggered.connect(self.openRecent)
+            action.setData(QtCore.QVariant(recentPath))
+            self.openRecentMenu.addAction(action)
+
+
     def newProject(self):
-        print "new Project"
+
+        tempProjectSettings = ProjectSettings()
+        accepted = self.editProjectMiscSettings(self.projectSettings)
+
+        if accepted == QtGui.QDialog.Accepted:
+            self.closeCurrentProject()
+            self.makeEmptyProject()
+            self.projectSettings = tempProjectSettings
+            self.projectSettings.changed.connect(self.projectSettingsChanged)
+            self.saveAs()
+
+
+    def makeEmptyProject(self):
+        self.projectSettings, self.channels, self.commands, self.messageFormatList, self.communicator = self.projectConfigManager.buildEmptyModel()
+        self.projectSettings.changed.connect(self.projectSettingsChanged)
+
+    def closeCurrentProject(self):
+        while self.centralWidgetLayout.count() > 0:
+            item = self.centralWidgetLayout.takeAt(0)
+            item.widget().deleteLater()
+        self.receiveTimer.stop()
 
     def open(self):
         print "open"
 
+        folderPath = "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\ControlDemonstratorProjects\\"
+
+
+
+        projectFilePath = QtGui.QFileDialog.getOpenFileName(self,
+                                                              "Open project file",
+                                                              folderPath,
+                                                              "Project Settings (*.json)")
+        projectFilePath = str(projectFilePath)
+        if projectFilePath == "":
+            print "no project file given"
+            return
+        else:
+            self.loadProject(projectFilePath)
+
+    def openRecent(self, *args):
+        recentPath = str(self.sender().data().toString())
+        self.loadProject(recentPath)
+
+    def loadProject(self, pathToProjectFile):
+
+        self.closeCurrentProject()
+
+        self.projectSettings, self.channels, self.commands, self.messageFormatList, self.communicator = self.projectConfigManager.buildModelFromConfigFile(pathToProjectFile)
+        self.projectSettings.changed.connect(self.projectSettingsChanged)
+
+        self.communicator.setMessageMap(self.messageFormatList)
+        self.communicator.connectToController()
+
+        self.addTabs(self.projectSettings.tabSettingsDescriptions)
+
+        self.applicationSettings.addRecentProjektPath(pathToProjectFile)
+
+        displayPath = pathToProjectFile
+        displayPath = displayPath.split("/")
+        displayPath = displayPath[-1]
+        displayPath = displayPath.replace(".json", "")
+
+        self.setWindowTitle(u"ControlDemonstrator - {}".format(self.projectSettings.projectName))
+        self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
+
+    def projectSettingsChanged(self, newSettings):
+        newWindowTitle = self.projectSettings.projectName
+        if self.projectSettings.unsavedChanges is True:
+            newWindowTitle += u" (unsaved)"
+        self.setWindowTitle(u"ControlDemonstrator - {}".format(newWindowTitle))
+
+
     def save(self):
-        print "save"
+        self.projectConfigManager.save(self.projectSettings, self.channels, self.commands)
+        self.projectSettings.unsavedChanges = False
 
     def saveAs(self):
-        print "save AS"
+        folder = os.path.dirname(self.projectSettings.openedFrom)
+        projectFilePath = QtGui.QFileDialog.getSaveFileName(self,
+                                                              "Projekt speichern unter...",
+                                                              folder,
+                                                              "Project Settings (*.json)")
+        projectFilePath = str(projectFilePath)
+        if projectFilePath == "":
+            print "cancel"
+            return
+        else:
+            self.projectConfigManager.saveAs(projectFilePath, self.projectSettings, self.channels, self.commands)
+
+        self.loadProject(projectFilePath)
 
     def close(self):
-        print "close"
+        if self.projectSettings.unsavedChanges is True:
+            print "SAVE ?"
+        else:
+            QtCore.QCoreApplication.quit()
 
     def showHelp(self):
-        print "Help"
+        pathToIndexHtml = os.path.abspath(os.path.join(os.getcwd(), "docs/sphinxHtml/index.html"))
+        url = "file://" + pathToIndexHtml
+        webbrowser.open(url)
 
     def showAboutWindow(self):
-        print "About"
+        aboutDialog = AboutDialog()
+        aboutDialog.exec_()
+
+    def editProjectMiscSettings(self, settings):
+        if settings is False or None:
+            # happens when this function is called from a signal
+            settings = self.projectSettings
+
+        dialog = ProjectMiscSettingsDialog(settings)
+        return dialog.updateSettings()
+
+
+    def editChannels(self, settings):
+        dialog = ChannelSettingsDialog(self.channels, self.applicationSettings)
+        dialog.updateSettings()
+
+    def editCommands(self):
+        dialog = CommandSettingsDialog(self.commands)
+        dialog.updateSettings()
+
+    def appSettingsChanged(self, settings):
+        self.refreshRecentProjectsMenu()
 
     def receiveAndSend(self):
         self.receive()
@@ -275,11 +397,6 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
     def send(self):
         self.communicator.send(self.commands)
-
-    def refreshGui(self):
-        pass
-        # self.tabWaterLineExperiment.updateTab(self.channels)
-        # self.tabGeneric.updateTab(self.channels)
 
     def handleNewData(self, message):
         MessageInterpreter.mapUserChannels(self.channels, message)

@@ -1,7 +1,16 @@
 # -*- encoding: utf-8 -*-
 from PyQt4 import QtGui
 
+AVAILABLE_FRAMEWORKS = [
+    {"macroName": "MBED_2_UDP", "displayName": u"Mbed 2 UDP"},
+    {"macroName": "MBED_2_SERIAL", "displayName": u"Mbed 2 Serial"},
+    {"macroName": "MBED_OS_UDP", "displayName": u"Mbed OS UDP"},
+    {"macroName": "MBED_OS_SERIAL", "displayName": u"Mbed OS Serial"},
+    {"macroName": "ARDUINO_UDP", "displayName": u"Arduino UDP"},
+    {"macroName": "ARDUINO_SERIAL", "displayName": u"Arduino Serial"}
+]
 
+PATH_TO_APPLICATION_SETTINGS = "applicationSettings.json"
 
 CHECK_BOX_FONT = QtGui.QFont()
 CHECK_BOX_FONT.setPointSize(8)

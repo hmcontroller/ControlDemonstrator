@@ -89,6 +89,10 @@ class Command(QtCore.QObject):
     sameValueReceived = QtCore.pyqtSignal(object)
     differentValueReceived = QtCore.pyqtSignal(object)
 
+    VALUE_INPUT = 1
+    SWITCH_INPUT = 2
+    TOGGLE_INPUT = 3
+
     def __init__(self):
         super(Command, self).__init__()
         self.id = None
@@ -104,6 +108,8 @@ class Command(QtCore.QObject):
         self._upperLimit = 1
         self._value = 0.0
         self.rawArgumentString = None
+
+        self.inputMethod = Command.VALUE_INPUT
 
         # This is needed to handle the fact, that float values may change a bit during send and receive.
         self.smallNumber = 0.00001

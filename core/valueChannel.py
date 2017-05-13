@@ -11,7 +11,7 @@ class ValueChannel(QtCore.QObject):
     def __init__(self, bufferLength):
         super(ValueChannel, self).__init__()
         self.id = 0
-        self.name = ""
+        self.name = "new"
         self._values = deque(maxlen=bufferLength)
         self.show = True
         self.colorRgbTuple = (0, 0, 0)
