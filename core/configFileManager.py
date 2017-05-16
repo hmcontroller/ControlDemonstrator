@@ -8,7 +8,7 @@ from core.model.tabDescription import TabDescription
 from core.measurementData import MeasurementData
 from core.model.projectSettings import ProjectSettings
 from core.command import CommandList
-from core.messageData import MessageData
+from core.messageData import MessageData, Message
 from core.communicator import *
 
 class ConfigFileManager(object):
@@ -37,7 +37,7 @@ class ConfigFileManager(object):
             commandDict["displayName"] = command.displayName
             commandDict["min"] = command._lowerLimit
             commandDict["max"] = command._upperLimit
-            commandDict["value"] = command._value
+            commandDict["value"] = command.initialValue
             commandDict["pendingMode"] = command._pendingSendMode
             commandDict["inputMethod"] = command.inputMethod
             commandDescriptions.append(commandDict)
@@ -89,7 +89,7 @@ class ConfigFileManager(object):
 
     def buildEmptyModel(self):
         newProjectMiscSettings = ProjectSettings()
-        newChannelObjects = MeasurementData()
+        newChannelObjects = MeasurementData(self.applicationSettings.bufferLength)
         newCommandObjects = CommandList()
         newMessageFormatList = list()
         communicator = None
@@ -127,9 +127,8 @@ class ConfigFileManager(object):
 
     def makeChannelObjects(self, channelDescriptions, bufferLength):
 
-        model = MeasurementData()
+        model = MeasurementData(bufferLength)
 
-        channels = list()
         for channelDescription in channelDescriptions:
             channel = ValueChannel(bufferLength)
             if "color" in channelDescription:
@@ -143,16 +142,7 @@ class ConfigFileManager(object):
             if "isRequested" in channelDescription:
                 channel.isRequested = channelDescription["isRequested"]
 
-            channels.append(channel)
-
-            for n in range(0, bufferLength):
-                channel.appendSilently(0.0)
-
-        model.channels = channels
-
-        model.timeValues = ValueChannel(bufferLength)
-        for i in range(0, bufferLength):
-            model.timeValues.appendSilently(0.0)
+            model.addChannel(channel)
 
         return model
 
@@ -180,7 +170,8 @@ class ConfigFileManager(object):
                 command._upperLimit = commandDescription["max"]
 
             if "value" in commandDescription:
-                command._value = commandDescription["value"]
+                command.initialValue = commandDescription["value"]
+                command.setValue(commandDescription["value"])
 
             if "pendingMode" in commandDescription:
                 command._pendingSendMode = commandDescription["pendingMode"]
@@ -235,8 +226,11 @@ class ConfigFileManager(object):
         return projectMiscSettings
 
 
-    def getMessageFormatList(self, channelDescriptions):
+    def getMessageFormatList(self, channelDescriptionsOrMeasurementData):
         messagePartsList = list()
+
+        messageInformation = Message()
+
 
         positionCounter = 0
         channelCounter = 0
@@ -258,7 +252,7 @@ class ConfigFileManager(object):
         # mData.unpackString = "<h"
         mData.unpackString = "<I"
         mData.name = "loopStartTime"
-        messagePartsList.append(mData)
+        messageInformation.append(mData)
 
         # # lastLoopDuration
         # mData1 = MessageData()
@@ -272,7 +266,7 @@ class ConfigFileManager(object):
         # mData1.unpackString = "<h"
         # # mData1.unpackString = "<i"
         # mData1.name = "lastLoopDuration"
-        # messagePartsList.append(mData1)
+        # messageInformation.append(mData1)
 
         # parameterNumber
         mData2 = MessageData()
@@ -286,7 +280,7 @@ class ConfigFileManager(object):
         mData2.unpackString = "<I"
         # mData2.unpackString = "<i"
         mData2.name = "parameterNumber"
-        messagePartsList.append(mData2)
+        messageInformation.append(mData2)
 
         # parameterValue
         mData3 = MessageData()
@@ -298,23 +292,40 @@ class ConfigFileManager(object):
         mData3.dataType = float
         mData3.unpackString = "<f"
         mData3.name = "parameterValue"
-        messagePartsList.append(mData3)
+        messageInformation.append(mData3)
 
         # channels
 
-        for i, channelDescription in enumerate(channelDescriptions):
-            messageData = MessageData()
-            # messageData.id = i
-            messageData.positionInBytes = positionCounter
-            messageData.lengthInBytes = 4
-            messageData.dataType = float
-            messageData.unpackString = "<f"
-            messageData.name = channelDescription["name"]
-            messageData.isUserChannel = True
-            messageData.userChannelId = i
-            messagePartsList.append(messageData)
-            positionCounter += messageData.lengthInBytes
-            channelCounter += 1
+        if isinstance(channelDescriptionsOrMeasurementData, MeasurementData):
+            for i, channel in enumerate(channelDescriptionsOrMeasurementData.channels):
+                messageData = MessageData()
+                # messageData.id = i
+                messageData.positionInBytes = positionCounter
+                messageData.lengthInBytes = 4
+                messageData.dataType = float
+                messageData.unpackString = "<f"
+                messageData.name = channel.name
+                messageData.isUserChannel = True
+                messageData.userChannelId = i
+                messageInformation.append(messageData)
+                positionCounter += messageData.lengthInBytes
+                channelCounter += 1
+        else:
+            for i, channelDescription in enumerate(channelDescriptionsOrMeasurementData):
+                messageData = MessageData()
+                # messageData.id = i
+                messageData.positionInBytes = positionCounter
+                messageData.lengthInBytes = 4
+                messageData.dataType = float
+                messageData.unpackString = "<f"
+                messageData.name = channelDescription["name"]
+                messageData.isUserChannel = True
+                messageData.userChannelId = i
+                messageInformation.append(messageData)
+                positionCounter += messageData.lengthInBytes
+                channelCounter += 1
 
-        return messagePartsList
+        messageInformation.messageLengthInBytes = positionCounter
+
+        return messageInformation
 

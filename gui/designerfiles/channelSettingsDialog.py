@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'channelSettingsDialog.ui'
 #
-# Created: Wed May 10 20:47:28 2017
+# Created: Sat May 13 15:16:13 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,12 @@ except AttributeError:
 class Ui_ChannelSettingsDialog(object):
     def setupUi(self, ChannelSettingsDialog):
         ChannelSettingsDialog.setObjectName(_fromUtf8("ChannelSettingsDialog"))
-        ChannelSettingsDialog.resize(1067, 849)
+        ChannelSettingsDialog.resize(503, 849)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(ChannelSettingsDialog.sizePolicy().hasHeightForWidth())
+        ChannelSettingsDialog.setSizePolicy(sizePolicy)
         self.horizontalLayout = QtGui.QHBoxLayout(ChannelSettingsDialog)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.verticalLayout = QtGui.QVBoxLayout()
@@ -49,7 +54,7 @@ class Ui_ChannelSettingsDialog(object):
         self.verticalLayout.addWidget(self.tableWidget)
         self.buttonBox = QtGui.QDialogButtonBox(ChannelSettingsDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Discard|QtGui.QDialogButtonBox.Save)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.verticalLayout.addWidget(self.buttonBox)
         self.horizontalLayout.addLayout(self.verticalLayout)

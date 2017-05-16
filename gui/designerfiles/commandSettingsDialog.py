@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'commandSettingsDialog.ui'
 #
-# Created: Wed May 10 20:48:01 2017
+# Created: Sat May 13 07:35:00 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -49,7 +49,7 @@ class Ui_CommandSettingsDialog(object):
         self.verticalLayout.addWidget(self.tableWidget)
         self.buttonBox = QtGui.QDialogButtonBox(CommandSettingsDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Discard|QtGui.QDialogButtonBox.Save)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.verticalLayout.addWidget(self.buttonBox)
         self.horizontalLayout.addLayout(self.verticalLayout)

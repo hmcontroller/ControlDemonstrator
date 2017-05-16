@@ -1,8 +1,10 @@
 # -*- encoding: utf-8 -*-
 from collections import deque
+import random
 
 from PyQt4 import QtCore
 
+from core.messageData import MessageData
 
 class ValueChannel(QtCore.QObject):
 
@@ -12,10 +14,15 @@ class ValueChannel(QtCore.QObject):
         super(ValueChannel, self).__init__()
         self.id = 0
         self.name = "new"
+        self.displayName = "Neu"
         self._values = deque(maxlen=bufferLength)
         self.show = True
-        self.colorRgbTuple = (0, 0, 0)
+        self.colorRgbTuple = (random.randint(0, 254), random.randint(0, 254), random.randint(0, 254))
         self.isRequested = False
+        self.messageData = MessageData()
+
+        for n in range(0, bufferLength):
+            self.appendSilently(0.0)
 
     def append(self, value):
         self.appendSilently(value)

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'projectMiscSettingsDialog.ui'
 #
-# Created: Fri May 12 16:27:14 2017
+# Created: Sat May 13 07:34:59 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!

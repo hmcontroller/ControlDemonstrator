@@ -7,6 +7,17 @@ from gui.designerfiles.commandSettingsDialog import Ui_CommandSettingsDialog
 from gui.resources import *
 
 class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
+
+    VARIABLE_NAME_COLUMN = 0
+    DISPLAY_NAME_COLUMN = 1
+    MIN_COLUMN = 2
+    MAX_COLUMN = 3
+    START_VALUE_COLUMN = 4
+    PENDING_COLUMN = 5
+    INPUT_METHOD_COLUMN = 6
+    DELETE_COLUMN = 7
+    ID_COLUMN = 8
+
     def __init__(self, commands, parent=None):
         super(CommandSettingsDialog, self).__init__(parent)
         self.setupUi(self)
@@ -21,29 +32,50 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
         self.tableWidget.setColumnCount(9)
         self.tableWidget.setRowCount(len(self.commands))
         self.tableWidget.verticalHeader().setVisible(False)
-        self.tableWidget.setColumnHidden(8, True)
 
-        self.tableWidget.setColumnWidth(0, 200)
-        self.tableWidget.setColumnWidth(1, 200)
-        self.tableWidget.setColumnWidth(2, 60)
-        self.tableWidget.setColumnWidth(3, 100)
-        self.tableWidget.setColumnWidth(4, 80)
-        self.tableWidget.setColumnWidth(5, 80)
-        self.tableWidget.setColumnWidth(6, 80)
-        self.tableWidget.setColumnWidth(7, 30)
+        self.tableHeader = QtGui.QHeaderView(QtCore.Qt.Horizontal, self.tableWidget)
+        self.tableWidget.setHorizontalHeader(self.tableHeader)
+        self.tableHeader.setResizeMode(QtGui.QHeaderView.Stretch)
+        self.tableHeader.setResizeMode(self.VARIABLE_NAME_COLUMN, QtGui.QHeaderView.Stretch)
+        self.tableHeader.setResizeMode(self.DISPLAY_NAME_COLUMN, QtGui.QHeaderView.Interactive)
+        self.tableHeader.setResizeMode(self.MIN_COLUMN, QtGui.QHeaderView.Interactive)
+        self.tableHeader.setResizeMode(self.MAX_COLUMN, QtGui.QHeaderView.Interactive)
+        self.tableHeader.setResizeMode(self.START_VALUE_COLUMN, QtGui.QHeaderView.Interactive)
+        self.tableHeader.setResizeMode(self.PENDING_COLUMN, QtGui.QHeaderView.Fixed)
+        self.tableHeader.setResizeMode(self.INPUT_METHOD_COLUMN, QtGui.QHeaderView.Fixed)
+        self.tableHeader.setResizeMode(self.DELETE_COLUMN, QtGui.QHeaderView.Fixed)
 
-        horItemOne = QtGui.QTableWidgetItem("Id")
-        horItemOne.setTextAlignment(QtCore.Qt.AlignLeft)
-        self.tableWidget.setHorizontalHeaderItem(2, horItemOne)
+        self.tableWidget.setColumnHidden(self.ID_COLUMN, True)
 
-        self.tableWidget.setHorizontalHeaderLabels([u"Variablenname",
-                                                    u"Anzeigename",
-                                                    u"pending",
-                                                    u"Eingabe per",
-                                                    u"Min",
-                                                    u"Max",
-                                                    u"Startwert",
-                                                    u"" ])
+
+        columnNames = [u"Variablenname",
+                       u"Anzeigename",
+                       u"Min",
+                       u"Max",
+                       u"Startwert",
+                       u"pending",
+                       u"Eingabe per",
+                       u"" ]
+
+        for i, name in enumerate(columnNames):
+            horItem = QtGui.QTableWidgetItem(name)
+            horItem.setTextAlignment(QtCore.Qt.AlignLeft)
+            horItem.setBackground(QtGui.QBrush(QtCore.Qt.darkGray))
+            self.tableWidget.setHorizontalHeaderItem(i, horItem)
+
+        self.tableWidget.horizontalHeader().setStyleSheet(" QHeaderView::section { "
+                        "spacing: 10px; background-color: lightgray; border: 3px solid lightgray; }")
+
+
+        self.tableWidget.setColumnWidth(self.VARIABLE_NAME_COLUMN, 200)
+        self.tableWidget.setColumnWidth(self.DISPLAY_NAME_COLUMN, 200)
+        self.tableWidget.setColumnWidth(self.PENDING_COLUMN, 60)
+        self.tableWidget.setColumnWidth(self.INPUT_METHOD_COLUMN, 100)
+        self.tableWidget.setColumnWidth(self.MIN_COLUMN, 80)
+        self.tableWidget.setColumnWidth(self.MAX_COLUMN, 80)
+        self.tableWidget.setColumnWidth(self.START_VALUE_COLUMN, 80)
+        self.tableWidget.setColumnWidth(self.DELETE_COLUMN, 24)
+
 
         self.inputModes = list()
         self.inputModes.append((Command.VALUE_INPUT, "Wert"))
@@ -80,14 +112,15 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
     def addCommand(self):
         newId = 0
         for commandId in self.finalCommandIDs:
-            if commandId > newId:
+            if commandId >= newId:
                 newId = commandId + 1
         self.finalCommandIDs.append(newId)
         self.setCommandsToTable()
 
     def setCommandsToTable(self):
-        self.tableWidget.clear()
+        self.tableWidget.clearContents()
         self.tableWidget.setRowCount(len(self.finalCommandIDs))
+
         for i, commandId in enumerate(self.finalCommandIDs):
             try:
                 command = self.commands.getCommandById(commandId)
@@ -98,10 +131,10 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
                 command.displayName = u"Neu"
 
             nameItem = QtGui.QTableWidgetItem(unicode(command.name))
-            self.tableWidget.setItem(i, 0, nameItem)
+            self.tableWidget.setItem(i, self.VARIABLE_NAME_COLUMN, nameItem)
 
             displayNameItem = QtGui.QTableWidgetItem(unicode(command.displayName))
-            self.tableWidget.setItem(i, 1, displayNameItem)
+            self.tableWidget.setItem(i, self.DISPLAY_NAME_COLUMN, displayNameItem)
 
             pendingItem = QtGui.QTableWidgetItem()
             pendingItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
@@ -109,7 +142,7 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
                 pendingItem.setCheckState(QtCore.Qt.Checked)
             else:
                 pendingItem.setCheckState(QtCore.Qt.Unchecked)
-            self.tableWidget.setItem(i, 2, pendingItem)
+            self.tableWidget.setItem(i, self.PENDING_COLUMN, pendingItem)
 
             inputMethodItem = QtGui.QTableWidgetItem()
             comboBox = QtGui.QComboBox()
@@ -119,16 +152,16 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
                 if mode[0] == command.inputMethod:
                     indexToSelect = n
             comboBox.setCurrentIndex(indexToSelect)
-            self.tableWidget.setCellWidget(i, 3, comboBox)
+            self.tableWidget.setCellWidget(i, self.INPUT_METHOD_COLUMN, comboBox)
 
             lowerLimitItem = QtGui.QTableWidgetItem(unicode(command._lowerLimit))
-            self.tableWidget.setItem(i, 4, lowerLimitItem)
+            self.tableWidget.setItem(i, self.MIN_COLUMN, lowerLimitItem)
 
             upperLimitItem = QtGui.QTableWidgetItem(unicode(command._upperLimit))
-            self.tableWidget.setItem(i, 5, upperLimitItem)
+            self.tableWidget.setItem(i, self.MAX_COLUMN, upperLimitItem)
 
             valueItem = QtGui.QTableWidgetItem(unicode(command._value))
-            self.tableWidget.setItem(i, 6, valueItem)
+            self.tableWidget.setItem(i, self.START_VALUE_COLUMN, valueItem)
 
 
             pixmap = QtGui.QPixmap(redCrossPngPath)
@@ -136,35 +169,45 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
             iconItem = QtGui.QTableWidgetItem()
             iconItem.setIcon(qIcon)
             iconItem.setToolTip("delete")
-            self.tableWidget.setItem(i, 7, iconItem)
+            self.tableWidget.setItem(i, self.DELETE_COLUMN, iconItem)
 
             idItem = QtGui.QTableWidgetItem(str(commandId))
-            self.tableWidget.setItem(i, 8, idItem)
+            self.tableWidget.setItem(i, self.ID_COLUMN, idItem)
+
+    def resizeDialogToTableWidth(self, logicalIndex=0, oldSize=0, newSize=0):
+        print "tableWidth", self.tableWidget.width()
+
+        widthSum = 0
+        for i in range(0, self.tableWidget.columnCount()):
+            widthSum += self.tableWidget.columnWidth(i)
+
+        self.resize(widthSum + 24, 700)
+
 
 
     def updateSettings(self):
 
+        self.resizeDialogToTableWidth()
 
         # set settings to form
-
 
         answer = self.exec_()
 
         if answer == QtGui.QDialog.Accepted:
             for i in range(0, self.tableWidget.rowCount()):
-                id = int(self.tableWidget.item(i, 8).text())
-                self.commands[id].name = unicode(self.tableWidget.item(i, 0).text())
-                self.commands[id].displayName = unicode(self.tableWidget.item(i, 1).text())
-                if self.tableWidget.item(i, 2).checkState() == QtCore.Qt.Checked:
+                id = int(self.tableWidget.item(i, self.ID_COLUMN).text())
+                self.commands[id].name = unicode(self.tableWidget.item(i, self.VARIABLE_NAME_COLUMN).text())
+                self.commands[id].displayName = unicode(self.tableWidget.item(i, self.DISPLAY_NAME_COLUMN).text())
+                if self.tableWidget.item(i, self.PENDING_COLUMN).checkState() == QtCore.Qt.Checked:
                     self.commands[id].setPendingSendMode(True)
                 else:
                     self.commands[id].setPendingSendMode(False)
-                comboIndex = self.tableWidget.cellWidget(i, 3).currentIndex()
+                comboIndex = self.tableWidget.cellWidget(i, self.INPUT_METHOD_COLUMN).currentIndex()
                 self.commands[id].inputMethod = self.inputModes[comboIndex][0]
 
-                self.commands[id].setLowerLimit(float(self.tableWidget.item(i, 4).text()))
-                self.commands[id].setUpperLimit(float(self.tableWidget.item(i, 5).text()))
-                self.commands[id].setValue(float(self.tableWidget.item(i, 6).text()))
+                self.commands[id].setLowerLimit(float(self.tableWidget.item(i, self.MIN_COLUMN).text()))
+                self.commands[id].setUpperLimit(float(self.tableWidget.item(i, self.MAX_COLUMN).text()))
+                self.commands[id].setValue(float(self.tableWidget.item(i, self.START_VALUE_COLUMN).text()))
 
         else:
             print "dann nicht"

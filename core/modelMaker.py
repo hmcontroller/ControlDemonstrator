@@ -59,9 +59,11 @@ class ModelMaker():
 
 
     def getMeasurementDataModel(self):
-        model = MeasurementData()
 
         bufferLength = self.config.getint("misc", "bufferSizePC")
+
+        model = MeasurementData(bufferLength)
+
         for i, channelName in enumerate(self.config.options('requestedChannels')):
             channel = ValueChannel(bufferLength)
             channel.id = i

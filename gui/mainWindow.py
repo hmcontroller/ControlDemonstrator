@@ -308,6 +308,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         self.projectSettings, self.channels, self.commands, self.messageFormatList, self.communicator = self.projectConfigManager.buildModelFromConfigFile(pathToProjectFile)
         self.projectSettings.changed.connect(self.projectSettingsChanged)
+        self.channels.changed.connect(self.channelSetupChanged)
 
         self.communicator.setMessageMap(self.messageFormatList)
         self.communicator.connectToController()
@@ -376,7 +377,17 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
     def editChannels(self, settings):
         dialog = ChannelSettingsDialog(self.channels, self.applicationSettings)
-        dialog.updateSettings()
+        self.channels = dialog.updateChannels()
+
+        self.receiveTimer.stop()
+
+        newMessageMap = self.projectConfigManager.getMessageFormatList(self.channels)
+        self.communicator.setMessageMap(newMessageMap)
+
+        self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
+
+    def channelSetupChanged(self):
+        pass
 
     def editCommands(self):
         dialog = CommandSettingsDialog(self.commands)

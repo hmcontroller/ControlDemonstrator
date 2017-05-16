@@ -107,11 +107,12 @@ class Command(QtCore.QObject):
         self._lowerLimit = 0
         self._upperLimit = 1
         self._value = 0.0
+        self.initialValue = 0.0
         self.rawArgumentString = None
 
         self.inputMethod = Command.VALUE_INPUT
 
-        # This is needed to handle the fact, that float values may change a bit during send and receive.
+        # This is needed to handle the inaccuracy of float types.
         self.smallNumber = 0.00001
 
         # On init set the following to something in the past, that is beyond the commCheckTimeOutDuration.

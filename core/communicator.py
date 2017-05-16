@@ -110,11 +110,13 @@ class Communicator(QtCore.QObject):
 
     def _unpack(self, rawPackets):
         # TODO - think about how to single source the packet configuration
-        # TODO at the time being the source is in types.h -> messageOut in the microcontroller code
 
         unpackedMessages = list()
 
         for rawPacket in rawPackets:
+            if len(rawPacket) != self._messageMap.messageLengthInBytes:
+                self._commState.state = CommState.WRONG_CONFIG
+                return unpackedMessages
             message = list()
             for messagePartInfo in self._messageMap:
                 messagePart = MessageData()
@@ -318,6 +320,10 @@ class SerialCommunicator(Communicator):
                 # message still too short or no message inside, store it for next try
                 if len(messageToProcess) < self._messageSize + 2 or messagePositions[0][0] == -1:
                     self.lastMessageRemainder = messageToProcess
+                    if len(self.lastMessageRemainder) > self._messageMap.messageLengthInBytes * 3:
+                        self.lastMessageRemainder = b""
+                        self._commState.state = CommState.WRONG_CONFIG
+                        self.commStateChanged.emit(self._commState)
                     return messages
 
 
