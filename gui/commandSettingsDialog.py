@@ -3,8 +3,11 @@
 from PyQt4 import QtGui, QtCore
 
 from core.command import Command
+
 from gui.designerfiles.commandSettingsDialog import Ui_CommandSettingsDialog
 from gui.resources import *
+
+
 
 class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
 
@@ -23,11 +26,6 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
         self.setupUi(self)
 
         self.commands = commands
-        self.finalCommandIDs = list()
-
-        for command in self.commands:
-            self.finalCommandIDs.append(command.id)
-
 
         self.tableWidget.setColumnCount(9)
         self.tableWidget.setRowCount(len(self.commands))
@@ -46,7 +44,6 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
         self.tableHeader.setResizeMode(self.DELETE_COLUMN, QtGui.QHeaderView.Fixed)
 
         self.tableWidget.setColumnHidden(self.ID_COLUMN, True)
-
 
         columnNames = [u"Variablenname",
                        u"Anzeigename",
@@ -82,107 +79,14 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
         self.inputModes.append((Command.SWITCH_INPUT, "Schalter"))
         self.inputModes.append((Command.TOGGLE_INPUT, "Taster"))
 
-        self.setCommandsToTable()
+        self.initializeTable()
 
-        self.tableWidget.cellChanged.connect(self.cellChanged)
         self.tableWidget.cellClicked.connect(self.cellClicked)
 
         plusPixmap = QtGui.QPixmap(greenPlusPath)
         plusIcon = QtGui.QIcon(plusPixmap)
         self.toolButtonAddChannel.setIcon(plusIcon)
-        self.toolButtonAddChannel.clicked.connect(self.addCommand)
-
-
-    def cellChanged(self, row, column):
-        pass
-
-    def cellClicked(self, row, column):
-        if column == 7:
-            idToDelete = int(self.tableWidget.item(row, 8).text())
-            self.removeCommand(idToDelete)
-
-
-    def removeCommand(self, id):
-        for i in range(0, len(self.finalCommandIDs)):
-            if self.finalCommandIDs[i] == id:
-                self.finalCommandIDs.pop(i)
-                break
-        self.setCommandsToTable()
-
-    def addCommand(self):
-        newId = 0
-        for commandId in self.finalCommandIDs:
-            if commandId >= newId:
-                newId = commandId + 1
-        self.finalCommandIDs.append(newId)
-        self.setCommandsToTable()
-
-    def setCommandsToTable(self):
-        self.tableWidget.clearContents()
-        self.tableWidget.setRowCount(len(self.finalCommandIDs))
-
-        for i, commandId in enumerate(self.finalCommandIDs):
-            try:
-                command = self.commands.getCommandById(commandId)
-            except Exception:
-                command = Command()
-                command.id = commandId
-                command.name = "new"
-                command.displayName = u"Neu"
-
-            nameItem = QtGui.QTableWidgetItem(unicode(command.name))
-            self.tableWidget.setItem(i, self.VARIABLE_NAME_COLUMN, nameItem)
-
-            displayNameItem = QtGui.QTableWidgetItem(unicode(command.displayName))
-            self.tableWidget.setItem(i, self.DISPLAY_NAME_COLUMN, displayNameItem)
-
-            pendingItem = QtGui.QTableWidgetItem()
-            pendingItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-            if command._pendingSendMode is True:
-                pendingItem.setCheckState(QtCore.Qt.Checked)
-            else:
-                pendingItem.setCheckState(QtCore.Qt.Unchecked)
-            self.tableWidget.setItem(i, self.PENDING_COLUMN, pendingItem)
-
-            inputMethodItem = QtGui.QTableWidgetItem()
-            comboBox = QtGui.QComboBox()
-            indexToSelect = 0
-            for n, mode in enumerate(self.inputModes):
-                comboBox.addItem(mode[1])
-                if mode[0] == command.inputMethod:
-                    indexToSelect = n
-            comboBox.setCurrentIndex(indexToSelect)
-            self.tableWidget.setCellWidget(i, self.INPUT_METHOD_COLUMN, comboBox)
-
-            lowerLimitItem = QtGui.QTableWidgetItem(unicode(command._lowerLimit))
-            self.tableWidget.setItem(i, self.MIN_COLUMN, lowerLimitItem)
-
-            upperLimitItem = QtGui.QTableWidgetItem(unicode(command._upperLimit))
-            self.tableWidget.setItem(i, self.MAX_COLUMN, upperLimitItem)
-
-            valueItem = QtGui.QTableWidgetItem(unicode(command._value))
-            self.tableWidget.setItem(i, self.START_VALUE_COLUMN, valueItem)
-
-
-            pixmap = QtGui.QPixmap(redCrossPngPath)
-            qIcon = QtGui.QIcon(pixmap)
-            iconItem = QtGui.QTableWidgetItem()
-            iconItem.setIcon(qIcon)
-            iconItem.setToolTip("delete")
-            self.tableWidget.setItem(i, self.DELETE_COLUMN, iconItem)
-
-            idItem = QtGui.QTableWidgetItem(str(commandId))
-            self.tableWidget.setItem(i, self.ID_COLUMN, idItem)
-
-    def resizeDialogToTableWidth(self, logicalIndex=0, oldSize=0, newSize=0):
-        print "tableWidth", self.tableWidget.width()
-
-        widthSum = 0
-        for i in range(0, self.tableWidget.columnCount()):
-            widthSum += self.tableWidget.columnWidth(i)
-
-        self.resize(widthSum + 24, 700)
-
+        self.toolButtonAddChannel.clicked.connect(self.createCommand)
 
 
     def updateSettings(self):
@@ -194,22 +98,118 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
         answer = self.exec_()
 
         if answer == QtGui.QDialog.Accepted:
-            for i in range(0, self.tableWidget.rowCount()):
-                id = int(self.tableWidget.item(i, self.ID_COLUMN).text())
-                self.commands[id].name = unicode(self.tableWidget.item(i, self.VARIABLE_NAME_COLUMN).text())
-                self.commands[id].displayName = unicode(self.tableWidget.item(i, self.DISPLAY_NAME_COLUMN).text())
-                if self.tableWidget.item(i, self.PENDING_COLUMN).checkState() == QtCore.Qt.Checked:
-                    self.commands[id].setPendingSendMode(True)
-                else:
-                    self.commands[id].setPendingSendMode(False)
-                comboIndex = self.tableWidget.cellWidget(i, self.INPUT_METHOD_COLUMN).currentIndex()
-                self.commands[id].inputMethod = self.inputModes[comboIndex][0]
 
-                self.commands[id].setLowerLimit(float(self.tableWidget.item(i, self.MIN_COLUMN).text()))
-                self.commands[id].setUpperLimit(float(self.tableWidget.item(i, self.MAX_COLUMN).text()))
-                self.commands[id].setValue(float(self.tableWidget.item(i, self.START_VALUE_COLUMN).text()))
+            # remove all old commands
+            self.commands.cmdList = list()
+
+            for rowNumber in range(0, self.tableWidget.rowCount()):
+
+                command = Command()
+
+                command.id = rowNumber
+
+                command.name = unicode(self.tableWidget.item(rowNumber, self.VARIABLE_NAME_COLUMN).text()).replace(" ", "")
+
+                command.displayName = unicode(self.tableWidget.item(rowNumber, self.DISPLAY_NAME_COLUMN).text())
+
+                if self.tableWidget.item(rowNumber, self.PENDING_COLUMN).checkState() == QtCore.Qt.Checked:
+                    command.setPendingSendMode(True)
+                else:
+                    command.setPendingSendMode(False)
+
+                comboIndex = self.tableWidget.cellWidget(rowNumber, self.INPUT_METHOD_COLUMN).currentIndex()
+                command.setInputMethod(self.inputModes[comboIndex][0])
+
+                command.setLowerLimit(float(self.tableWidget.item(rowNumber, self.MIN_COLUMN).text()))
+                command.setUpperLimit(float(self.tableWidget.item(rowNumber, self.MAX_COLUMN).text()))
+                command.initialValue = (float(self.tableWidget.item(rowNumber, self.START_VALUE_COLUMN).text()))
+
+                self.commands.cmdList.append(command)
+
+            self.commands.changed.emit(self.commands)
+            return self.commands
 
         else:
-            print "dann nicht"
+            return self.commands
+
+
+
+    def cellClicked(self, row, column):
+        if column == 7:
+            self.removeCommandFromTable(row)
+
+
+    def removeCommandFromTable(self, row):
+        self.tableWidget.removeRow(row)
+
+    def createCommand(self):
+        # make a temp command to get the initial values of all properties
+        tempCommand = Command()
+        self.addCommandToTable(tempCommand)
+
+    def addCommandToTable(self, command):
+        rowNumber = self.tableWidget.rowCount()
+
+        self.tableWidget.insertRow(rowNumber)
+
+        nameItem = QtGui.QTableWidgetItem(unicode(command.name))
+        self.tableWidget.setItem(rowNumber, self.VARIABLE_NAME_COLUMN, nameItem)
+
+        displayNameItem = QtGui.QTableWidgetItem(unicode(command.displayName))
+        self.tableWidget.setItem(rowNumber, self.DISPLAY_NAME_COLUMN, displayNameItem)
+
+        pendingItem = QtGui.QTableWidgetItem()
+        pendingItem.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+        if command._pendingSendMode is True:
+            pendingItem.setCheckState(QtCore.Qt.Checked)
+        else:
+            pendingItem.setCheckState(QtCore.Qt.Unchecked)
+        self.tableWidget.setItem(rowNumber, self.PENDING_COLUMN, pendingItem)
+
+        inputMethodItem = QtGui.QTableWidgetItem()
+        comboBox = QtGui.QComboBox()
+        indexToSelect = 0
+        for n, mode in enumerate(self.inputModes):
+            comboBox.addItem(mode[1])
+            if mode[0] == command.getInputMethod():
+                indexToSelect = n
+        comboBox.setCurrentIndex(indexToSelect)
+        self.tableWidget.setCellWidget(rowNumber, self.INPUT_METHOD_COLUMN, comboBox)
+
+        lowerLimitItem = QtGui.QTableWidgetItem(unicode(command._lowerLimit))
+        self.tableWidget.setItem(rowNumber, self.MIN_COLUMN, lowerLimitItem)
+
+        upperLimitItem = QtGui.QTableWidgetItem(unicode(command._upperLimit))
+        self.tableWidget.setItem(rowNumber, self.MAX_COLUMN, upperLimitItem)
+
+        initialValueItem = QtGui.QTableWidgetItem(unicode(command.initialValue))
+        self.tableWidget.setItem(rowNumber, self.START_VALUE_COLUMN, initialValueItem)
+
+
+        pixmap = QtGui.QPixmap(redCrossPngPath)
+        qIcon = QtGui.QIcon(pixmap)
+        iconItem = QtGui.QTableWidgetItem()
+        iconItem.setIcon(qIcon)
+        iconItem.setToolTip("delete")
+        self.tableWidget.setItem(rowNumber, self.DELETE_COLUMN, iconItem)
+
+        idItem = QtGui.QTableWidgetItem(str(command.id))
+        self.tableWidget.setItem(rowNumber, self.ID_COLUMN, idItem)
+
+
+    def initializeTable(self):
+        self.tableWidget.clearContents()
+        self.tableWidget.setRowCount(0)
+
+        for command in self.commands:
+            self.addCommandToTable(command)
+
+    def resizeDialogToTableWidth(self, logicalIndex=0, oldSize=0, newSize=0):
+        widthSum = 0
+        for i in range(0, self.tableWidget.columnCount()):
+            widthSum += self.tableWidget.columnWidth(i)
+
+        self.resize(widthSum + 24, 700)
+
 
 

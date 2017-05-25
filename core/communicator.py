@@ -68,6 +68,17 @@ class Communicator(QtCore.QObject):
     def connectToController(self):
         raise NotImplementedError()
 
+    def disconnectFromController(self):
+        raise NotImplementedError()
+
+    def toggleCommunication(self):
+        if self._commState.state == CommState.COMM_PAUSED:
+            self.continueCommunication()
+        elif self._commState.state == CommState.COMM_ESTABLISHED:
+            self.pauseCommunication()
+        else:
+            self.continueCommunication()
+
     def pauseCommunication(self):
         self._commState.state = CommState.COMM_PAUSED
 
@@ -160,12 +171,15 @@ class UdpCommunicator(Communicator):
                 self.commStateChanged.emit(self._commState)
                 self._connectionPollTimer.start(1000)
 
+    def disconnectFromController(self):
+        pass
+
     def send(self, commandList):
         if len(commandList.changedCommands) > 0 and self._commState.state == CommState.COMM_ESTABLISHED:
             commandToSend = commandList.changedCommands.popleft()
             packedData = self._packCommand(commandToSend)
             self._socket.sendto(packedData, (self._projectSettings.controllerIP, self._projectSettings.udpPort))
-            print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue()
+            # print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue()
             self.commandSend.emit(commandToSend)
 
     def sendPerTimer(self):
@@ -279,6 +293,10 @@ class SerialCommunicator(Communicator):
     def getOpenPorts(self):
         return serial.tools.list_ports.comports()
 
+    def disconnectFromController(self):
+        self.ser.close()
+        self._commState.state = CommState.COMM_PAUSED
+        self.commStateChanged.emit(self._commState)
 
     def send(self, commandList):
         # return

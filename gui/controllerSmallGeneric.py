@@ -22,6 +22,7 @@ class ControllerSmallGeneric(QtGui.QGraphicsView):
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
         self.commands = commands
+        self.commands.changed.connect(self.commandListChanged)
         self.channels = channels
 
         self.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.lightGray))
@@ -38,34 +39,23 @@ class ControllerSmallGeneric(QtGui.QGraphicsView):
         self.cablePen.setWidth(2)
         self.cablePen.setCosmetic(True)
 
+        self.initItems()
+
+        self.setScene(self.scene)
+
+        self.arrangeItems()
+
+    def initItems(self):
+        self.scene.clear()
         self.items = list()
         for command in self.commands:
             commandItem = SmallGenericCommand(command)
             self.scene.addItem(commandItem)
             self.items.append(commandItem)
 
-        self.setScene(self.scene)
-
+    def commandListChanged(self):
+        self.initItems()
         self.arrangeItems()
-
-        # self.sendPendingCommandsButton = QtGui.QPushButton()
-        # self.cancelPendingCommandsButton = QtGui.QPushButton()
-        #
-        # self.sendPendingCommandsButtonProxy = self.scene.addWidget(self.sendPendingCommandsButton)
-        # self.sendPendingCommandsButton.setText("send now")
-        # self.sendPendingCommandsButton.clicked.connect(self.sendPendingCommands)
-        # self.sendPendingCommandsButton.setGeometry(10, 10, 80, 30)
-        #
-        # self.cancelPendingCommandsButtonProxy = self.scene.addWidget(self.cancelPendingCommandsButton)
-        # self.cancelPendingCommandsButton.setText("cancel")
-        # self.cancelPendingCommandsButton.clicked.connect(self.cancelPendingCommands)
-        # self.cancelPendingCommandsButton.setGeometry(100, 10, 80, 30)
-    #
-    # def sendPendingCommands(self):
-    #     self.commands.movePendingCommandsToSendList()
-    #
-    # def cancelPendingCommands(self):
-    #     self.commands.cancelPendingCommands()
 
     def arrangeItems(self):
         """

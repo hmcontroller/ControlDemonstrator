@@ -7,11 +7,11 @@ Welcome to ControlDemonstrator's documentation!
 ===============================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    _static/introduction
+   _static/quickstart
    _static/apireference
-   Module index <_apidoc/modules>
 
 Indices and tables
 ==================

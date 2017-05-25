@@ -59,13 +59,3 @@ class ApplicationSettingsManager():
             content = f.read()
             return json.loads(content)
 
-
-    def appendRecentProjectPath(self, path):
-        newRecentPathes = deque(maxlen=5)
-
-        for i in range(0, len(self.settings.recentProjectFilePathes)):
-            if not self.settings.recentProjectFilePathes[i] == path:
-                newRecentPathes.append(self.settings.recentProjectFilePathes[i])
-
-        self.settings.recentProjectFilePathes = newRecentPathes
-        self.settings.recentProjectFilePathes.appendleft(path)

@@ -13,7 +13,7 @@ class TabSmallGenericView(QtGui.QWidget, Ui_tabGenericView):
 
     changingName = QtCore.pyqtSignal(str)
 
-    def __init__(self, commands, channels, applicationSettings, projectSettings, communicator, parent=None):
+    def __init__(self, commands, channels, applicationSettings, projectSettings, communicator, mainWindow, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setupUi(self)
 
@@ -33,7 +33,7 @@ class TabSmallGenericView(QtGui.QWidget, Ui_tabGenericView):
 
         self.controller = ControllerSmallGeneric(self.commands, self.channels)
 
-        self.globalController = GlobalControllerAndView(self.commands, self.communicator)
+        self.globalController = GlobalControllerAndView(self.commands, self.communicator, mainWindow)
 
         self.commandViewLayout.insertWidget(0, self.globalController, 0)
 

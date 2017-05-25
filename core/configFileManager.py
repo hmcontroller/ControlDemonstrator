@@ -26,6 +26,7 @@ class ConfigFileManager(object):
             channelDict["show"] = channel.show
             channelDict["id"] = channel.id
             channelDict["name"] = channel.name
+            channelDict["displayName"] = channel.displayName
             channelDict["isRequested"] = channel.isRequested
             channelDescriptions.append(channelDict)
 
@@ -37,15 +38,15 @@ class ConfigFileManager(object):
             commandDict["displayName"] = command.displayName
             commandDict["min"] = command._lowerLimit
             commandDict["max"] = command._upperLimit
-            commandDict["value"] = command.initialValue
+            commandDict["initialValue"] = command.initialValue
             commandDict["pendingMode"] = command._pendingSendMode
-            commandDict["inputMethod"] = command.inputMethod
+            commandDict["inputMethod"] = command._inputMethod
             commandDescriptions.append(commandDict)
 
 
         projectSettingsDescriptions = dict()
 
-        projectSettingsDescriptions["projectName"] = projectSettings.projectName
+        # projectSettingsDescriptions["projectName"] = projectSettings.projectName
         projectSettingsDescriptions["controllerLoopCycleTimeInUs"] = projectSettings.controllerLoopCycleTimeInUs
         projectSettingsDescriptions["computerIP"] = projectSettings.computerIP
         projectSettingsDescriptions["controllerIP"] = projectSettings.controllerIP
@@ -74,6 +75,7 @@ class ConfigFileManager(object):
             path = projectSettings.openedFrom
         else:
             path = newPath
+            projectSettings.openedFrom = newPath
 
         with open(path, "w") as f:
             f.write(json.dumps(everythingDict, indent=4))
@@ -115,7 +117,7 @@ class ConfigFileManager(object):
 
     def makeCommunicator(self, projectMiscSettings):
         serialCases = ["arduino_serial", "ARDUINO_SERIAL", "MBED_OS_SERIAL", "MBED_2_SERIAL"]
-        udpCases = ["mbed_OS_udp", "arduino_udp", "MBED_OS_UDP", "MBED_2_UDP", "ARDUINO_SERIAL"]
+        udpCases = ["mbed_OS_udp", "arduino_udp", "ARDUINO_UDP", "MBED_OS_UDP", "MBED_2_UDP", "ARDUINO_SERIAL"]
 
         if projectMiscSettings.controllerFrameworkAndInterface in serialCases:
             return SerialCommunicator(self.applicationSettings, projectMiscSettings)
@@ -139,6 +141,8 @@ class ConfigFileManager(object):
                 channel.id = channelDescription["id"]
             if "name" in channelDescription:
                 channel.name = channelDescription["name"]
+            if "displayName" in channelDescription:
+                channel.displayName = channelDescription["displayName"]
             if "isRequested" in channelDescription:
                 channel.isRequested = channelDescription["isRequested"]
 
@@ -169,23 +173,22 @@ class ConfigFileManager(object):
             if "max" in commandDescription:
                 command._upperLimit = commandDescription["max"]
 
-            if "value" in commandDescription:
-                command.initialValue = commandDescription["value"]
-                command.setValue(commandDescription["value"])
+            if "initialValue" in commandDescription:
+                command.initialValue = commandDescription["initialValue"]
 
             if "pendingMode" in commandDescription:
                 command._pendingSendMode = commandDescription["pendingMode"]
 
             if "inputMethod" in commandDescription:
-                command.inputMethod = commandDescription["inputMethod"]
+                command.setInputMethod(commandDescription["inputMethod"])
 
         return commandList
 
     def makeProjectMiscSettings(self, settingsDescriptions):
         projectMiscSettings = ProjectSettings()
 
-        if "projectName" in settingsDescriptions:
-            projectMiscSettings.projectName = settingsDescriptions["projectName"]
+        # if "projectName" in settingsDescriptions:
+        #     projectMiscSettings.projectName = settingsDescriptions["projectName"]
 
         if "controllerLoopCycleTimeInUs" in settingsDescriptions:
             projectMiscSettings.controllerLoopCycleTimeInUs = settingsDescriptions["controllerLoopCycleTimeInUs"]

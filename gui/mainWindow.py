@@ -6,17 +6,22 @@ import json
 import pickle
 import collections
 import webbrowser
+import time
+import errno
+import traceback
 
 from PyQt4 import QtCore, QtGui
 import sip
 
 from core.modelMaker import ModelMaker
-from core.communicator import UdpCommunicator
+from core.communicator import UdpCommunicator, CommState
 from core.communicator import SerialCommunicator
 from core.messageInterpreter import MessageInterpreter
 from core.configFileManager import ConfigFileManager
 from core.applicationSettingsManager import ApplicationSettingsManager
 from core.model.projectSettings import ProjectSettings
+from core.includeFileMaker import IncludeFileMaker
+from core.model.tabDescription import TabDescription
 
 from gui.aboutDialog import AboutDialog
 from gui.projectMiscSettingsDialog import ProjectMiscSettingsDialog
@@ -24,13 +29,26 @@ from gui.channelSettingsDialog import ChannelSettingsDialog
 from gui.commandSettingsDialog import CommandSettingsDialog
 
 from gui.constants import *
-# from gui.TabWaterLineExperiment import TabWaterLineExperiment
-# from gui.TabGenericView import TabGenericView
-# from gui.TabSmallGenericView import TabSmallGenericView
+from gui.tabWaterLineExperiment import TabWaterLineExperiment
+from gui.tabGenericView import TabGenericView
+from gui.tabSmallGenericView import TabSmallGenericView
+from gui.resources import *
 
 class ControlDemonstratorMainWindow(QtGui.QMainWindow):
-    def __init__(self, rootFolder):
+
+    displayMessage = QtCore.pyqtSignal(object, object)
+
+    def __init__(self, rootFolder, exceptHook):
         QtGui.QMainWindow.__init__(self)
+
+        exceptHook.caughtException.connect(self.uncaughtExceptionOccured)
+
+        self.programRootFolder = rootFolder
+
+        pixmap = QtGui.QPixmap(icPath)
+        icon = QtGui.QIcon(pixmap)
+        QtGui.QApplication.setApplicationName(u"microRay")
+        QtGui.QApplication.setWindowIcon(icon)
 
         self.appSettingsManager = ApplicationSettingsManager(PATH_TO_APPLICATION_SETTINGS)
         self.applicationSettings = self.appSettingsManager.restoreSettingsFromFile()
@@ -44,8 +62,11 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         self.projectConfigManager = ConfigFileManager(self.applicationSettings)
 
+        self.includeFileMaker = IncludeFileMaker()
 
         self.setupUi()
+
+
 
 
         self.setWindowTitle("ControlDemonstrator")
@@ -73,13 +94,19 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
 
 
+        self.setInitialValuesTimer = QtCore.QTimer()
+        self.setInitialValuesTimer.setSingleShot(True)
+        self.setInitialValuesTimer.timeout.connect(self.setInitialValues)
 
 
 
 
 
         if len(self.applicationSettings.recentProjectFilePathes) > 0:
-            self.loadProject(self.applicationSettings.recentProjectFilePathes[0])
+            try:
+                self.loadProject(self.applicationSettings.recentProjectFilePathes[0])
+            except IOError:
+                self.displayMessage.emit("Konnte die Projektdatei nicht finden.", "warning")
 
 
 
@@ -108,10 +135,13 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.loopDurationSum = 0
         self.loopDurationCounter = 0
 
+
+
+
+
+
         splashScreen.finish(self)
         logging.info("GUI load complete")
-
-
 
 
 
@@ -166,18 +196,44 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
             tabLayout.setMargin(0)
             self.tabWidget.addTab(tab, givenTab.displayName)
 
-            tabContentClass = getattr(import_module(givenTab.pathToClassFile), givenTab.className)
-            tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
+            # don't do this dynamically, otherwise pyinstaller stops working
+            # tabContentClass = getattr(import_module(givenTab.pathToClassFile), givenTab.className)
+            # tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
 
-            tabLayout.addWidget(tabContentClassInstance)
+            classInstance = None
+            if givenTab.className == "TabWaterLineExperiment":
+                classInstance = TabWaterLineExperiment(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+            elif givenTab.className == "TabSmallGenericView":
+                classInstance = TabSmallGenericView(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+            elif givenTab.className == "TabGenericView":
+                classInstance = TabGenericView(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+            else:
+                raise ValueError("inappropriate tab given in project file")
+
+
+            tabLayout.addWidget(classInstance)
 
     def addOnlyOneWidget(self, tabs):
         tab = tabs[0]
 
-        tabContentClass = getattr(import_module(tab.pathToClassFile), tab.className)
-        tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
+        classInstance = None
 
-        self.centralWidgetLayout.addWidget(tabContentClassInstance)
+        # don't do this dynamically, otherwise pyinstaller stops working
+        # tabContentClass = getattr(import_module(givenTab.pathToClassFile), givenTab.className)
+        # tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
+
+        if tab.className == "TabWaterLineExperiment":
+            classInstance = TabWaterLineExperiment(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+        elif tab.className == "TabSmallGenericView":
+            classInstance = TabSmallGenericView(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+        elif tab.className == "TabGenericView":
+            classInstance = TabGenericView(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+        else:
+            raise ValueError("inappropriate tab given in project file")
+
+
+
+        self.centralWidgetLayout.addWidget(classInstance)
 
 
     def setupMainMenu(self):
@@ -224,12 +280,15 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         editCommandsAction = QtGui.QAction(u"Parametereinstellungen...", self)
         editCommandsAction.triggered.connect(self.editCommands)
 
+        generateCCodeAction = QtGui.QAction(u"C-Code generieren", self)
+        generateCCodeAction.triggered.connect(self.generateCCode)
 
 
         editMenu = mainMenu.addMenu("Bearbeiten")
         editMenu.addAction(editProjectMiscSettingsAction)
         editMenu.addAction(editChannelsAction)
         editMenu.addAction(editCommandsAction)
+        editMenu.addAction(generateCCodeAction)
 
 
         showHelpAction = QtGui.QAction(u"Hilfe anzeigen...", self)
@@ -247,11 +306,13 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def refreshRecentProjectsMenu(self):
         self.openRecentMenu.clear()
         for i, recentPath in enumerate(self.applicationSettings.recentProjectFilePathes):
-            displayPath = recentPath
-            displayPath = displayPath.split("/")
-            displayPath = displayPath[-1]
-            displayPath = displayPath.replace(".json", "")
-            action = QtGui.QAction(u"{}".format(displayPath), self)
+            displayPath = self.getProjectDisplayPath(recentPath)
+            # displayPath = displayPath.split("/")
+            # displayPath = displayPath[-1]
+            # displayPath = displayPath.replace(".json", "")
+
+            # action = QtGui.QAction(u"{}".format(displayPath), self)
+            action = QtGui.QAction(u"{}".format(recentPath), self)
             action.triggered.connect(self.openRecent)
             action.setData(QtCore.QVariant(recentPath))
             self.openRecentMenu.addAction(action)
@@ -260,14 +321,23 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def newProject(self):
 
         tempProjectSettings = ProjectSettings()
-        accepted = self.editProjectMiscSettings(self.projectSettings)
+
+        accepted = self.editProjectMiscSettings(tempProjectSettings)
 
         if accepted == QtGui.QDialog.Accepted:
             self.closeCurrentProject()
             self.makeEmptyProject()
             self.projectSettings = tempProjectSettings
+            self.projectSettings.tabSettingsDescriptions.append(TabDescription())
             self.projectSettings.changed.connect(self.projectSettingsChanged)
-            self.saveAs()
+
+            tempPath = os.path.join(self.programRootFolder, "tempNew.json")
+
+            self.saveAs(None, tempPath)
+            self.loadProject(tempPath)
+            self.projectSettings.openedFrom = u""
+            self.applicationSettings.recentProjectFilePathes.popleft()
+            self.refreshRecentProjectsMenu()
 
 
     def makeEmptyProject(self):
@@ -281,26 +351,29 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         self.receiveTimer.stop()
 
     def open(self):
-        print "open"
 
-        folderPath = "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\ControlDemonstratorProjects\\"
-
+        if len(self.applicationSettings.recentProjectFilePathes) > 0:
+            folderSuggestion = self.applicationSettings.recentProjectFilePathes[0]
+        else:
+            folderSuggestion = os.path.expanduser("~")
 
 
         projectFilePath = QtGui.QFileDialog.getOpenFileName(self,
                                                               "Open project file",
-                                                              folderPath,
+                                                              folderSuggestion,
                                                               "Project Settings (*.json)")
         projectFilePath = str(projectFilePath)
         if projectFilePath == "":
-            print "no project file given"
             return
         else:
             self.loadProject(projectFilePath)
 
     def openRecent(self, *args):
         recentPath = str(self.sender().data().toString())
-        self.loadProject(recentPath)
+        try:
+            self.loadProject(recentPath)
+        except IOError:
+            self.displayMessage.emit("Konnte die Projektdatei nicht finden", "warning")
 
     def loadProject(self, pathToProjectFile):
 
@@ -315,56 +388,99 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         self.addTabs(self.projectSettings.tabSettingsDescriptions)
 
-        self.applicationSettings.addRecentProjektPath(pathToProjectFile)
+        self.applicationSettings.addRecentProjectPath(pathToProjectFile)
 
-        displayPath = pathToProjectFile
-        displayPath = displayPath.split("/")
-        displayPath = displayPath[-1]
-        displayPath = displayPath.replace(".json", "")
+        displayPath = self.getProjectDisplayPath(pathToProjectFile)
 
-        self.setWindowTitle(u"ControlDemonstrator - {}".format(self.projectSettings.projectName))
+        self.setWindowTitle(u"microRay - {}".format(displayPath))
         self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
 
+        self.setInitialValuesTimer.start(2000)
+
+    def getProjectDisplayPath(self, fullProjectFilePath):
+        displayPath = unicode(fullProjectFilePath)
+        displayPath = os.path.split(displayPath)[1]
+        return displayPath.replace(".json", "")
+
+
+    def setInitialValues(self):
+        self.commands.sendInitialValues()
+
     def projectSettingsChanged(self, newSettings):
-        newWindowTitle = self.projectSettings.projectName
+
+        # self.receiveTimer.stop()
+        # self.communicator.disconnectFromController()
+
+        newWindowTitle = self.getProjectDisplayPath(self.projectSettings.openedFrom)
         if self.projectSettings.unsavedChanges is True:
             newWindowTitle += u" (unsaved)"
-        self.setWindowTitle(u"ControlDemonstrator - {}".format(newWindowTitle))
+        self.setWindowTitle(u"microRay - {}".format(newWindowTitle))
+        # todo rebuild communicator
 
+
+        # self.communicator = self.projectConfigManager.makeCommunicator(self.projectSettings)
+        # self.communicator.setMessageMap(self.messageFormatList)
+        # self.communicator.connectToController()
+        #
+        # self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
 
     def save(self):
-        self.projectConfigManager.save(self.projectSettings, self.channels, self.commands)
+        try:
+            self.projectConfigManager.save(self.projectSettings, self.channels, self.commands)
+        except IOError:
+            self.displayMessage.emit("could not save project file", "warning")
+            self.saveAs(None)
         self.projectSettings.unsavedChanges = False
 
-    def saveAs(self):
-        folder = os.path.dirname(self.projectSettings.openedFrom)
-        projectFilePath = QtGui.QFileDialog.getSaveFileName(self,
-                                                              "Projekt speichern unter...",
-                                                              folder,
-                                                              "Project Settings (*.json)")
-        projectFilePath = str(projectFilePath)
-        if projectFilePath == "":
-            print "cancel"
+    def saveAs(self, something, path=None):
+
+        if path is None:
+            filePathSuggestion = self.getSavePathSuggestion()
+
+            projectFilePath = QtGui.QFileDialog.getSaveFileName(self,
+                                                                  "Projekt speichern unter...",
+                                                                  filePathSuggestion,
+                                                                  "Project Settings (*.json)")
+            projectFilePath = unicode(projectFilePath)
+        else:
+            projectFilePath = unicode(path)
+
+        if len(projectFilePath) == 0:
             return
         else:
-            self.projectConfigManager.saveAs(projectFilePath, self.projectSettings, self.channels, self.commands)
+            try:
+                self.projectConfigManager.saveAs(projectFilePath, self.projectSettings, self.channels, self.commands)
+                self.applicationSettings.addRecentProjectPath(projectFilePath)
+                self.projectSettings.unsavedChanges = False
+            except IOError:
+                self.displayMessage.emit("could not save project file", "warning")
+                return
 
-        self.loadProject(projectFilePath)
+        # self.loadProject(projectFilePath)
+
+    def getSavePathSuggestion(self):
+        if len(self.projectSettings.openedFrom) > 0:
+            folderSuggestion = self.projectSettings.openedFrom
+        elif len(self.projectSettings.pathToControllerCodeFolder) > 0:
+            folderSuggestion = self.projectSettings.pathToControllerCodeFolder
+        elif len(self.applicationSettings.recentProjectFilePathes) > 0:
+            folderSuggestion = self.applicationSettings.recentProjectFilePathes[0]
+        else:
+            folderSuggestion = os.path.expanduser("~")
+
+        return folderSuggestion
+
+        # fileNameSuggestion = self.projectSettings.projectName + ".json"
+        # filePathSuggestion = os.path.join(folderSuggestion, fileNameSuggestion)
+
 
     def close(self):
         if self.projectSettings.unsavedChanges is True:
-            print "SAVE ?"
+            pass
+            # print "SAVE ?"
         else:
             QtCore.QCoreApplication.quit()
 
-    def showHelp(self):
-        pathToIndexHtml = os.path.abspath(os.path.join(os.getcwd(), "docs/sphinxHtml/index.html"))
-        url = "file://" + pathToIndexHtml
-        webbrowser.open(url)
-
-    def showAboutWindow(self):
-        aboutDialog = AboutDialog()
-        aboutDialog.exec_()
 
     def editProjectMiscSettings(self, settings):
         if settings is False or None:
@@ -396,6 +512,37 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def appSettingsChanged(self, settings):
         self.refreshRecentProjectsMenu()
 
+    def generateCCode(self):
+
+        self.communicator.disconnectFromController()
+        try:
+            self.includeFileMaker.generateIncludeFiles(self.projectSettings, self.channels, self.commands)
+            if len(self.projectSettings.pathToControllerCodeFolder) == 0:
+                path = self.programRootFolder
+                self.displayMessage.emit(u"You can specify the include files target folder in the project settings.", "softWarning")
+            else:
+                path = self.projectSettings.pathToControllerCodeFolder
+            self.displayMessage.emit(u"Include file generated in {}".format(path), "normal")
+        except IOError as ex:
+            if ex.errno == errno.ENOENT:
+                self.displayMessage.emit(u"failed to generate code. Please specify output folder.", "warning")
+        except:
+            errorMessage = traceback.format_exc()
+            self.displayMessage.emit(u"failed to generate code. Errormessage:\n{}".format(errorMessage), "warning")
+
+        self.displayMessage.emit(u"Communication paused, recompile your controller code.", "softWarning")
+
+
+    def showHelp(self):
+        pathToIndexHtml = os.path.abspath(os.path.join(os.getcwd(), "documentation/index.html"))
+        url = "file://" + pathToIndexHtml
+        webbrowser.open(url)
+
+    def showAboutWindow(self):
+        aboutDialog = AboutDialog()
+        aboutDialog.exec_()
+
+
     def receiveAndSend(self):
         self.receive()
         self.send()
@@ -412,7 +559,14 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def handleNewData(self, message):
         MessageInterpreter.mapUserChannels(self.channels, message)
         returnedCommand = MessageInterpreter.getMicroControllerCommandReturned(message)
-        self.commands[returnedCommand.id].checkMicroControllerReturnValue(returnedCommand)
+
+        try:
+            command = self.commands.getCommandById(returnedCommand.id)
+            self.commands[returnedCommand.id].checkMicroControllerReturnValue(returnedCommand)
+        except:
+            self.communicator._commState.state = CommState.WRONG_CONFIG
+            self.communicator.commStateChanged.emit(self.communicator._commState)
+
 
     def calculateSomeStuff(self, message):
         loopCycleDuration = MessageInterpreter.getLoopCycleDuration(message)
@@ -431,6 +585,8 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         # print "min", self.loopDurationMin, "max", self.loopDurationMax, "avg", self.loopDurationAverage
 
     def closeEvent(self, *args, **kwargs):
-        print "bye bye"
+        # print "bye bye"
         QtGui.QApplication.quit()
 
+    def uncaughtExceptionOccured(self, exceptionString):
+        print exceptionString

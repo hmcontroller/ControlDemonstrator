@@ -4,6 +4,8 @@ import traceback
 import logging
 import os
 
+from core.exceptHook import ExceptHook
+
 from PyQt4 import QtGui
 
 from gui.mainWindow import ControlDemonstratorMainWindow
@@ -31,7 +33,11 @@ class ControlDemonstrator(QtGui.QApplication):
         logging.info("application start")
         QtGui.QApplication.__init__(self, args)
 
-        self.mainW = ControlDemonstratorMainWindow(ABSOLUTE_PROGRAM_ROOT_FOLDER)
+        self.excepthook = ExceptHook()
+        # sys.excepthook = self.excepthook.hook
+
+
+        self.mainW = ControlDemonstratorMainWindow(ABSOLUTE_PROGRAM_ROOT_FOLDER, self.excepthook)
         self.mainW.show()
 
     def notify(self, object, event):

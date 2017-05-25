@@ -144,10 +144,7 @@ class GenericCommand(BaseCommand):
         self.command.setPendingSendMode(newValue)
 
     def valueEditingFinished(self):
-        # self.valueLineEditProxy.clearFocus()
-        # self.valueLineEdit.selectAll()
         text = self.valueLineEdit.text()
-        print "ValueEditFinished", text
 
         # if nothing is in the textBox, the lower limit of the command will be set
         if len(text) is 0:
@@ -187,8 +184,6 @@ class GenericCommand(BaseCommand):
 
         text = self.minLineEdit.text()
 
-        print "minEditFinished", text
-
         if text == "":
             min = 0
         else:
@@ -210,8 +205,6 @@ class GenericCommand(BaseCommand):
         # self.maxLineEdit.selectAll()
 
         text = self.maxLineEdit.text()
-
-        print "maxEditFinished", text
 
         if text == "":
             max = 0

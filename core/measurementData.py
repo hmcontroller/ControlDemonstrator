@@ -9,6 +9,8 @@ class MeasurementData(QtCore.QObject):
 
     channelChanged = QtCore.pyqtSignal(object, object)
 
+    channelConfigChanged = QtCore.pyqtSignal(object)
+
     changed = QtCore.pyqtSignal(object)
 
     def __init__(self, bufferLength):
@@ -28,6 +30,7 @@ class MeasurementData(QtCore.QObject):
 
     def addChannel(self, channel):
         self.channels.append(channel)
+        channel.changed.connect(self.channelConfigurationChanged)
         self.changed.emit(self)
 
     def removeChannel(self, channel):
@@ -39,6 +42,9 @@ class MeasurementData(QtCore.QObject):
 
     def channelUpdated(self, channel):
         self.channelChanged.emit(self.timeValues, channel)
+
+    def channelConfigurationChanged(self, channel):
+        self.channelConfigChanged.emit(channel)
 
     def getChannelById(self, id):
         for channel in self.channels:

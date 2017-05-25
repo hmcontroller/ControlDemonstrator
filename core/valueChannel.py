@@ -9,17 +9,19 @@ from core.messageData import MessageData
 class ValueChannel(QtCore.QObject):
 
     newValueArrived = QtCore.pyqtSignal(object)
+    changed = QtCore.pyqtSignal(object)
+    showChanged = QtCore.pyqtSignal(object)
 
     def __init__(self, bufferLength):
         super(ValueChannel, self).__init__()
-        self.id = 0
-        self.name = "new"
-        self.displayName = "Neu"
+        self._id = 0
+        self._name = "new"
+        self._displayName = u""
         self._values = deque(maxlen=bufferLength)
-        self.show = True
-        self.colorRgbTuple = (random.randint(0, 254), random.randint(0, 254), random.randint(0, 254))
-        self.isRequested = False
-        self.messageData = MessageData()
+        self._show = True
+        self._colorRgbTuple = (random.randint(0, 254), random.randint(0, 254), random.randint(0, 254))
+        self._isRequested = True
+        self._messageData = MessageData()
 
         for n in range(0, bufferLength):
             self.appendSilently(0.0)
@@ -30,6 +32,72 @@ class ValueChannel(QtCore.QObject):
 
     def appendSilently(self, value):
         self._values.append(value)
+
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        self._id = value
+        self.changed.emit(self)
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+        self.changed.emit(self)
+
+    @property
+    def displayName(self):
+        return self._displayName
+
+    @displayName.setter
+    def displayName(self, value):
+        self._displayName = value
+        self.changed.emit(self)
+
+    @property
+    def show(self):
+        return self._show
+
+    @show.setter
+    def show(self, value):
+        self._show = value
+        self.showChanged.emit(self)
+
+    @property
+    def colorRgbTuple(self):
+        return self._colorRgbTuple
+
+    @colorRgbTuple.setter
+    def colorRgbTuple(self, value):
+        self._colorRgbTuple = value
+        self.changed.emit(self)
+
+    @property
+    def isRequested(self):
+        return self._isRequested
+
+    @isRequested.setter
+    def isRequested(self, value):
+        self._isRequested = value
+        self.changed.emit(self)
+
+    @property
+    def messageData(self):
+        return self._messageData
+
+    @messageData.setter
+    def messageData(self, value):
+        self._messageData = value
+        self.changed.emit(self)
+
+
 
     def __len__(self):
         return len(self._values)

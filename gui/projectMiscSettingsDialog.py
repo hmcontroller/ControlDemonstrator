@@ -16,7 +16,6 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
         self.setupUi(self)
 
 
-        self.lineEditName.textChanged.connect(self.nameEditTextChanged)
         self.lineEditControllerLoopCycleTime.setValidator(QtGui.QIntValidator())
         self.lineEditUDPPort.setValidator(QtGui.QIntValidator(0, 49151))
 
@@ -36,18 +35,18 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
 
         self.openedDialog = None
 
-    def nameEditTextChanged(self):
-        if len(self.lineEditName.text()) == 0:
-            self.lineEditName.setStyleSheet("QLineEdit {background-color: red;}")
-            self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(False)
-        else:
-            self.lineEditName.setStyleSheet("QLineEdit {background-color: white;}")
-            self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(True)
+    # def nameEditTextChanged(self):
+    #     if len(self.lineEditName.text()) == 0:
+    #         self.lineEditName.setStyleSheet("QLineEdit {background-color: red;}")
+    #         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(False)
+    #     else:
+    #         self.lineEditName.setStyleSheet("QLineEdit {background-color: white;}")
+    #         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(True)
 
 
     def verifyInput(self):
-        if len(self.lineEditName.text()) == 0:
-            return
+        # if len(self.lineEditName.text()) == 0:
+        #     return
 
         self.accept()
 
@@ -92,8 +91,11 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
 
     def getFolderPath(self):
         selectedFolder = QtGui.QFileDialog.getExistingDirectory(self)
+        if len(selectedFolder) == 0:
+            return
 
         self.settings.pathToControllerCodeFolder = selectedFolder
+
         self.lineEditPathToControllerCodeFolder.setText(selectedFolder)
 
     def updateSettings(self):
@@ -101,7 +103,7 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
         # self.settings = ProjectSettings()
 
         # set settings to form
-        self.lineEditName.setText(self.settings.projectName)
+        # self.lineEditName.setText(self.settings.projectName)
         self.lineEditControllerLoopCycleTime.setText(unicode(self.settings.controllerLoopCycleTimeInUs))
         self.lineEditPathToControllerCodeFolder.setText(self.settings.pathToControllerCodeFolder)
 
@@ -127,7 +129,7 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
         answer = self.exec_()
 
         if answer == QtGui.QDialog.Accepted:
-            self.settings.projectName = unicode(self.lineEditName.text())
+            # self.settings.projectName = unicode(self.lineEditName.text())
             self.settings.controllerLoopCycleTimeInUs = int(self.lineEditControllerLoopCycleTime.text())
             self.settings.pathToControllerCodeFolder = unicode(self.lineEditPathToControllerCodeFolder.text())
 

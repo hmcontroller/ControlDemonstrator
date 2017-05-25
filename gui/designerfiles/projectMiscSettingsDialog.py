@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'projectMiscSettingsDialog.ui'
 #
-# Created: Sat May 13 07:34:59 2017
+# Created: Thu May 25 10:04:32 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -38,27 +38,15 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.formLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.ExpandingFieldsGrow)
         self.formLayout.setObjectName(_fromUtf8("formLayout"))
-        self.label = QtGui.QLabel(ProjectMiscSettingsDialog)
-        self.label.setObjectName(_fromUtf8("label"))
-        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.label)
-        self.lineEditName = QtGui.QLineEdit(ProjectMiscSettingsDialog)
-        self.lineEditName.setObjectName(_fromUtf8("lineEditName"))
-        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.lineEditName)
         self.label_2 = QtGui.QLabel(ProjectMiscSettingsDialog)
         self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_2)
+        self.formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self.label_2)
         self.lineEditControllerLoopCycleTime = QtGui.QLineEdit(ProjectMiscSettingsDialog)
         self.lineEditControllerLoopCycleTime.setObjectName(_fromUtf8("lineEditControllerLoopCycleTime"))
-        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.lineEditControllerLoopCycleTime)
+        self.formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self.lineEditControllerLoopCycleTime)
         self.label_3 = QtGui.QLabel(ProjectMiscSettingsDialog)
         self.label_3.setObjectName(_fromUtf8("label_3"))
-        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_3)
-        self.label_4 = QtGui.QLabel(ProjectMiscSettingsDialog)
-        self.label_4.setObjectName(_fromUtf8("label_4"))
-        self.formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self.label_4)
-        self.comboBoxFrameworkAndInterface = QtGui.QComboBox(ProjectMiscSettingsDialog)
-        self.comboBoxFrameworkAndInterface.setObjectName(_fromUtf8("comboBoxFrameworkAndInterface"))
-        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.comboBoxFrameworkAndInterface)
+        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_3)
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         self.lineEditPathToControllerCodeFolder = QtGui.QLineEdit(ProjectMiscSettingsDialog)
@@ -67,7 +55,13 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.toolButtonSelectControllerCodeFolder = QtGui.QToolButton(ProjectMiscSettingsDialog)
         self.toolButtonSelectControllerCodeFolder.setObjectName(_fromUtf8("toolButtonSelectControllerCodeFolder"))
         self.horizontalLayout_3.addWidget(self.toolButtonSelectControllerCodeFolder)
-        self.formLayout.setLayout(2, QtGui.QFormLayout.FieldRole, self.horizontalLayout_3)
+        self.formLayout.setLayout(1, QtGui.QFormLayout.FieldRole, self.horizontalLayout_3)
+        self.label_4 = QtGui.QLabel(ProjectMiscSettingsDialog)
+        self.label_4.setObjectName(_fromUtf8("label_4"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_4)
+        self.comboBoxFrameworkAndInterface = QtGui.QComboBox(ProjectMiscSettingsDialog)
+        self.comboBoxFrameworkAndInterface.setObjectName(_fromUtf8("comboBoxFrameworkAndInterface"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.comboBoxFrameworkAndInterface)
         self.verticalLayout.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 10, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         self.verticalLayout.addItem(spacerItem)
@@ -124,11 +118,10 @@ class Ui_ProjectMiscSettingsDialog(object):
 
     def retranslateUi(self, ProjectMiscSettingsDialog):
         ProjectMiscSettingsDialog.setWindowTitle(_translate("ProjectMiscSettingsDialog", "Projekteinstellungen", None))
-        self.label.setText(_translate("ProjectMiscSettingsDialog", "Name", None))
         self.label_2.setText(_translate("ProjectMiscSettingsDialog", "Controller loop cycle time in us", None))
         self.label_3.setText(_translate("ProjectMiscSettingsDialog", "path to controller code folder", None))
-        self.label_4.setText(_translate("ProjectMiscSettingsDialog", "Framework and interface", None))
         self.toolButtonSelectControllerCodeFolder.setText(_translate("ProjectMiscSettingsDialog", "...", None))
+        self.label_4.setText(_translate("ProjectMiscSettingsDialog", "Framework and interface", None))
         self.groupBoxUdp.setTitle(_translate("ProjectMiscSettingsDialog", "Framework and interface settings", None))
         self.label_5.setText(_translate("ProjectMiscSettingsDialog", "computer IP", None))
         self.label_6.setText(_translate("ProjectMiscSettingsDialog", "controller IP", None))

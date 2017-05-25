@@ -333,7 +333,8 @@ class SignalGeneratorConstantShape(QtGui.QGraphicsItem):
         pass
 
     def confirmationTimeOut(self):
-        print "hello signalSourceWidget timeOut"
+        pass
+        # print "hello signalSourceWidget timeOut"
 
     def boundingRect(self):
         return QtCore.QRectF(0, 0, 151, 101)

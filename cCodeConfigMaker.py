@@ -30,12 +30,6 @@ AVAILABLE_FRAMEWORKS = {
 
 def run():
 
-
-    ports = serial.tools.list_ports.comports()
-
-    for port in ports:
-        print port
-
     nameWidth = 40
     valueWidth = 6
 
@@ -175,7 +169,7 @@ def run():
 
     with open(fullDestinationPathCFile, "w") as f:
         #
-        f.write('#include "controlDemonstrator.h"\n\n')
+        # f.write('#include "controlDemonstrator.h"\n\n')
 
         # # channel mapping
         # f.write("// Channel values that will be send to the pc at every loop cycle\n")

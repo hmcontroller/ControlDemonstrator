@@ -7,6 +7,9 @@ from PyQt4 import QtCore
 
 # TODO make a good list inheritance
 class CommandList(QtCore.QObject):
+
+    changed = QtCore.pyqtSignal(object)
+
     def __init__(self):
         super(CommandList, self).__init__()
 
@@ -17,6 +20,15 @@ class CommandList(QtCore.QObject):
     def append(self, cmd):
         cmd.valueChanged.connect(self.commandChanged)
         self.cmdList.append(cmd)
+        self.changed.emit(self)
+
+    def removeCommand(self, command):
+        for i in range(0, len(self.cmdList)):
+            if command.id == self.cmdList[i].id:
+                self.cmdList.pop(i)
+                self.changed.emit(self)
+                break
+
 
     def getCommandById(self, id):
         for cmd in self.cmdList:
@@ -48,6 +60,10 @@ class CommandList(QtCore.QObject):
         while len(self.pendingCommands) > 0:
             cmd = self.pendingCommands.pop()
             cmd.clearPendingValue()
+
+    def sendInitialValues(self):
+        for command in self.cmdList:
+            command.setValue(command.initialValue)
 
     def __len__(self):
         return len(self.cmdList)
@@ -83,6 +99,7 @@ class Command(QtCore.QObject):
     maxChangedPerWidget = QtCore.pyqtSignal(object)
     pendingModeChanged = QtCore.pyqtSignal(object)
     pendingValueCanceled = QtCore.pyqtSignal(object)
+    inputMethodChanged = QtCore.pyqtSignal(object)
 
     # These signals allow the gui elements to signalize the user an uncommanded value change.
     commTimeOut = QtCore.pyqtSignal(object)
@@ -96,7 +113,7 @@ class Command(QtCore.QObject):
     def __init__(self):
         super(Command, self).__init__()
         self.id = None
-        self.name = ""
+        self.name = "New"
         self.displayName = ""
         self.timeOfSend = datetime.datetime.now()
         self._pendingSendMode = False
@@ -110,7 +127,7 @@ class Command(QtCore.QObject):
         self.initialValue = 0.0
         self.rawArgumentString = None
 
-        self.inputMethod = Command.VALUE_INPUT
+        self._inputMethod = Command.VALUE_INPUT
 
         # This is needed to handle the inaccuracy of float types.
         self.smallNumber = 0.00001
@@ -145,7 +162,7 @@ class Command(QtCore.QObject):
         if self._lowerLimit <= value <= self._upperLimit:
             self._value = value
             self.timeOfSend = datetime.datetime.now()
-            print "Command change id {} name {} value {}".format(self.id, self.name, self._value)
+            # print "Command change id {} name {} value {}".format(self.id, self.name, self._value)
         else:
             raise ValueError("value {} out of allowed range {} - {} for command {}".format(
                 value, self._lowerLimit, self._upperLimit, self.name))
@@ -153,7 +170,7 @@ class Command(QtCore.QObject):
     def _setPendingValue(self, value):
         if self._lowerLimit <= value <= self._upperLimit:
             self._pendingValue = value
-            print "Command change pending: id {} name {} value {}".format(self.id, self.name, self._pendingValue)
+            # print "Command change pending: id {} name {} value {}".format(self.id, self.name, self._pendingValue)
         else:
             raise ValueError("pending value {} out of allowed range {} - {} for command {}".format(
                 value, self._lowerLimit, self._upperLimit, self.name))
@@ -210,6 +227,13 @@ class Command(QtCore.QObject):
                 self._pendingValue = None
 
             self.pendingModeChanged.emit(self)
+
+    def getInputMethod(self):
+        return self._inputMethod
+
+    def setInputMethod(self, inputMethod):
+        self._inputMethod = inputMethod
+        self.inputMethodChanged.emit(self)
 
     def getIsSelectedAsActive(self):
         return self._isSelectedAsActive

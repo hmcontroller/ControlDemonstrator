@@ -12,7 +12,7 @@ class TabWaterLineExperiment(QtGui.QWidget, Ui_tabWaterLineExperiment):
 
     changingName = QtCore.pyqtSignal(str)
 
-    def __init__(self, commands, channels, applicationSettings, projectSettings, communicator, parent=None):
+    def __init__(self, commands, channels, applicationSettings, projectSettings, communicator, mainWindow, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setupUi(self)
 

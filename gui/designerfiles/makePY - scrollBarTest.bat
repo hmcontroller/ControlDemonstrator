@@ -1,0 +1,1 @@
+pyuic4 -o scrollBarTest.py scrollBarTest.ui

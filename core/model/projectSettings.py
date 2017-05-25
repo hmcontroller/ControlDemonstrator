@@ -9,13 +9,12 @@ class ProjectSettings(QtCore.QObject):
 
     def __init__(self):
         super(ProjectSettings, self).__init__()
-        self._projectName = u""
         self._controllerLoopCycleTimeInUs = 5000
         self._computerIP = "192.168.0.133"
         self._controllerIP = "192.168.0.15"
         self._udpPort = 10000
         self._comPortDescription = ""
-        self._controllerFrameworkAndInterface = "mbed_udp"
+        self._controllerFrameworkAndInterface = "mbed_OS_udp"
         self._tabSettingsDescriptions = list()
         self._pathToControllerCodeFolder = u""
         self._openedFrom = ""
@@ -25,14 +24,14 @@ class ProjectSettings(QtCore.QObject):
         self._unsavedChanges = True
         self.changed.emit(self)
 
-    @property
-    def projectName(self):
-        return self._projectName
-
-    @projectName.setter
-    def projectName(self, value):
-        self._projectName = value
-        self.somethingChanged()
+    # @property
+    # def projectName(self):
+    #     return self._projectName
+    #
+    # @projectName.setter
+    # def projectName(self, value):
+    #     self._projectName = value
+    #     self.somethingChanged()
 
     @property
     def controllerLoopCycleTimeInUs(self):

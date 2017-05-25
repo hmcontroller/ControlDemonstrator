@@ -20,6 +20,7 @@ class SmallGenericCommand(BaseCommand):
     def __init__(self, command):
         super(SmallGenericCommand, self).__init__(command)
 
+        self.command.inputMethodChanged.connect(self.actualizeInputMethod)
 
         self.width = 370
         self.height = 70
@@ -61,7 +62,7 @@ class SmallGenericCommand(BaseCommand):
 
         self.toggleButton = SymbolButton(SymbolButton.TEXT, parent=self)
         self.toggleButton.setPos(85, self.editAreaHCenter - 0.5 * self.pendingButton.boundingRect().height())
-        self.toggleButton.clicked.connect(self.switchToOneAndThenToZero)
+        self.toggleButton.clicked.connect(self.switchToMaxAndThenToMin)
         self.toggleButton.symbol.setText(u"T")
         self.toggleButton.hide()
         # self.toggleButton.drawBorder = False
@@ -76,17 +77,17 @@ class SmallGenericCommand(BaseCommand):
 
         self.switchButton = SymbolButton(SymbolButton.TEXT, parent=self)
         self.switchButton.setPos(85, self.editAreaHCenter - 0.5 * self.switchButton.boundingRect().height())
-        self.switchButton.clicked.connect(self.toggleOneAndZero)
+        self.switchButton.clicked.connect(self.toggleMaxAndMin)
         self.switchButton.hide()
         # self.switchButton.drawBorder = False
         self.switchButton.borderPen = borderPen
 
 
         self.switchBoxState = False
-        self.switchButton.symbol.setText(u"0")
+        self.switchButton.symbol.setText(u"1")
         if self.command.valueOfLastResponse > 0.5:
             self.switchBoxState = True
-            self.switchButton.symbol.setText(u"1")
+            self.switchButton.symbol.setText(u"0")
 
 
 
@@ -189,14 +190,10 @@ class SmallGenericCommand(BaseCommand):
 
         self.littleTimer = QtCore.QTimer()
         self.littleTimer.setSingleShot(True)
-        self.littleTimer.timeout.connect(self.switchToZero)
+        self.littleTimer.timeout.connect(self.switchToMin)
 
-        if self.command.inputMethod == Command.VALUE_INPUT:
-            self.valueLineEdit.show()
-        if self.command.inputMethod == Command.SWITCH_INPUT:
-            self.switchButton.show()
-        if self.command.inputMethod == Command.TOGGLE_INPUT:
-            self.toggleButton.show()
+        self.actualizeInputMethod()
+
 
     def _layoutLineEdit(self, lineEdit):
 
@@ -213,7 +210,7 @@ class SmallGenericCommand(BaseCommand):
 
     def switchToOneAndThenToZero(self):
         self.command.setValue(1.0)
-        self.toggleButton.symbol.setText(u"1")
+        self.toggleButton.symbol.setText(u"0")
         self.littleTimer.start(100)
 
     def switchToZero(self):
@@ -223,22 +220,41 @@ class SmallGenericCommand(BaseCommand):
     def toggleOneAndZero(self):
         if self.switchBoxState is False:
             self.command.setValue(1.0)
-            self.switchButton.symbol.setText(u"1")
+            self.switchButton.symbol.setText(u"0")
         else:
             self.command.setValue(0.0)
-            self.switchButton.symbol.setText(u"0")
+            self.switchButton.symbol.setText(u"1")
         self.switchBoxState = not self.switchBoxState
+
+    def switchToMaxAndThenToMin(self):
+        self.command.setValue(self.command.getUpperLimit())
+        self.toggleButton.symbol.setText(u"0")
+        self.littleTimer.start(100)
+
+    def switchToMin(self):
+        self.command.setValue(self.command.getLowerLimit())
+        self.toggleButton.symbol.setText(u"T")
+
+    def toggleMaxAndMin(self):
+        if self.switchBoxState is False:
+            self.command.setValue(self.command.getUpperLimit())
+            self.switchButton.symbol.setText(u"0")
+        else:
+            self.command.setValue(self.command.getLowerLimit())
+            self.switchButton.symbol.setText(u"1")
+        self.switchBoxState = not self.switchBoxState
+
 
     def showSettingsWindow(self):
         self.settingsWindow.lineEditDisplayName.setText(self.command.displayName)
         self.settingsWindow.lineEditMin.setText(str(self.command.getLowerLimit()))
         self.settingsWindow.lineEditMax.setText(str(self.command.getUpperLimit()))
 
-        if self.valueLineEdit.isVisible():
+        if self.command.getInputMethod() == Command.VALUE_INPUT:
             self.settingsWindow.radioButtonValueMode.setChecked(True)
-        elif self.toggleButton.isVisible():
+        elif self.command.getInputMethod() == Command.TOGGLE_INPUT:
             self.settingsWindow.radioButtonToggleMode.setChecked(True)
-        elif self.switchButton.isVisible():
+        elif self.command.getInputMethod() == Command.SWITCH_INPUT:
             self.settingsWindow.radioButtonSwitchMode.setChecked(True)
 
         self.settingsWindow.checkBoxPendingMode.setChecked(self.command.getPendingSendMode())
@@ -256,10 +272,13 @@ class SmallGenericCommand(BaseCommand):
         self.switchButton.hide()
         if self.settingsWindow.radioButtonValueMode.isChecked() is True:
             self.valueLineEdit.show()
+            self.command.setInputMethod(Command.VALUE_INPUT)
         if self.settingsWindow.radioButtonSwitchMode.isChecked() is True:
             self.switchButton.show()
+            self.command.setInputMethod(Command.SWITCH_INPUT)
         if self.settingsWindow.radioButtonToggleMode.isChecked() is True:
             self.toggleButton.show()
+            self.command.setInputMethod(Command.TOGGLE_INPUT)
 
         self.command.displayName = unicode(self.settingsWindow.lineEditDisplayName.text())
         self.command.setPendingSendMode(self.settingsWindow.checkBoxPendingMode.isChecked())
@@ -270,6 +289,20 @@ class SmallGenericCommand(BaseCommand):
         maxText = self.settingsWindow.lineEditMax.text()
         self.setMaximum(maxText)
         self.update()
+
+    def actualizeInputMethod(self):
+        self.valueLineEdit.hide()
+        self.switchButton.hide()
+        self.toggleButton.hide()
+
+
+        if self.command.getInputMethod() == Command.VALUE_INPUT:
+            self.valueLineEdit.show()
+        if self.command.getInputMethod() == Command.SWITCH_INPUT:
+            self.switchButton.show()
+        if self.command.getInputMethod() == Command.TOGGLE_INPUT:
+            self.toggleButton.show()
+
 
     # TODO move to settings window
     def setMinimum(self, text):
@@ -301,7 +334,7 @@ class SmallGenericCommand(BaseCommand):
 
     def valueEditingReturnPressed(self):
         text = self.valueLineEdit.text()
-        print "command given", text
+        # print "command given", text
 
         self.command.clearPendingValue()
 

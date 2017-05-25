@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'commandSettingsDialog.ui'
 #
-# Created: Sat May 13 07:35:00 2017
+# Created: Wed May 17 20:27:53 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -60,7 +60,7 @@ class Ui_CommandSettingsDialog(object):
         QtCore.QMetaObject.connectSlotsByName(CommandSettingsDialog)
 
     def retranslateUi(self, CommandSettingsDialog):
-        CommandSettingsDialog.setWindowTitle(_translate("CommandSettingsDialog", "Kanaleinstellungen", None))
+        CommandSettingsDialog.setWindowTitle(_translate("CommandSettingsDialog", "Parametereinstellungen", None))
         self.label.setText(_translate("CommandSettingsDialog", "Parameter", None))
         self.toolButtonAddChannel.setText(_translate("CommandSettingsDialog", "...", None))
 

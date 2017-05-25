@@ -14,10 +14,10 @@ class ApplicationSettings(QtCore.QObject):
         self.receiveMessageIntervalLengthInMs = 0
         self.sendMessageIntervalLengthInMs = 0
         self.bufferLength = 1000
-        self.recentProjectFilePathes = deque(maxlen=5)
+        self.recentProjectFilePathes = deque(maxlen=10)
 
-    def addRecentProjektPath(self, path):
-        newRecentPathes = deque(maxlen=5)
+    def addRecentProjectPath(self, path):
+        newRecentPathes = deque(maxlen=10)
 
         for i in range(0, len(self.recentProjectFilePathes)):
             if not self.recentProjectFilePathes[i] == path:

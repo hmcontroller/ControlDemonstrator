@@ -30,9 +30,10 @@ sys.path.insert(0, os.path.abspath('..'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages']
+              'sphinx.ext.autosummary',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.viewcode',
+              'sphinx.ext.githubpages']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -72,8 +73,13 @@ language = None
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+add_module_names = False
+
+# autodoc_member_order = "groupwise"
+autodoc_member_order = "bysource"
+
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
@@ -88,13 +94,35 @@ todo_include_todos = False
 
 
 
+
+# from better import better_theme_path
+# html_theme_path = [better_theme_path]
+# html_theme = 'better'
+
 import sphinx_rtd_theme
-
 html_theme = "sphinx_rtd_theme"
-
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
+# html_theme_options = {
+#     'rightsidebar': True,
+#     # 'content_fixed': True,
+#     # 'content_width': '700px',
+# }
 
+# import sphinx_bootstrap_theme
+# html_theme = 'bootstrap'
+# html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
+
+
+# import alabaster
+# html_theme_path = [alabaster.get_path()]
+# # extensions = ['alabaster']
+# html_theme = 'alabaster'
+# html_theme_options = {
+#     'logo': '../gui/resources/ic.png',
+#     'fixed_sidebar': True,
+#     'font_family': 'sans serif',
+# }
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
