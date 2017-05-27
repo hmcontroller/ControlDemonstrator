@@ -6,4 +6,5 @@ Quickstart
 
    ../_static/quickstart/quickstart_one
    ../_static/quickstart/quickstart_two
+   ../_static/quickstart/microRayGuiIntroduction
 

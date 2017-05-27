@@ -10,7 +10,7 @@ AVAILABLE_FRAMEWORKS = [
     {"macroName": "ARDUINO_SERIAL", "displayName": u"Arduino Serial"}
 ]
 
-PATH_TO_APPLICATION_SETTINGS = "applicationSettings.json"
+RELATIVE_PATH_TO_APPLICATION_SETTINGS = "applicationSettings.json"
 
 CHECK_BOX_FONT = QtGui.QFont()
 CHECK_BOX_FONT.setPointSize(8)

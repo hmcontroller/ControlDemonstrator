@@ -55,6 +55,8 @@ class IncludeFileMaker(object):
         self.addIncludeGuardEnd()
 
     def makeCFileString(self):
+        self.addIncludeToCFile()
+        self.addSetInitialValuesFunctionToCFile()
         self.addCTemplate()
 
     def writeFilesToDisk(self):
@@ -139,6 +141,18 @@ class IncludeFileMaker(object):
         templateText = "".join(lines)
 
         self.headerFileString += templateText
+
+    def addIncludeToCFile(self):
+        self.cFileString += '#include "controlDemonstrator.h"\n\n'
+
+    def addSetInitialValuesFunctionToCFile(self):
+        self.cFileString += "void setInitialValues() {\n"
+
+        for command in self.commands:
+            self.cFileString += "    {} = {}f;\n".format(command.name, command.initialValue)
+
+        self.cFileString += "}\n\n"
+
 
     def addCTemplate(self):
         with open(cTemplatePath, "r") as cTemplate:

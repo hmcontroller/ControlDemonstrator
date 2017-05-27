@@ -4,11 +4,7 @@
         "guiUpdateIntervalLengthInMs": 100, 
         "sendMessageIntervalLengthInMs": 15, 
         "recentProjects": [
-            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/ControlDemonstratorProjects/testUnoSerial.json", 
-            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/ControlDemonstratorProjects/hexaDog.json", 
-            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/ControlDemonstratorProjects/wasserstand.json", 
-            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/ControlDemonstratorProjects/wasserstandTESTDELETEME.json", 
-            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/ControlDemonstratorProjects/hexaDogTwo.json"
+            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/mRayProjects/testUnoSerial.mRay"
         ], 
         "bufferLength": 10000
     }

@@ -75,7 +75,7 @@ class MicroRay(QtGui.QApplication):
 def run():
     sys.excepthook = myExcepthook
 
-    app = ControlDemonstrator(sys.argv)
+    app = MicroRay(sys.argv)
 
     exitCode = app.exec_()
     sys.exit(exitCode)

@@ -5,6 +5,7 @@ import pyqtgraph
 
 from gui.idCheckBox import IdColorLabelCheckbox
 from gui.constants import *
+from gui.resources import *
 
 
 class PlotWidget(QtGui.QWidget):
@@ -43,22 +44,23 @@ class PlotWidget(QtGui.QWidget):
         # folgendes funktioniert nicht
         self.verticalLine.setCursor(QtCore.Qt.SizeHorCursor)
 
-
-        # self.channelScrollArea = QtGui.QScrollArea()
-        # self.channelScrollArea.setWidgetResizable(False)
-        # self.channelScrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        #
-        # self.channelControllerList = ChannelControllerList()
-        #
-        # self.channelScrollArea.setWidget(self.channelControllerList)
-
-        # self.horizontalLayoutPlotArea.insertLayout(1, self.verticalLayoutPlotSwitcher, 0)
-
-        # self.horizontalLayoutPlotArea.insertWidget(1, self.channelScrollArea, 0)
-        # self.horizontalLayoutPlotArea.addWidget(self.channelScrollArea)
-
-        self.listLayout = QtGui.QHBoxLayout()
+        self.listLayout = QtGui.QVBoxLayout()
         self.listLayout.setMargin(0)
+
+        self.toggleMovePlotButton = QtGui.QToolButton()
+
+        self.playPixmap = QtGui.QPixmap(playPath)
+        self.playIcon = QtGui.QIcon(self.playPixmap)
+
+        self.pausePixmap = QtGui.QPixmap(pausePath)
+        self.pauseIcon = QtGui.QIcon(self.pausePixmap)
+
+        self.toggleMovePlotButton.setIcon(self.pauseIcon)
+        self.toggleMovePlotButton.setIconSize(QtCore.QSize(25, 25))
+
+        self.toggleMovePlotButton.clicked.connect(self.togglePlayPause)
+        self.listLayout.addWidget(self.toggleMovePlotButton)
+
         self.listWidget = QtGui.QListWidget()
         self.listWidget.setAlternatingRowColors(True)
         self.listLayout.addWidget(self.listWidget)
@@ -209,9 +211,16 @@ class PlotWidget(QtGui.QWidget):
             curve.setData(timeValues, channel)
             curve.setPos(-biggestTime, 0)
 
+    def togglePlayPause(self):
+        self.movePlot = not self.movePlot
+        if self.movePlot is True:
+            self.toggleMovePlotButton.setIcon(self.pauseIcon)
+        else:
+            self.toggleMovePlotButton.setIcon(self.playIcon)
+
     def keyPressEvent(self, QKeyEvent):
         if QKeyEvent.key() == QtCore.Qt.Key_Space:
-            self.movePlot = not self.movePlot
+            self.togglePlayPause()
 
 
 

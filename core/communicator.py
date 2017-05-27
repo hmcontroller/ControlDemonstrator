@@ -14,7 +14,9 @@ from PyQt4 import QtCore
 from core.messageData import MessageData
 
 
-class CommState(object):
+class CommState(QtCore.QObject):
+
+    changed = QtCore.pyqtSignal(object)
 
     UNKNOWN = 0
     COMM_ESTABLISHED = 1
@@ -24,13 +26,45 @@ class CommState(object):
     NO_CONN = 5
 
     def __init__(self):
-        self.state = self.UNKNOWN
+        super(CommState, self).__init__()
+        self._play = True
+        self._state = self.UNKNOWN
+        self._interfaceDescription = u""
         self.timeOfLastReceive = datetime.datetime.now() - datetime.timedelta(hours=1000)
+
+    @property
+    def play(self):
+        return self._play
+
+    @play.setter
+    def play(self, value):
+        if value != self._play:
+            self._play = value
+            self.changed.emit(self)
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        if value != self._state:
+            self._state = value
+            self.changed.emit(self)
+
+    @property
+    def interfaceDescription(self):
+        return self._interfaceDescription
+
+    @interfaceDescription.setter
+    def interfaceDescription(self, value):
+        if value != self._interfaceDescription:
+            self._interfaceDescription = value
+            self.changed.emit(self)
 
 
 class Communicator(QtCore.QObject):
 
-    commStateChanged = QtCore.pyqtSignal(object)
     commandSend = QtCore.pyqtSignal(object)
 
     def __init__(self, applicationSettings, projectSettings):
@@ -42,7 +76,6 @@ class Communicator(QtCore.QObject):
         self._messageMap = None
 
         self._commState = CommState()
-        self._commState.state = CommState.UNKNOWN
 
         self._directCommandSendBuffer = deque()
         self._pendingCommandSendBuffer = deque()
@@ -72,37 +105,27 @@ class Communicator(QtCore.QObject):
         raise NotImplementedError()
 
     def toggleCommunication(self):
-        if self._commState.state == CommState.COMM_PAUSED:
-            self.continueCommunication()
-        elif self._commState.state == CommState.COMM_ESTABLISHED:
-            self.pauseCommunication()
+        if self._commState.play is False:
+            self._commState.play = True
+            self.connectToController()
         else:
-            self.continueCommunication()
-
-    def pauseCommunication(self):
-        self._commState.state = CommState.COMM_PAUSED
-
-    def continueCommunication(self):
-        self._commState.state = CommState.COMM_ESTABLISHED
+            self._commState.play = False
+            self.disconnectFromController()
 
     def checkCommTimeOut(self):
         if self._commState.state == CommState.COMM_PAUSED:
             return
-
 
         if datetime.datetime.now() - self._commState.timeOfLastReceive > datetime.timedelta(seconds=2):
             if self._commState.state == CommState.COMM_TIMEOUT:
                 return
             else:
                 self._commState.state = CommState.COMM_TIMEOUT
-                self.commStateChanged.emit(self._commState)
-                # self._connectionPollTimer.start(1000)
+                # if self._connectionPollTimer.isActive() is False:
+                #     self._connectionPollTimer.start(1000)
         else:
             if self._commState.state != CommState.COMM_ESTABLISHED:
                 self._commState.state = CommState.COMM_ESTABLISHED
-                self.commStateChanged.emit(self._commState)
-
-
 
     def send(self, commandList):
         raise NotImplementedError()
@@ -158,24 +181,31 @@ class UdpCommunicator(Communicator):
 
 
     def connectToController(self):
+
+        self._commState.play = True
+        self._commState.interfaceDescription = u"{} {}".format(self._projectSettings.computerIP, self._projectSettings.udpPort)
+
         try:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self._socket.bind((self._projectSettings.computerIP, self._projectSettings.udpPort))
             self._socket.setblocking(False)
             self._socket.settimeout(0)
             self._commState.state = CommState.COMM_ESTABLISHED
-            self.commStateChanged.emit(self._commState)
         except socket.error, e:
             if e.args[0] == errno.WSAEADDRNOTAVAIL:
                 self._commState.state = CommState.NO_CONN
-                self.commStateChanged.emit(self._commState)
-                self._connectionPollTimer.start(1000)
+                if self._connectionPollTimer.isActive() is False:
+                    self._connectionPollTimer.start(1000)
 
     def disconnectFromController(self):
-        pass
+
+        self._commState.play = False
+
+        self._socket.close()
+        self._commState.state = CommState.COMM_PAUSED
 
     def send(self, commandList):
-        if len(commandList.changedCommands) > 0 and self._commState.state == CommState.COMM_ESTABLISHED:
+        if len(commandList.changedCommands) > 0 and self._commState.play is True:
             commandToSend = commandList.changedCommands.popleft()
             packedData = self._packCommand(commandToSend)
             self._socket.sendto(packedData, (self._projectSettings.controllerIP, self._projectSettings.udpPort))
@@ -191,8 +221,8 @@ class UdpCommunicator(Communicator):
     def receive(self):
         packets = list()
 
-        # if self._commState.state != CommState.COMM_ESTABLISHED:
-        #     return packets
+        if self._commState.play is False:
+            return packets
 
         while True:
             try:
@@ -205,15 +235,16 @@ class UdpCommunicator(Communicator):
                     pass
                 elif e.args[0] == errno.WSAEADDRNOTAVAIL:
                     self._commState.state = CommState.NO_CONN
-                    self.commStateChanged.emit(self._commState)
-                    self._connectionPollTimer.start(1000)
+                    if self._connectionPollTimer.isActive() is False:
+                        self._connectionPollTimer.start(1000)
                 elif e.args[0] == errno.WSAEMSGSIZE:
                     self._commState.state = CommState.WRONG_CONFIG
-                    self.commStateChanged.emit(self._commState)
                 elif e.args[0] == errno.WSAEINVAL:
                     self._commState.state = CommState.NO_CONN
-                    self.commStateChanged.emit(self._commState)
-                    self._connectionPollTimer.start(1000)
+                    if self._connectionPollTimer.isActive() is False:
+                        self._connectionPollTimer.start(1000)
+                elif e.args[0] == errno.EBADF:
+                    return packets
                 else:
                     raise
                 break
@@ -248,7 +279,10 @@ class SerialCommunicator(Communicator):
         self.startByte = 7
         self.stopByte = 8
 
+        self.noMessageInsideCounter = 0
+
         self.ser = serial.Serial()
+
 
     @QtCore.pyqtSlot(object)
     def projectSettingsChanged(self, newSettings):
@@ -260,17 +294,21 @@ class SerialCommunicator(Communicator):
         else:
             self.connectToController()
 
+    @QtCore.pyqtSlot(object)
     def connectToController(self):
-        if self.ser.isOpen():
-            # print "serial open, closing"
-            self.ser.close()
-            # time.sleep(1)
+
+        self._commState.play = True
+
+        if self.ser is not None:
+            if self.ser.isOpen():
+                self.ser.close()
+                # time.sleep(1)
 
         ports = serial.tools.list_ports.comports()
         if len(ports) == 0:
             self._commState.state = CommState.NO_CONN
-            self.commStateChanged.emit(self._commState)
-            self._connectionPollTimer.start(1000)
+            if self._connectionPollTimer.isActive() is False:
+                self._connectionPollTimer.start(1000)
             return
 
         portToConnectTo = ports[0]
@@ -278,29 +316,37 @@ class SerialCommunicator(Communicator):
             if port.description == self._projectSettings.comPortDescription:
                 portToConnectTo = port
 
+        self._commState.interfaceDescription = u"{}".format(port.description)
+
+
         self.ser.baudrate = 115200
         self.ser.port = portToConnectTo.device
         self.ser.timeout = 0.1
+
+        # prohibits restart of the controller
+        self.ser.dtr = False
+
         try:
             self.ser.open()
             self._commState.state = CommState.COMM_ESTABLISHED
-            self.commStateChanged.emit(self._commState)
         except serial.SerialException:
             self._commState.state = CommState.NO_CONN
-            self.commStateChanged.emit(self._commState)
-            self._connectionPollTimer.start(1000)
+            if self._connectionPollTimer.isActive() is False:
+                self._connectionPollTimer.start(1000)
 
     def getOpenPorts(self):
         return serial.tools.list_ports.comports()
 
     def disconnectFromController(self):
+
+        self._commState.play = False
+
         self.ser.close()
         self._commState.state = CommState.COMM_PAUSED
-        self.commStateChanged.emit(self._commState)
 
     def send(self, commandList):
         # return
-        if len(commandList.changedCommands) > 0 and self._commState.state == CommState.COMM_ESTABLISHED:
+        if len(commandList.changedCommands) > 0 and self._commState.play is True:
             commandToSend = commandList.changedCommands.popleft()
 
             startByte = struct.pack("<1B", 7)
@@ -324,6 +370,9 @@ class SerialCommunicator(Communicator):
         messages = list()
         messagePositions = list()
 
+        if self._commState.play is False:
+            return messages
+
         try:
             if self.ser.in_waiting > 0:
                 incomingMessage = self.ser.read(self.ser.in_waiting)
@@ -335,13 +384,15 @@ class SerialCommunicator(Communicator):
 
                 messagePositions.append(self.findNextFullMessagePosition(0, unpackedBytes))
 
+
+
                 # message still too short or no message inside, store it for next try
                 if len(messageToProcess) < self._messageSize + 2 or messagePositions[0][0] == -1:
                     self.lastMessageRemainder = messageToProcess
                     if len(self.lastMessageRemainder) > self._messageMap.messageLengthInBytes * 3:
                         self.lastMessageRemainder = b""
                         self._commState.state = CommState.WRONG_CONFIG
-                        self.commStateChanged.emit(self._commState)
+
                     return messages
 
 
@@ -354,16 +405,15 @@ class SerialCommunicator(Communicator):
                         self.lastMessageRemainder = messageToProcess[lastStopPosition : ]
                         break
 
-
-
-
                 for messagePosition in messagePositions:
                     start = messagePosition[0]
                     stop = messagePosition[1]
                     messages.append(messageToProcess[start : stop])
+
         except serial.SerialException:
             self._commState.state = CommState.NO_CONN
-            self.commStateChanged.emit(self._commState)
+            if self._connectionPollTimer.isActive() is False:
+                self._connectionPollTimer.start(1000)
             return list()
 
 

@@ -1,19 +1,12 @@
 # -*- encoding: utf-8 -*-
 import os
 import logging
-from importlib import import_module
-import json
-import pickle
-import collections
 import webbrowser
-import time
 import errno
 import traceback
 
 from PyQt4 import QtCore, QtGui
-import sip
 
-from core.modelMaker import ModelMaker
 from core.communicator import UdpCommunicator, CommState
 from core.communicator import SerialCommunicator
 from core.messageInterpreter import MessageInterpreter
@@ -27,6 +20,7 @@ from gui.aboutDialog import AboutDialog
 from gui.projectMiscSettingsDialog import ProjectMiscSettingsDialog
 from gui.channelSettingsDialog import ChannelSettingsDialog
 from gui.commandSettingsDialog import CommandSettingsDialog
+from gui.valuesToInitialValuesDialog import ValuesToInitialValuesDialog
 
 from gui.constants import *
 from gui.tabWaterLineExperiment import TabWaterLineExperiment
@@ -45,12 +39,14 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         self.programRootFolder = rootFolder
 
-        pixmap = QtGui.QPixmap(icPath)
+        pixmap = QtGui.QPixmap(iconPath)
         icon = QtGui.QIcon(pixmap)
         QtGui.QApplication.setApplicationName(u"microRay")
         QtGui.QApplication.setWindowIcon(icon)
 
-        self.appSettingsManager = ApplicationSettingsManager(PATH_TO_APPLICATION_SETTINGS)
+        appSettingsPath = os.path.join(self.programRootFolder, RELATIVE_PATH_TO_APPLICATION_SETTINGS)
+
+        self.appSettingsManager = ApplicationSettingsManager(appSettingsPath)
         self.applicationSettings = self.appSettingsManager.restoreSettingsFromFile()
         self.applicationSettings.changed.connect(self.appSettingsChanged)
 
@@ -281,14 +277,18 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         editCommandsAction.triggered.connect(self.editCommands)
 
         generateCCodeAction = QtGui.QAction(u"C-Code generieren", self)
+        generateCCodeAction.setShortcut("Ctrl+G")
         generateCCodeAction.triggered.connect(self.generateCCode)
 
+        actualValuesToInitialValuesAction = QtGui.QAction(u"aktuelle Werte als Startwerte übernehmen...", self)
+        actualValuesToInitialValuesAction.triggered.connect(self.setActualValuesToInitialValues)
 
-        editMenu = mainMenu.addMenu("Bearbeiten")
+        editMenu = mainMenu.addMenu("Schnittstelle")
         editMenu.addAction(editProjectMiscSettingsAction)
         editMenu.addAction(editChannelsAction)
         editMenu.addAction(editCommandsAction)
         editMenu.addAction(generateCCodeAction)
+        editMenu.addAction(actualValuesToInitialValuesAction)
 
 
         showHelpAction = QtGui.QAction(u"Hilfe anzeigen...", self)
@@ -331,7 +331,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
             self.projectSettings.tabSettingsDescriptions.append(TabDescription())
             self.projectSettings.changed.connect(self.projectSettingsChanged)
 
-            tempPath = os.path.join(self.programRootFolder, "tempNew.json")
+            tempPath = os.path.join(self.programRootFolder, "tempNew.mRay")
 
             self.saveAs(None, tempPath)
             self.loadProject(tempPath)
@@ -361,7 +361,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         projectFilePath = QtGui.QFileDialog.getOpenFileName(self,
                                                               "Open project file",
                                                               folderSuggestion,
-                                                              "Project Settings (*.json)")
+                                                              "Project Settings (*.mRay *.json *)")
         projectFilePath = str(projectFilePath)
         if projectFilePath == "":
             return
@@ -392,15 +392,17 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         displayPath = self.getProjectDisplayPath(pathToProjectFile)
 
+        # self.setWindowTitle(u"microRay - {}".format(displayPath))
         self.setWindowTitle(u"microRay - {}".format(displayPath))
+
         self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
 
-        self.setInitialValuesTimer.start(2000)
+        # self.setInitialValuesTimer.start(2000)
 
     def getProjectDisplayPath(self, fullProjectFilePath):
         displayPath = unicode(fullProjectFilePath)
         displayPath = os.path.split(displayPath)[1]
-        return displayPath.replace(".json", "")
+        return displayPath.replace(".mRay", "")
 
 
     def setInitialValues(self):
@@ -437,10 +439,20 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         if path is None:
             filePathSuggestion = self.getSavePathSuggestion()
 
+            ## when using this, an ugly qt dialog will be shown...
+            # fileDialog = QtGui.QFileDialog(self,
+            #                               "Projekt speichern unter...",
+            #                               filePathSuggestion)
+            # fileDialog.setDefaultSuffix(".mRay")
+            # # fileDialog.setFileMode(QtGui.QFileDialog.E)
+            #
+            # projectFilePath = fileDialog.exec_()
+
+
             projectFilePath = QtGui.QFileDialog.getSaveFileName(self,
                                                                   "Projekt speichern unter...",
                                                                   filePathSuggestion,
-                                                                  "Project Settings (*.json)")
+                                                                  "Project Settings (*.mRay *.json *)")
             projectFilePath = unicode(projectFilePath)
         else:
             projectFilePath = unicode(path)
@@ -514,7 +526,9 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
     def generateCCode(self):
 
-        self.communicator.disconnectFromController()
+        if isinstance(self.communicator, SerialCommunicator):
+            self.communicator.disconnectFromController()
+
         try:
             self.includeFileMaker.generateIncludeFiles(self.projectSettings, self.channels, self.commands)
             if len(self.projectSettings.pathToControllerCodeFolder) == 0:
@@ -522,7 +536,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
                 self.displayMessage.emit(u"You can specify the include files target folder in the project settings.", "softWarning")
             else:
                 path = self.projectSettings.pathToControllerCodeFolder
-            self.displayMessage.emit(u"Include file generated in {}".format(path), "normal")
+            self.displayMessage.emit(u"Include file generated in {}".format(path), "softWarning")
         except IOError as ex:
             if ex.errno == errno.ENOENT:
                 self.displayMessage.emit(u"failed to generate code. Please specify output folder.", "warning")
@@ -530,18 +544,23 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
             errorMessage = traceback.format_exc()
             self.displayMessage.emit(u"failed to generate code. Errormessage:\n{}".format(errorMessage), "warning")
 
-        self.displayMessage.emit(u"Communication paused, recompile your controller code.", "softWarning")
+        if isinstance(self.communicator, SerialCommunicator):
+            self.displayMessage.emit(u"Communication paused, please recompile your controller code.", "warning")
+        else:
+            self.displayMessage.emit(u"Please recompile your controller code.", "warning")
 
+    def setActualValuesToInitialValues(self):
+        dialog = ValuesToInitialValuesDialog(self.commands)
+        self.commands = dialog.doIt()
 
     def showHelp(self):
-        pathToIndexHtml = os.path.abspath(os.path.join(os.getcwd(), "documentation/index.html"))
+        pathToIndexHtml = os.path.abspath(os.path.join(self.programRootFolder, "documentation/index.html"))
         url = "file://" + pathToIndexHtml
         webbrowser.open(url)
 
     def showAboutWindow(self):
         aboutDialog = AboutDialog()
         aboutDialog.exec_()
-
 
     def receiveAndSend(self):
         self.receive()

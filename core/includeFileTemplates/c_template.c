@@ -77,21 +77,25 @@ MessageIn messageInBuffer;
 #ifdef ARDUINO_UDP
 void initControlDemonstrator()
 {
+    setInitialValues();
     // Bring up the network interface
     Ethernet.begin(macAddress, ownIp);
     Udp.begin(port);
 }
 #elif defined(ARDUINO_SERIAL)
 void initControlDemonstrator() {
+    setInitialValues();
     Serial.begin(BAUD_RATE);
 }
 
 #elif defined(MBED_2_USBHID)
 void initControlDemonstrator() {
+    setInitialValues();
 }
 
 #elif defined(MBED_OS_UDP)
 void initControlDemonstrator() {
+    setInitialValues();
 
     // Bring up the network interface
 
@@ -119,6 +123,7 @@ void initControlDemonstrator() {
 
 #else
 void initControlDemonstrator() {
+    setInitialValues();
 }
 #endif
 
@@ -171,7 +176,7 @@ void sendMessage()
     Udp.beginPacket(remoteIp, port);
     Udp.write((char *)&messageOutBuffer, sizeof(messageOutBuffer));
     Udp.endPacket();
-    sendTimer = (float)(micros() - lastTime);
+    // sendTimer = (float)(micros() - lastTime);
 }
 
 #elif defined(ARDUINO_SERIAL)
@@ -193,7 +198,7 @@ void sendMessage() {
     Serial.write((byte *)&messageOutBuffer, sizeof(messageOutBuffer));
     Serial.write(8);
 
-    sendTimer = (float)(micros() - lastTime);
+    // sendTimer = (float)(micros() - lastTime);
 }
 
 #elif defined(MBED_2_USBHID)
@@ -232,7 +237,7 @@ void receiveMessage() {
     else {
     }
 
-    receiveTimer = (float)(micros() - lastTime);
+    // receiveTimer = (float)(micros() - lastTime);
 }
 #elif defined(ARDUINO_SERIAL)
 
@@ -260,7 +265,7 @@ void receiveMessage() {
     readIncomingBytesIntoBuffer();
     lastPositionProcessed = findMessageAndProcess();
     storeForNextLoop(lastPositionProcessed);
-    receiveTimer = (float)(micros() - lastTime);
+    // receiveTimer = (float)(micros() - lastTime);
 }
 
 

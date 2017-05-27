@@ -1,0 +1,1 @@
+pyuic4 -o valuesToInitialValuesDialog.py valuesToInitialValuesDialog.ui

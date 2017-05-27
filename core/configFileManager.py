@@ -175,6 +175,7 @@ class ConfigFileManager(object):
 
             if "initialValue" in commandDescription:
                 command.initialValue = commandDescription["initialValue"]
+                command._value = command.initialValue
 
             if "pendingMode" in commandDescription:
                 command._pendingSendMode = commandDescription["pendingMode"]

@@ -2,6 +2,7 @@
 
 import json
 from collections import deque
+import os
 
 from core.model.applicationSettings import ApplicationSettings
 
@@ -47,7 +48,8 @@ class ApplicationSettingsManager():
 
         recentPathes = deque(maxlen=5)
         for recentPath in jsonMiscSettings["recentProjects"]:
-            recentPathes.append(recentPath)
+            if os.path.isfile(recentPath):
+                recentPathes.append(recentPath)
         self.settings.recentProjectFilePathes = recentPathes
 
         self.settings.changed.connect(self.saveSettings)

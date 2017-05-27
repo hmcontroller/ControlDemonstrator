@@ -2,7 +2,7 @@
     "channels": [], 
     "commands": [], 
     "miscSettings": {
-        "controllerFrameworkAndInterface": "MBED_2_UDP", 
+        "controllerFrameworkAndInterface": "ARDUINO_SERIAL", 
         "tabs": [
             {
                 "className": "TabSmallGenericView", 
@@ -10,10 +10,10 @@
                 "displayName": "Generische Ansicht"
             }
         ], 
-        "comPortDescription": "Arduino Due Programming Port (COM7)", 
+        "comPortDescription": "", 
         "computerIP": "192.168.0.133", 
         "udpPort": 10000, 
-        "pathToControllerCodeFolder": "", 
+        "pathToControllerCodeFolder": "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\ControlDemonstratorProjects", 
         "controllerLoopCycleTimeInUs": 5000, 
         "controllerIP": "192.168.0.15"
     }

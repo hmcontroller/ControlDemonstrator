@@ -85,7 +85,9 @@ class ChannelSettingsDialog(QtGui.QDialog, Ui_ChannelSettingsDialog):
                 channel.id = rowNumber
 
                 channel.name = unicode(self.tableWidget.item(rowNumber, self.VARIABLE_NAME_COLUMN).text()).replace(" ", "")
+
                 channel.displayName = unicode(self.tableWidget.item(rowNumber, self.DISPLAY_NAME_COLUMN).text())
+
                 if self.tableWidget.item(rowNumber, self.ACTIVE_COLUMN).checkState() == QtCore.Qt.Checked:
                     channel.isRequested = True
                 else:
