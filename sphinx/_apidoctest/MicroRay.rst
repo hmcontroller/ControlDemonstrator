@@ -1,6 +1,4 @@
-
-
-.. automodule:: ControlDemonstrator
+.. automodule:: MicroRay
     :members:
     :undoc-members:
     :show-inheritance:
