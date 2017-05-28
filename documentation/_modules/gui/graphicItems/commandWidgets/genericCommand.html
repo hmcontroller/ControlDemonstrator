@@ -1,0 +1,566 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>gui.graphicItems.commandWidgets.genericCommand &mdash; microRay 1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="microRay 1 documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> microRay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_static/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_static/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_static/apireference.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../../index.html">microRay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      
+    <li>gui.graphicItems.commandWidgets.genericCommand</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for gui.graphicItems.commandWidgets.genericCommand</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- encoding: utf-8 -*-</span>
+
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtGui</span><span class="p">,</span> <span class="n">QtCore</span>
+
+<span class="kn">from</span> <span class="nn">baseCommand</span> <span class="k">import</span> <span class="n">BaseCommand</span>
+<span class="kn">from</span> <span class="nn">gui.graphicItems.floatValidator</span> <span class="k">import</span> <span class="n">FloatValidator</span>
+<span class="kn">from</span> <span class="nn">gui.graphicItems.lineEditDoubleClickSpecial</span> <span class="k">import</span> <span class="n">LineEditDoubleClickSpecial</span>
+
+<span class="kn">from</span> <span class="nn">gui.constants</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="GenericCommand"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand">[docs]</a><span class="k">class</span> <span class="nc">GenericCommand</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">commandNameFont</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QFont</span><span class="p">(</span><span class="s2">&quot;sans-serif&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QFont</span><span class="o">.</span><span class="n">Bold</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">otherFont</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QFont</span><span class="p">(</span><span class="s2">&quot;sans-serif&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blackPen</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPen</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">black</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_addLineEdit</span><span class="p">(</span><span class="n">LineEditDoubleClickSpecial</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_addLineEdit</span><span class="p">(</span><span class="n">LineEditDoubleClickSpecial</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_addLineEdit</span><span class="p">(</span><span class="n">LineEditDoubleClickSpecial</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QCheckBox</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;Guggu&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">otherFont</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">setGeometry</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WA_TranslucentBackground</span><span class="p">)</span>
+
+        <span class="c1"># self.minLineEdit.lostFocus.connect(self.minLostFocus)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">GenericCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+
+        <span class="c1"># the order of initializing the proxies affects the tab order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEditProxy</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QGraphicsProxyWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEditProxy</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEditProxy</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QGraphicsProxyWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEditProxy</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEditProxy</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QGraphicsProxyWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEditProxy</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckboxProxy</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QGraphicsProxyWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckboxProxy</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="mi">400</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="mi">100</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span> <span class="o">=</span> <span class="mi">30</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">editAreaHeight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hCenterEditArea</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">editAreaHeight</span>
+
+        <span class="c1"># self.minLineEdit.move(45, self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.minLineEdit.height())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">editAreaHeight</span> <span class="o">-</span> <span class="mf">1.1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">height</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEditValidator</span> <span class="o">=</span> <span class="n">FloatValidator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">setValidator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minLineEditValidator</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getLowerLimit</span><span class="p">()))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">editingFinished</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minEditingFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">returnPressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minEditingReturnPressed</span><span class="p">)</span>
+
+        <span class="c1"># self.maxLineEdit.move(167, self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.minLineEdit.height())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">editAreaHeight</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">height</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEditValidator</span> <span class="o">=</span> <span class="n">FloatValidator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">setValidator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxLineEditValidator</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getUpperLimit</span><span class="p">()))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">editingFinished</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxEditingFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">returnPressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxEditingReturnPressed</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">10</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">width</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">editAreaHeight</span> <span class="o">-</span> <span class="mf">1.1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">height</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEditValidator</span> <span class="o">=</span> <span class="n">FloatValidator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">setValidator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valueLineEditValidator</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getValue</span><span class="p">()))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">editingFinished</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valueEditingFinished</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">returnPressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valueEditingReturnPressed</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">setCheckState</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getPendingSendMode</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="mi">45</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">width</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span> <span class="o">+</span> <span class="mi">10</span><span class="p">)</span><span class="c1"># + 0.5 * self.editAreaHeight)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">setTristate</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pendingCheckboxClicked</span><span class="p">)</span>
+
+        <span class="c1"># no text is drawn when the</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;pending mode&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">addRect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">headerAreaPath</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">headerAreaPath</span><span class="o">.</span><span class="n">addRect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">headerAreaBrush</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">153</span><span class="p">,</span> <span class="mi">153</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">editAreaPath</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">editAreaPath</span><span class="o">.</span><span class="n">addRect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">editAreaHeight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">editAreaBrush</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">153</span><span class="p">,</span> <span class="mi">250</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">labelRect</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span><span class="p">)</span>
+        <span class="c1"># self.minRect = QtCore.QRectF(10, self.labelAreaHeight, 50, self.editAreaHeight)</span>
+        <span class="c1"># self.maxRect = QtCore.QRectF(130, self.labelAreaHeight, 50, self.editAreaHeight)</span>
+        <span class="c1"># self.valueRect = QtCore.QRectF(280, self.labelAreaHeight, 50, self.editAreaHeight)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minRect</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">editAreaHeight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxRect</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">editAreaHeight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueRect</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">280</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">editAreaHeight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingRect</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">45</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">width</span><span class="p">()</span> <span class="o">+</span> <span class="mi">30</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingValueRect</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">45</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">width</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span> <span class="o">+</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">155</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueFromControllerRect</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">10</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">width</span><span class="p">(),</span>
+                                                     <span class="bp">self</span><span class="o">.</span><span class="n">labelAreaHeight</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">editAreaHeight</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">height</span><span class="p">(),</span>
+                                                     <span class="mi">63</span><span class="p">,</span>
+                                                     <span class="mi">25</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">onePixelGrayPen</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPen</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">onePixelGrayPen</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">onePixelGrayPen</span><span class="o">.</span><span class="n">setCosmetic</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">onePixelGrayPen</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">darkGray</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingValuePen</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPen</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingValuePen</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">PENDING_VALUE_COLOR</span><span class="p">)</span>
+
+    <span class="c1"># def minLostFocus(self):</span>
+    <span class="c1">#     self.triggerNoChangeWarning()</span>
+    <span class="c1">#     self.minLineEdit.setText(self.minLineEdit.oldValueText)</span>
+    <span class="c1">#</span>
+    <span class="c1"># def triggerNoChangeWarning(self):</span>
+    <span class="c1">#     pass</span>
+
+    <span class="k">def</span> <span class="nf">_addLineEdit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lineEdit</span><span class="p">):</span>
+        <span class="n">lineEdit</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WA_TranslucentBackground</span><span class="p">)</span>
+        <span class="n">lineEdit</span><span class="o">.</span><span class="n">setFixedSize</span><span class="p">(</span><span class="mi">63</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="o">.</span><span class="n">Window</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
+        <span class="c1"># label.setStyleSheet(&quot;&quot;&quot;border: none; background-color: rgba(0, 0, 0, 0);&quot;&quot;&quot;)     #; margin-top: 8px &quot;&quot;&quot;)</span>
+        <span class="n">lineEdit</span><span class="o">.</span><span class="n">setPalette</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="c1"># lineEdit.move(self.width - 10 - self.valueLineEdit.width(), self.labelAreaHeight + 0.5 * self.editAreaHeight - 0.5 * self.valueLineEdit.height())</span>
+        <span class="n">lineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;0.0&quot;</span><span class="p">)</span>
+        <span class="c1"># lineEdit.setMaxLength(6)</span>
+        <span class="n">lineEdit</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QFont</span><span class="p">(</span><span class="s2">&quot;sans-serif&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">lineEdit</span>
+
+<div class="viewcode-block" id="GenericCommand.pendingCheckboxClicked"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.pendingCheckboxClicked">[docs]</a>    <span class="k">def</span> <span class="nf">pendingCheckboxClicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newValue</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">setPendingSendMode</span><span class="p">(</span><span class="n">newValue</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericCommand.valueEditingFinished"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.valueEditingFinished">[docs]</a>    <span class="k">def</span> <span class="nf">valueEditingFinished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+
+        <span class="c1"># if nothing is in the textBox, the lower limit of the command will be set</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">is</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getLowerLimit</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">setCursorPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getLowerLimit</span><span class="p">(),</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activateUserInputWarning</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># allowed for the decimal point are a comma and a dot</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+
+            <span class="n">number</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">number</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getLowerLimit</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getLowerLimit</span><span class="p">(),</span> <span class="bp">self</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getLowerLimit</span><span class="p">()))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">setCursorPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">activateUserInputWarning</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">number</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getUpperLimit</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getUpperLimit</span><span class="p">(),</span> <span class="bp">self</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getUpperLimit</span><span class="p">()))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">setCursorPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">activateUserInputWarning</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">number</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># self.valueLineEdit.setText(str(self.command.getValue()))</span>
+        <span class="c1"># self.valueLineEdit.setCursorPosition(0)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GenericCommand.valueEditingReturnPressed"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.valueEditingReturnPressed">[docs]</a>    <span class="k">def</span> <span class="nf">valueEditingReturnPressed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valueLineEdit</span><span class="o">.</span><span class="n">selectAll</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GenericCommand.minEditingFinished"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.minEditingFinished">[docs]</a>    <span class="k">def</span> <span class="nf">minEditingFinished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># self.minLineEditProxy.clearFocus()</span>
+        <span class="c1"># self.minLineEdit.selectAll()</span>
+
+
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="nb">min</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">min</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">min</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getUpperLimit</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">setLowerLimit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getUpperLimit</span><span class="p">(),</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getLowerLimit</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">setCursorPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">selectAll</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activateUserInputWarning</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">setLowerLimit</span><span class="p">(</span><span class="nb">min</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericCommand.minEditingReturnPressed"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.minEditingReturnPressed">[docs]</a>    <span class="k">def</span> <span class="nf">minEditingReturnPressed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">selectAll</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GenericCommand.maxEditingFinished"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.maxEditingFinished">[docs]</a>    <span class="k">def</span> <span class="nf">maxEditingFinished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># self.maxLineEditProxy.clearFocus()</span>
+        <span class="c1"># self.maxLineEdit.selectAll()</span>
+
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="nb">max</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">max</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">max</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getLowerLimit</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">setUpperLimit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getLowerLimit</span><span class="p">(),</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getUpperLimit</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">setCursorPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">selectAll</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activateUserInputWarning</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">setUpperLimit</span><span class="p">(</span><span class="nb">max</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericCommand.maxEditingReturnPressed"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.maxEditingReturnPressed">[docs]</a>    <span class="k">def</span> <span class="nf">maxEditingReturnPressed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">selectAll</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GenericCommand.valueChangedPerWidget"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.valueChangedPerWidget">[docs]</a>    <span class="k">def</span> <span class="nf">valueChangedPerWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widgetInstance</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">widgetInstance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+            <span class="c1"># self.valueLineEdit.setText(str(self.command.getValue()))</span>
+            <span class="c1"># self.valueLineEdit.setCursorPosition(0)</span>
+
+
+<div class="viewcode-block" id="GenericCommand.minChangedPerWidget"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.minChangedPerWidget">[docs]</a>    <span class="k">def</span> <span class="nf">minChangedPerWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widgetInstance</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">widgetInstance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getLowerLimit</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">setCursorPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericCommand.maxChangedPerWidget"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.maxChangedPerWidget">[docs]</a>    <span class="k">def</span> <span class="nf">maxChangedPerWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widgetInstance</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">widgetInstance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getUpperLimit</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">setCursorPosition</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GenericCommand.pendingModeChanged"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.pendingModeChanged">[docs]</a>    <span class="k">def</span> <span class="nf">pendingModeChanged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GenericCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">pendingModeChanged</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getPendingSendMode</span><span class="p">())</span></div>
+
+    <span class="c1"># overwrites method of super class</span>
+<div class="viewcode-block" id="GenericCommand.differentValueReceived"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.differentValueReceived">[docs]</a>    <span class="k">def</span> <span class="nf">differentValueReceived</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># this call is needed to start the blink timer</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GenericCommand</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">differentValueReceived</span><span class="p">()</span></div>
+
+        <span class="c1"># self.valueLineEdit.setText(str(self.command.getValue()))</span>
+        <span class="c1"># self.valueLineEdit.setCursorPosition(0)</span>
+
+<div class="viewcode-block" id="GenericCommand.paint"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.paint">[docs]</a>    <span class="k">def</span> <span class="nf">paint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QPainter</span><span class="p">,</span> <span class="n">QStyleOptionGraphicsItem</span><span class="p">,</span> <span class="n">QWidget_widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setRenderHint</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPainter</span><span class="o">.</span><span class="n">Antialiasing</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># draw background of the label</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">fillPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headerAreaPath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">headerAreaBrush</span><span class="p">)</span>
+
+        <span class="c1"># draw background of edit area</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">fillPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">editAreaPath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">editAreaBrush</span><span class="p">)</span>
+
+
+        <span class="c1"># draw a warning</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">showUserInputWarning</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">QPainter</span><span class="o">.</span><span class="n">fillPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">editAreaPath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">userInputWarningBrush</span><span class="p">)</span>
+
+        <span class="c1"># draw a warning</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">showCommFailureWarning</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">QPainter</span><span class="o">.</span><span class="n">fillPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">editAreaPath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">commFailureWarningBrush</span><span class="p">)</span>
+
+        <span class="c1"># draw this warning in front of all other colors</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">showDifferentValueReceivedWarning</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">QPainter</span><span class="o">.</span><span class="n">fillPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">editAreaPath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">differentValueReceivedWarningBrush</span><span class="p">)</span>
+
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blackPen</span><span class="p">)</span>
+
+        <span class="c1"># draw the command name</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commandNameFont</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">displayName</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">QPainter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labelRect</span><span class="p">,</span>
+                             <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">,</span>
+                             <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">displayName</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">QPainter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labelRect</span><span class="p">,</span>
+                             <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">,</span>
+                             <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="c1"># draw some text</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">otherFont</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">minRect</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">))</span>
+
+        <span class="c1"># # draw some text</span>
+        <span class="c1"># QPainter.setFont(self.otherFont)</span>
+        <span class="c1"># QPainter.drawText(self.pendingRect,</span>
+        <span class="c1">#                  QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,</span>
+        <span class="c1">#                  QtCore.QString(&quot;pending mode&quot;))</span>
+
+        <span class="c1"># draw some text</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">_pendingValue</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pendingValuePen</span><span class="p">)</span>
+            <span class="n">pendingValue</span> <span class="o">=</span> <span class="n">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">_pendingValue</span><span class="p">)</span> <span class="o">+</span> <span class="sa">u</span><span class="s2">&quot;  --&gt;&quot;</span>
+            <span class="n">QPainter</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">otherFont</span><span class="p">)</span>
+            <span class="n">QPainter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pendingValueRect</span><span class="p">,</span>
+                             <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignTop</span><span class="p">,</span>
+                             <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="n">pendingValue</span><span class="p">))</span>
+            <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blackPen</span><span class="p">)</span>
+
+        <span class="c1"># draw some text</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">otherFont</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valueFromControllerRect</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">valueOfLastResponse</span><span class="p">)))</span>
+
+        <span class="c1"># draw some text</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxRect</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s2">&quot;max&quot;</span><span class="p">))</span>
+
+        <span class="c1"># draw some text</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valueRect</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">))</span>
+
+        <span class="c1"># draw bounding paths</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">onePixelGrayPen</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headerAreaPath</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">editAreaPath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GenericCommand.boundingRect"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommand.boundingRect">[docs]</a>    <span class="k">def</span> <span class="nf">boundingRect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">)</span></div></div>
+
+
+
+<div class="viewcode-block" id="GenericCommandWithoutMinMaxEdit"><a class="viewcode-back" href="../../../../_apidoc/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.genericCommand.GenericCommandWithoutMinMaxEdit">[docs]</a><span class="k">class</span> <span class="nc">GenericCommandWithoutMinMaxEdit</span><span class="p">(</span><span class="n">GenericCommand</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GenericCommandWithoutMinMaxEdit</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">setReadOnly</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">setReadOnly</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+
+        <span class="n">styleSheet</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;border: none; background-color: rgba(0, 0, 0, 0);&quot;&quot;&quot;</span>
+        <span class="c1"># styleSheet = &quot;&quot;&quot;border: none; color: rgb(120, 120, 120); background-color: rgba(0, 0, 0, 0);&quot;&quot;&quot;</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="o">.</span><span class="n">Window</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="p">()</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="o">.</span><span class="n">Window</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WA_TranslucentBackground</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="n">styleSheet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minLineEdit</span><span class="o">.</span><span class="n">setPalette</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">WA_TranslucentBackground</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="n">styleSheet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxLineEdit</span><span class="o">.</span><span class="n">setPalette</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingStateCheckbox</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, hmcontroller.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

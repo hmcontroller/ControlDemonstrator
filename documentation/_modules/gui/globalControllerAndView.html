@@ -1,0 +1,356 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>gui.globalControllerAndView &mdash; microRay 1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="microRay 1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> microRay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/apireference.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">microRay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>gui.globalControllerAndView</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for gui.globalControllerAndView</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- encoding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span>
+
+<span class="kn">from</span> <span class="nn">gui.designerfiles.globalControllerAndView</span> <span class="k">import</span> <span class="n">Ui_GlobalControllerAndView</span>
+<span class="kn">from</span> <span class="nn">gui.resources</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<span class="kn">from</span> <span class="nn">core.communicator</span> <span class="k">import</span> <span class="n">CommState</span>
+
+<div class="viewcode-block" id="GlobalControllerAndView"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.globalControllerAndView.GlobalControllerAndView">[docs]</a><span class="k">class</span> <span class="nc">GlobalControllerAndView</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="p">,</span> <span class="n">Ui_GlobalControllerAndView</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commandList</span><span class="p">,</span> <span class="n">communicator</span><span class="p">,</span> <span class="n">mainWindow</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QWidget</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupUi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">commandList</span> <span class="o">=</span> <span class="n">commandList</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span> <span class="o">=</span> <span class="n">communicator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">changed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commStateChanged</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">commandSend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reportCommandSend</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mainWindow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mainWindow</span> <span class="o">=</span> <span class="n">mainWindow</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mainWindow</span><span class="o">.</span><span class="n">displayMessage</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">showMessage</span><span class="p">)</span>
+
+        <span class="c1"># self.commToggleButton.clicked.connect(self.toggleComm)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingSendButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sendPendingCommands</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pendingCancelButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cancelPendingCommands</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">commOkStyleSheet</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            QLabel { color: black; font-weight: normal; }</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commFailureStyleSheet</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            QLabel { color: red; font-weight: bold; }</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">playPixmap</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="n">playPath</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">playIcon</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">playPixmap</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pausePixmap</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="n">pausePath</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pauseIcon</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pausePixmap</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">toolButton</span><span class="o">.</span><span class="n">setIcon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pauseIcon</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toolButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">togglePlayPause</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toolButton</span><span class="o">.</span><span class="n">setIconSize</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QSize</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">))</span>
+
+
+        <span class="n">pal</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="p">()</span>
+        <span class="n">pal</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="o">.</span><span class="n">Base</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">black</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">setAutoFillBackground</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">setPalette</span><span class="p">(</span><span class="n">pal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">setCurrentFont</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QFont</span><span class="p">(</span><span class="s2">&quot;Courier New&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">setFontPointSize</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">document</span><span class="p">()</span><span class="o">.</span><span class="n">setMaximumBlockCount</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">darkGreen</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setAutoFillBackground</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setPalette</span><span class="p">(</span><span class="n">pal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setCurrentFont</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QFont</span><span class="p">(</span><span class="s2">&quot;Courier New&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setFontPointSize</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">document</span><span class="p">()</span><span class="o">.</span><span class="n">setMaximumBlockCount</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">darkGreen</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">commStateBlinkTimer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commStateBlinkTimer</span><span class="o">.</span><span class="n">setSingleShot</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commStateBlinkTimer</span><span class="o">.</span><span class="n">setInterval</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commStateBlinkTimer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clearCommStateBlink</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">commStateChanged</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">_commState</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GlobalControllerAndView.togglePlayPause"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.globalControllerAndView.GlobalControllerAndView.togglePlayPause">[docs]</a>    <span class="k">def</span> <span class="nf">togglePlayPause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">communicator</span><span class="o">.</span><span class="n">toggleCommunication</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GlobalControllerAndView.commStateChanged"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.globalControllerAndView.GlobalControllerAndView.commStateChanged">[docs]</a>    <span class="k">def</span> <span class="nf">commStateChanged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commState</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">commStateBoxBlink</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">commState</span><span class="o">.</span><span class="n">play</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">toolButton</span><span class="o">.</span><span class="n">setIcon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pauseIcon</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">toolButton</span><span class="o">.</span><span class="n">setIcon</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">playIcon</span><span class="p">)</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">commState</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_ESTABLISHED</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Comm OK&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">darkGreen</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">commState</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_TIMEOUT</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Comm TIMEOUT, waiting...&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">red</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">commState</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CommState</span><span class="o">.</span><span class="n">WRONG_CONFIG</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;config file mismatch&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">red</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">commState</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CommState</span><span class="o">.</span><span class="n">NO_CONN</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;no connection, waiting...&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">red</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">commState</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CommState</span><span class="o">.</span><span class="n">UNKNOWN</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;unknown state&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">red</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">commState</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_PAUSED</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Com paused&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">darkGreen</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">darkGreen</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">commState</span><span class="o">.</span><span class="n">interfaceDescription</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">verticalScrollBar</span><span class="p">()</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">verticalScrollBar</span><span class="p">()</span><span class="o">.</span><span class="n">maximum</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="GlobalControllerAndView.commStateBoxBlink"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.globalControllerAndView.GlobalControllerAndView.commStateBoxBlink">[docs]</a>    <span class="k">def</span> <span class="nf">commStateBoxBlink</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pal</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="p">()</span>
+        <span class="n">pal</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="o">.</span><span class="n">Base</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">red</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setAutoFillBackground</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setPalette</span><span class="p">(</span><span class="n">pal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commStateBlinkTimer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GlobalControllerAndView.clearCommStateBlink"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.globalControllerAndView.GlobalControllerAndView.clearCommStateBlink">[docs]</a>    <span class="k">def</span> <span class="nf">clearCommStateBlink</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pal</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="p">()</span>
+        <span class="n">pal</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPalette</span><span class="o">.</span><span class="n">Base</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">black</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setAutoFillBackground</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">singleLineTextEdit</span><span class="o">.</span><span class="n">setPalette</span><span class="p">(</span><span class="n">pal</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GlobalControllerAndView.reportCommandSend"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.globalControllerAndView.GlobalControllerAndView.reportCommandSend">[docs]</a>    <span class="k">def</span> <span class="nf">reportCommandSend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H:%M:%S.</span><span class="si">%f</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">displayName</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">displayName</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="si">{: &lt;15}</span><span class="s2"> </span><span class="si">{: &lt;40}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">now</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">command</span><span class="o">.</span><span class="n">_value</span><span class="p">)</span>
+
+
+        <span class="c1"># &quot;#define {:{nameWidth}} {:&gt;{valueWidth}}\n&quot;.format</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">showMessage</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GlobalControllerAndView.sendPendingCommands"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.globalControllerAndView.GlobalControllerAndView.sendPendingCommands">[docs]</a>    <span class="k">def</span> <span class="nf">sendPendingCommands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commandList</span><span class="o">.</span><span class="n">sendPendingCommands</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GlobalControllerAndView.cancelPendingCommands"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.globalControllerAndView.GlobalControllerAndView.cancelPendingCommands">[docs]</a>    <span class="k">def</span> <span class="nf">cancelPendingCommands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commandList</span><span class="o">.</span><span class="n">cancelPendingCommands</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GlobalControllerAndView.showMessage"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.globalControllerAndView.GlobalControllerAndView.showMessage">[docs]</a>    <span class="k">def</span> <span class="nf">showMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">kindOfMessage</span><span class="o">=</span><span class="s2">&quot;normal&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">kindOfMessage</span> <span class="o">==</span> <span class="s2">&quot;normal&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">darkGreen</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">kindOfMessage</span> <span class="o">==</span> <span class="s2">&quot;softWarning&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">140</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">kindOfMessage</span> <span class="o">==</span> <span class="s2">&quot;warning&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">red</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">setTextColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">lightGray</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">verticalScrollBar</span><span class="p">()</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">messageTextEdit</span><span class="o">.</span><span class="n">verticalScrollBar</span><span class="p">()</span><span class="o">.</span><span class="n">maximum</span><span class="p">())</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, hmcontroller.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

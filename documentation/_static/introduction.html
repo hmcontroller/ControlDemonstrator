@@ -1,0 +1,298 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Introduction &mdash; microRay 1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="microRay 1 documentation" href="../index.html"/>
+        <link rel="next" title="Quickstart" href="quickstart.html"/>
+        <link rel="prev" title="Welcome to microRay’s documentation!" href="../index.html"/> 
+
+  
+  <script src="js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> microRay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-microray">What is microRay ?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#microray-superapp">microRay SuperApp</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apireference.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">microRay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Introduction</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/_static/introduction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-microray">
+<h2>What is microRay ?<a class="headerlink" href="#what-is-microray" title="Permalink to this headline">¶</a></h2>
+<p>The microRay is a program, that sends commands to a microcontroller
+and displays or stores measurement data, that arrives from the microcontroller.</p>
+<p>It communicates over serial, usb or ethernet, depending on which interface you select.</p>
+<p>It generates a C-library, that you have to include in your microcontroller code. Supported combinations of controller
+and interface are:</p>
+<ul class="simple">
+<li>Arduino via<ul>
+<li>Serial</li>
+<li>EthernetShield</li>
+<li>WifiShield</li>
+</ul>
+</li>
+<li>Mbed via<ul>
+<li>Serial</li>
+<li>Ethernet</li>
+<li>Usb</li>
+</ul>
+</li>
+</ul>
+<p>The following code example shows the basic usage of the microRay in your microcontroller code.
+The testparameter can be controlled from the connected pc and the channelOne variable will be transmitted and
+displayed on the pc.</p>
+<div class="highlight-c"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span> <span class="cp">#include</span> <span class="cpf">&quot;microRay.h&quot;</span><span class="cp"></span>
+
+ <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+     <span class="n">microRayInit</span><span class="p">();</span>
+     <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+         <span class="k">if</span> <span class="p">(</span><span class="n">testparameter</span> <span class="o">&gt;</span> <span class="mf">0.5f</span><span class="p">)</span> <span class="p">{</span>
+             <span class="n">channelOne</span> <span class="o">=</span> <span class="mf">12.0f</span><span class="p">;</span>
+         <span class="p">}</span>
+         <span class="k">else</span> <span class="p">{</span>
+             <span class="n">channelOne</span> <span class="o">=</span> <span class="mf">11.0f</span><span class="p">;</span>
+         <span class="p">}</span>
+         <span class="n">communicate</span><span class="p">();</span>
+     <span class="p">}</span>
+ <span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="microray-superapp">
+<h2>microRay SuperApp<a class="headerlink" href="#microray-superapp" title="Permalink to this headline">¶</a></h2>
+<p>Bla guggu das ist ein Testtext.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>PlotDataItem(xValues, yValues)</td>
+<td>x and y values may be any sequence (including ndarray) of real numbers</td>
+</tr>
+<tr class="row-even"><td>PlotDataItem(yValues)</td>
+<td>y values only &#8211; x will be automatically set to range(len(y))</td>
+</tr>
+<tr class="row-odd"><td>PlotDataItem(x=xValues, y=yValues)</td>
+<td>x and y given by keyword arguments</td>
+</tr>
+<tr class="row-even"><td>PlotDataItem(ndarray(Nx2))</td>
+<td>numpy array with shape (N, 2) where x=data[:,0] and y=data[:,1]</td>
+</tr>
+</tbody>
+</table>
+<p>example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">core.settings</span> <span class="k">import</span> <span class="o">*</span>
+<span class="n">doWrite</span><span class="p">(</span><span class="n">gaga</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">&quot;Hallo&quot;</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="quickstart.html" class="btn btn-neutral float-right" title="Quickstart" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral" title="Welcome to microRay’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, hmcontroller.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="jquery.js"></script>
+      <script type="text/javascript" src="underscore.js"></script>
+      <script type="text/javascript" src="doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

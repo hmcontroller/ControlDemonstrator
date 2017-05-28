@@ -1,0 +1,677 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>gui.graphicItems.commandWidgets.signalGenerator &mdash; microRay 1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="microRay 1 documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> microRay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_static/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_static/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../_static/apireference.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../../index.html">microRay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      
+    <li>gui.graphicItems.commandWidgets.signalGenerator</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for gui.graphicItems.commandWidgets.signalGenerator</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- encoding: utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtCore</span>
+
+<span class="kn">from</span> <span class="nn">core.signalGeneratorCommandGroup</span> <span class="k">import</span> <span class="n">SignalGeneratorCommandGroup</span>
+<span class="kn">from</span> <span class="nn">gui.constants</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">gui.graphicItems.commandWidgets.baseCommand</span> <span class="k">import</span> <span class="n">BaseCommand</span>
+<span class="kn">from</span> <span class="nn">gui.graphicItems.button</span> <span class="k">import</span> <span class="n">SymbolButton</span>
+<span class="kn">from</span> <span class="nn">gui.genericCommandEditorWindow</span> <span class="k">import</span> <span class="n">GenericCommandEditorWindow</span>
+
+
+<div class="viewcode-block" id="SignalGenerator"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator">[docs]</a><span class="k">class</span> <span class="nc">SignalGenerator</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signalGeneratorCommandGroup</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">signalGeneratorCommandGroup</span><span class="p">,</span> <span class="n">SignalGeneratorCommandGroup</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;must be initialized with a core.signalGeneratorCommandGroup.SignalGeneratorCommandGroup instance&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">commands</span> <span class="o">=</span> <span class="n">signalGeneratorCommandGroup</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functionNumberCommand</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">functionNumberCommand</span>
+
+        <span class="c1"># there exist 6 functions that can be used for signal generation at the time of writing this (2017-02-23).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functionNumberCommand</span><span class="o">.</span><span class="n">setLowerLimit</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functionNumberCommand</span><span class="o">.</span><span class="n">setUpperLimit</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1"># the command to set the function number of the generator is used as main command here</span>
+        <span class="c1"># TODO rewrite documentation one line above</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SignalGenerator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">functionNumberCommand</span><span class="p">)</span>
+
+
+        <span class="c1"># set up some groups of commands, each suitable for a function number</span>
+        <span class="c1"># the editing of the parameters takes place in a popup window</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupedCommandLists</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1"># these are commands for the dirac function</span>
+        <span class="n">cmds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">diracLowCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;unterer Wert&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">diracHighCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;oberer Wert&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">diracDurationCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Dauer in Sekunden&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupedCommandLists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cmds</span><span class="p">)</span>
+
+        <span class="c1"># these are commands for the heavyside function</span>
+        <span class="n">cmds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">stepLowCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;unterer Wert&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">stepHighCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;oberer Wert&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupedCommandLists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cmds</span><span class="p">)</span>
+
+        <span class="c1"># these are commands for the ramp function</span>
+        <span class="n">cmds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">rampState</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Rampe Richtung&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">rampGradient</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Rampe Steigung&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">rampLow</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Rampe unten&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">rampHigh</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Rampe oben&quot;</span>
+
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupedCommandLists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cmds</span><span class="p">)</span>
+
+        <span class="c1"># these are commands for the sin function</span>
+        <span class="n">cmds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">sinAmplitudeCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Amplitude&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">sinOmegaCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Omega&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">sinOffsetCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Y-Offset&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupedCommandLists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cmds</span><span class="p">)</span>
+
+        <span class="c1"># these are commands for the square wave function</span>
+        <span class="n">cmds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">squareLowCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Square unterer Wert&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">squareHighCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Square oberer Wert&quot;</span>
+        <span class="n">cmds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">squareFrequencyCommand</span><span class="p">)</span>
+        <span class="n">cmds</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;Square Frequenz in Hz&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupedCommandLists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cmds</span><span class="p">)</span>
+
+
+        <span class="c1"># a list with functions that get executed on the trigger button</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triggerCommands</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triggerCommands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">startDirac</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triggerCommands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">toggleHeavySide</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triggerCommands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">toggleRamp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triggerCommands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">triggerCommands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">warningPath</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">warningPath</span><span class="o">.</span><span class="n">addRect</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">upButton</span> <span class="o">=</span> <span class="n">SymbolButton</span><span class="p">(</span><span class="n">SymbolButton</span><span class="o">.</span><span class="n">UP</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upButton</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="mi">125</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oneSignalUp</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">okButton</span> <span class="o">=</span> <span class="n">SymbolButton</span><span class="p">(</span><span class="n">SymbolButton</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">okButton</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="mi">125</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+        <span class="c1"># the slot connected to this button changes programmatically</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settingsButton</span> <span class="o">=</span> <span class="n">SymbolButton</span><span class="p">(</span><span class="n">SymbolButton</span><span class="o">.</span><span class="n">SETTINGS</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settingsButton</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="mi">125</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settingsButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settingsButtonClicked</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">downButton</span> <span class="o">=</span> <span class="n">SymbolButton</span><span class="p">(</span><span class="n">SymbolButton</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downButton</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="mi">125</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oneSignalDown</span><span class="p">)</span>
+
+
+        <span class="n">dirac</span> <span class="o">=</span> <span class="n">DiracSignal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">dirac</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dirac</span><span class="p">)</span>
+
+        <span class="n">heavySide</span> <span class="o">=</span> <span class="n">HeaviSideSignal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">heavySide</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">heavySide</span><span class="p">)</span>
+
+        <span class="n">ramp</span> <span class="o">=</span> <span class="n">RampSignal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">ramp</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ramp</span><span class="p">)</span>
+
+        <span class="n">sinus</span> <span class="o">=</span> <span class="n">SinusSignal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">sinus</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="n">sinus</span><span class="o">.</span><span class="n">setScale</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sinus</span><span class="p">)</span>
+
+        <span class="n">square</span> <span class="o">=</span> <span class="n">SquareSignal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">square</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">square</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getValue</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawCurrentSignal</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">constantShape</span> <span class="o">=</span> <span class="n">SignalGeneratorConstantShape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># # if i open a window here to let the user edit some properties, it needs to be updated to show</span>
+        <span class="c1"># #  warnings, if some are active.</span>
+        <span class="c1"># self.dialogUpdateTimer = QtCore.QTimer()</span>
+        <span class="c1"># self.dialogUpdateTimer.setSingleShot(False)</span>
+        <span class="c1"># self.dialogUpdateTimer.timeout.connect(self.updateDialog)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentDialog</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigNumberFont</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QFont</span><span class="p">(</span><span class="s2">&quot;sans-serif&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QFont</span><span class="o">.</span><span class="n">Normal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigNumberRect</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connectTriggerButton</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SignalGenerator.connectTriggerButton"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.connectTriggerButton">[docs]</a>    <span class="k">def</span> <span class="nf">connectTriggerButton</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">okButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">triggerCommands</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">okButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">triggerCommands</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.startDirac"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.startDirac">[docs]</a>    <span class="k">def</span> <span class="nf">startDirac</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">diracNowCommand</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.toggleHeavySide"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.toggleHeavySide">[docs]</a>    <span class="k">def</span> <span class="nf">toggleHeavySide</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">stepStateCommand</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">stepStateCommand</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">stepStateCommand</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.toggleRamp"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.toggleRamp">[docs]</a>    <span class="k">def</span> <span class="nf">toggleRamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">rampState</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">rampState</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commands</span><span class="o">.</span><span class="n">rampState</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.updateDialog"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.updateDialog">[docs]</a>    <span class="k">def</span> <span class="nf">updateDialog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentDialog</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.oneSignalUp"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.oneSignalUp">[docs]</a>    <span class="k">def</span> <span class="nf">oneSignalUp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qGraphicsSceneMouseEvent</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functionNumberCommand</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actualizeSignalSymbol</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.oneSignalDown"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.oneSignalDown">[docs]</a>    <span class="k">def</span> <span class="nf">oneSignalDown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qGraphicsSceneMouseEvent</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">functionNumberCommand</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actualizeSignalSymbol</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.settingsButtonClicked"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.settingsButtonClicked">[docs]</a>    <span class="k">def</span> <span class="nf">settingsButtonClicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qGraphicsSceneMouseEvent</span><span class="p">):</span>
+        <span class="n">lastDialog</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentDialog</span>
+        <span class="k">if</span> <span class="n">lastDialog</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lastDialog</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentDialog</span> <span class="o">=</span> <span class="n">GenericCommandEditorWindow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">groupedCommandLists</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span><span class="p">])</span>
+
+        <span class="c1"># self.dialogUpdateTimer.start(50)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentDialog</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.valueChangedPerWidget"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.valueChangedPerWidget">[docs]</a>    <span class="k">def</span> <span class="nf">valueChangedPerWidget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widgetInstance</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">widgetInstance</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getValue</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">actualizeSignalSymbol</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SignalGenerator.differentValueReceived"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.differentValueReceived">[docs]</a>    <span class="k">def</span> <span class="nf">differentValueReceived</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SignalGenerator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">differentValueReceived</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="o">.</span><span class="n">getValue</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actualizeSignalSymbol</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.actualizeSignalSymbol"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.actualizeSignalSymbol">[docs]</a>    <span class="k">def</span> <span class="nf">actualizeSignalSymbol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawCurrentSignal</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connectTriggerButton</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.drawCurrentSignal"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.drawCurrentSignal">[docs]</a>    <span class="k">def</span> <span class="nf">drawCurrentSignal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span><span class="p">:</span>
+            <span class="n">sig</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">signalSymbols</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span><span class="p">]</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">northCoordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapToScene</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QPoint</span><span class="p">(</span><span class="mi">75</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">westCoordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapToScene</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QPoint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">southCoordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapToScene</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QPoint</span><span class="p">(</span><span class="mi">75</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">eastCoordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapToScene</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QPoint</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span>
+
+<div class="viewcode-block" id="SignalGenerator.paint"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.paint">[docs]</a>    <span class="k">def</span> <span class="nf">paint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QPainter</span><span class="p">,</span> <span class="n">QStyleOptionGraphicsItem</span><span class="p">,</span> <span class="n">QWidget_widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">showCommFailureWarning</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">QPainter</span><span class="o">.</span><span class="n">fillPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">warningPath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">commFailureWarningBrush</span><span class="p">)</span>
+
+        <span class="c1"># draw the signal number</span>
+        <span class="n">sigNumberText</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentSignalNumber</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/5&quot;</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigNumberFont</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigNumberRect</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignTop</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="n">sigNumberText</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SignalGenerator.boundingRect"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGenerator.boundingRect">[docs]</a>    <span class="k">def</span> <span class="nf">boundingRect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span></div></div>
+
+
+
+<div class="viewcode-block" id="SignalGeneratorConstantShape"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGeneratorConstantShape">[docs]</a><span class="k">class</span> <span class="nc">SignalGeneratorConstantShape</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QGraphicsItem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SignalGeneratorConstantShape</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+        <span class="c1"># boundingRect</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">closeSubpath</span><span class="p">()</span>
+
+        <span class="c1"># rects of button areas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">125</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">125</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">125</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">125</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">125</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPen</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPen</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPen</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPen</span><span class="o">.</span><span class="n">setCosmetic</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># self.boundingRectPen.setColor(QtCore.Qt.lightGray)</span>
+
+        <span class="c1"># coordinate system</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">85</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">110</span><span class="p">,</span> <span class="mi">85</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">105</span><span class="p">,</span> <span class="mi">80</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">110</span><span class="p">,</span> <span class="mi">85</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">105</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPen</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPen</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPen</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPen</span><span class="o">.</span><span class="n">setCosmetic</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cSysPen</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">darkGray</span><span class="p">)</span>
+
+        <span class="c1"># rects for axis label positions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uRect</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tRect</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">95</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SignalGeneratorConstantShape.paint"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGeneratorConstantShape.paint">[docs]</a>    <span class="k">def</span> <span class="nf">paint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QPainter</span><span class="p">,</span> <span class="n">QStyleOptionGraphicsItem</span><span class="p">,</span> <span class="n">QWidget_widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># QPainter.setRenderHint(QtGui.QPainter.Antialiasing)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPen</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">boundingRectPath</span><span class="p">)</span>
+
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cSysPen</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cSysPath</span><span class="p">)</span>
+
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">uRect</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s2">&quot;u&quot;</span><span class="p">))</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tRect</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignLeft</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">,</span>
+                         <span class="n">QtCore</span><span class="o">.</span><span class="n">QString</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SignalGeneratorConstantShape.mouseDoubleClickEvent"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGeneratorConstantShape.mouseDoubleClickEvent">[docs]</a>    <span class="k">def</span> <span class="nf">mouseDoubleClickEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QMouseEvent</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="SignalGeneratorConstantShape.confirmationTimeOut"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGeneratorConstantShape.confirmationTimeOut">[docs]</a>    <span class="k">def</span> <span class="nf">confirmationTimeOut</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+        <span class="c1"># print &quot;hello signalSourceWidget timeOut&quot;</span>
+
+<div class="viewcode-block" id="SignalGeneratorConstantShape.boundingRect"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SignalGeneratorConstantShape.boundingRect">[docs]</a>    <span class="k">def</span> <span class="nf">boundingRect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">151</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span></div></div>
+
+
+
+
+<div class="viewcode-block" id="SinusSignal"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SinusSignal">[docs]</a><span class="k">class</span> <span class="nc">SinusSignal</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QGraphicsItem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SinusSignal</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPen</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setCosmetic</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">black</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SinusSignal.boundingRect"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SinusSignal.boundingRect">[docs]</a>    <span class="k">def</span> <span class="nf">boundingRect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SinusSignal.paint"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SinusSignal.paint">[docs]</a>    <span class="k">def</span> <span class="nf">paint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QPainter</span><span class="p">,</span> <span class="n">QStyleOptionGraphicsItem</span><span class="p">,</span> <span class="n">QWidget_widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setRenderHint</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPainter</span><span class="o">.</span><span class="n">Antialiasing</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RampSignal"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.RampSignal">[docs]</a><span class="k">class</span> <span class="nc">RampSignal</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QGraphicsItem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RampSignal</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">upHillPath</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upHillPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upHillPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upHillPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upHillPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPen</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setCosmetic</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">black</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RampSignal.boundingRect"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.RampSignal.boundingRect">[docs]</a>    <span class="k">def</span> <span class="nf">boundingRect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RampSignal.paint"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.RampSignal.paint">[docs]</a>    <span class="k">def</span> <span class="nf">paint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QPainter</span><span class="p">,</span> <span class="n">QStyleOptionGraphicsItem</span><span class="p">,</span> <span class="n">QWidget_widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setRenderHint</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPainter</span><span class="o">.</span><span class="n">Antialiasing</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upHillPath</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DiracSignal"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.DiracSignal">[docs]</a><span class="k">class</span> <span class="nc">DiracSignal</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QGraphicsItem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DiracSignal</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPen</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setCosmetic</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">black</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DiracSignal.boundingRect"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.DiracSignal.boundingRect">[docs]</a>    <span class="k">def</span> <span class="nf">boundingRect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DiracSignal.paint"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.DiracSignal.paint">[docs]</a>    <span class="k">def</span> <span class="nf">paint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QPainter</span><span class="p">,</span> <span class="n">QStyleOptionGraphicsItem</span><span class="p">,</span> <span class="n">QWidget_widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setRenderHint</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPainter</span><span class="o">.</span><span class="n">Antialiasing</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SquareSignal"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SquareSignal">[docs]</a><span class="k">class</span> <span class="nc">SquareSignal</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QGraphicsItem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SquareSignal</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">20</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">10</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPen</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setCosmetic</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">black</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SquareSignal.boundingRect"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SquareSignal.boundingRect">[docs]</a>    <span class="k">def</span> <span class="nf">boundingRect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SquareSignal.paint"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.SquareSignal.paint">[docs]</a>    <span class="k">def</span> <span class="nf">paint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QPainter</span><span class="p">,</span> <span class="n">QStyleOptionGraphicsItem</span><span class="p">,</span> <span class="n">QWidget_widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setRenderHint</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPainter</span><span class="o">.</span><span class="n">Antialiasing</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="HeaviSideSignal"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.HeaviSideSignal">[docs]</a><span class="k">class</span> <span class="nc">HeaviSideSignal</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QGraphicsItem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HeaviSideSignal</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">upPath</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">downPath</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPainterPath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downPath</span><span class="o">.</span><span class="n">moveTo</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downPath</span><span class="o">.</span><span class="n">lineTo</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">75</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPen</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setCosmetic</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">black</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upPath</span>
+
+<div class="viewcode-block" id="HeaviSideSignal.boundingRect"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.HeaviSideSignal.boundingRect">[docs]</a>    <span class="k">def</span> <span class="nf">boundingRect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HeaviSideSignal.paint"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.HeaviSideSignal.paint">[docs]</a>    <span class="k">def</span> <span class="nf">paint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">QPainter</span><span class="p">,</span> <span class="n">QStyleOptionGraphicsItem</span><span class="p">,</span> <span class="n">QWidget_widget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setRenderHint</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPainter</span><span class="o">.</span><span class="n">Antialiasing</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pen</span><span class="p">)</span>
+        <span class="n">QPainter</span><span class="o">.</span><span class="n">drawPath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HeaviSideSignal.toggleUpDown"><a class="viewcode-back" href="../../../../_apidoctest/gui.graphicItems.commandWidgets.html#gui.graphicItems.commandWidgets.signalGenerator.HeaviSideSignal.toggleUpDown">[docs]</a>    <span class="k">def</span> <span class="nf">toggleUpDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">upPath</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downPath</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upPath</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, hmcontroller.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Create a microRay project &mdash; microRay 1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="microRay 1 documentation" href="../../index.html"/>
+        <link rel="up" title="Quickstart" href="../quickstart.html"/>
+        <link rel="next" title="Create your microcontroller code" href="quickstart_two.html"/>
+        <link rel="prev" title="Quickstart" href="../quickstart.html"/> 
+
+  
+  <script src="../js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> microRay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../quickstart.html">Quickstart</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Create a microRay project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart_two.html">Create your microcontroller code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="microRayGuiIntroduction.html">microRay user interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../apireference.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">microRay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../quickstart.html">Quickstart</a> &raquo;</li>
+      
+    <li>Create a microRay project</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/_static/quickstart/quickstart_one.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="create-a-microray-project">
+<h1>Create a microRay project<a class="headerlink" href="#create-a-microray-project" title="Permalink to this headline">¶</a></h1>
+<p>Create a new microRay project under &#8220;Datei&#8221; -&gt; &#8220;Neues Projekt...&#8221;.</p>
+<ul class="simple">
+<li>Go to &#8220;Bearbeiten&#8221; -&gt; &#8220;Projekteinstellungen&#8221;</li>
+<li>Select some options and specify the controller and interface you want to use</li>
+<li>click Ok</li>
+</ul>
+<p><strong>Add channels</strong></p>
+<ul class="simple">
+<li>Go to &#8220;Bearbeiten&#8221; -&gt; &#8220;Kanaleinstellungen&#8221;</li>
+</ul>
+<img alt="../../_images/channelSettingsDialog.png" src="../../_images/channelSettingsDialog.png" />
+<ul class="simple">
+<li>click the green plus symbol in the upper right corner to add a variable,
+that will be send from the controller on every loop cycle</li>
+<li>edit the variable name and its display name and click the checkbox &#8220;active&#8221;, so that the variable will be transmitted.
+This is intended as if later you have too many of them to be transmitted in time, that you can deselect some without loosing reference in your code</li>
+</ul>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The choosen variable names will be macros in the generated C-Code. Consider, that they might conflict
+with macros allready defined somewhere else.</p>
+</div>
+<p><strong>Add parameters</strong></p>
+<ul class="simple">
+<li>Go to &#8220;Bearbeiten&#8221; -&gt; &#8220;Parametereinstellungen&#8221;</li>
+<li>add a parameter, that allows you to set values from within microRay</li>
+</ul>
+<img alt="../../_images/parameterSettingsDialog.png" src="../../_images/parameterSettingsDialog.png" />
+<p><strong>Generate a include files</strong></p>
+<ul class="simple">
+<li>Click on &#8220;Bearbeiten&#8221; -&gt; &#8220;CCode generieren&#8221;</li>
+<li>the include files will be generated in the folder you have specified in &#8220;Projekteinstellungen&#8221; or if not in the program root folder.
+and will be named<ul>
+<li>microRay.h</li>
+<li>microRay.cpp</li>
+</ul>
+</li>
+</ul>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="quickstart_two.html" class="btn btn-neutral float-right" title="Create your microcontroller code" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../quickstart.html" class="btn btn-neutral" title="Quickstart" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, hmcontroller.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../jquery.js"></script>
+      <script type="text/javascript" src="../underscore.js"></script>
+      <script type="text/javascript" src="../doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

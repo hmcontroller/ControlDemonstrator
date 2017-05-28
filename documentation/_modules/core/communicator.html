@@ -1,0 +1,700 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>core.communicator &mdash; microRay 1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="microRay 1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> microRay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/apireference.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">microRay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>core.communicator</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for core.communicator</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- encoding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">serial</span>
+<span class="kn">import</span> <span class="nn">serial.tools.list_ports</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtCore</span>
+
+<span class="kn">from</span> <span class="nn">core.messageData</span> <span class="k">import</span> <span class="n">MessageData</span>
+
+
+<div class="viewcode-block" id="CommState"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.CommState">[docs]</a><span class="k">class</span> <span class="nc">CommState</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="p">):</span>
+
+    <span class="n">changed</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+
+    <span class="n">UNKNOWN</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">COMM_ESTABLISHED</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">COMM_PAUSED</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">COMM_TIMEOUT</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">WRONG_CONFIG</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">NO_CONN</span> <span class="o">=</span> <span class="mi">5</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CommState</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_play</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">UNKNOWN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interfaceDescription</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeOfLastReceive</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_play</span>
+
+    <span class="nd">@play</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">play</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_play</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_play</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">changed</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span>
+
+    <span class="nd">@state</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">changed</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">interfaceDescription</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interfaceDescription</span>
+
+    <span class="nd">@interfaceDescription</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">interfaceDescription</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interfaceDescription</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_interfaceDescription</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">changed</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Communicator"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.Communicator">[docs]</a><span class="k">class</span> <span class="nc">Communicator</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="p">):</span>
+
+    <span class="n">commandSend</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+    <span class="n">alternatePortAvailable</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+    <span class="n">reEstablishedWantedPort</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">applicationSettings</span><span class="p">,</span> <span class="n">projectSettings</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Communicator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_applicationSettings</span> <span class="o">=</span> <span class="n">applicationSettings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_projectSettings</span> <span class="o">=</span> <span class="n">projectSettings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_messageSize</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_messageMap</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span> <span class="o">=</span> <span class="n">CommState</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_portOfferingInProgress</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_directCommandSendBuffer</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pendingCommandSendBuffer</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendTimer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendTimer</span><span class="o">.</span><span class="n">setSingleShot</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendTimer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sendPerTimer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendTimer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_applicationSettings</span><span class="o">.</span><span class="n">sendMessageIntervalLengthInMs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commTimeOutChecker</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commTimeOutChecker</span><span class="o">.</span><span class="n">setSingleShot</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commTimeOutChecker</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">checkCommTimeOut</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commTimeOutChecker</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">setSingleShot</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connectToController</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Communicator.setMessageMap"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.Communicator.setMessageMap">[docs]</a>    <span class="k">def</span> <span class="nf">setMessageMap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formatList</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_messageMap</span> <span class="o">=</span> <span class="n">formatList</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_messageSize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_messageMap</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">positionInBytes</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_messageMap</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lengthInBytes</span></div>
+
+<div class="viewcode-block" id="Communicator.connectToController"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.Communicator.connectToController">[docs]</a>    <span class="k">def</span> <span class="nf">connectToController</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Communicator.disconnectFromController"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.Communicator.disconnectFromController">[docs]</a>    <span class="k">def</span> <span class="nf">disconnectFromController</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Communicator.toggleCommunication"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.Communicator.toggleCommunication">[docs]</a>    <span class="k">def</span> <span class="nf">toggleCommunication</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connectToController</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">disconnectFromController</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Communicator.checkCommTimeOut"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.Communicator.checkCommTimeOut">[docs]</a>    <span class="k">def</span> <span class="nf">checkCommTimeOut</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_ESTABLISHED</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">timeOfLastReceive</span> <span class="o">&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_TIMEOUT</span><span class="p">:</span>
+                    <span class="k">return</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_TIMEOUT</span>
+                    <span class="c1"># if self._connectionPollTimer.isActive() is False:</span>
+                    <span class="c1">#     self._connectionPollTimer.start(1000)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_ESTABLISHED</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_ESTABLISHED</span></div>
+
+<div class="viewcode-block" id="Communicator.send"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.Communicator.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commandList</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Communicator.sendPerTimer"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.Communicator.sendPerTimer">[docs]</a>    <span class="k">def</span> <span class="nf">sendPerTimer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Communicator.sendPendingCommands"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.Communicator.sendPendingCommands">[docs]</a>    <span class="k">def</span> <span class="nf">sendPendingCommands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Communicator.receive"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.Communicator.receive">[docs]</a>    <span class="k">def</span> <span class="nf">receive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_packCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s2">&quot;&lt;1i1f&quot;</span><span class="p">,</span> <span class="n">command</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">command</span><span class="o">.</span><span class="n">getValue</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_unpack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rawPackets</span><span class="p">):</span>
+        <span class="c1"># TODO - think about how to single source the packet configuration</span>
+
+        <span class="n">unpackedMessages</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">rawPacket</span> <span class="ow">in</span> <span class="n">rawPackets</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rawPacket</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_messageMap</span><span class="o">.</span><span class="n">messageLengthInBytes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">WRONG_CONFIG</span>
+                <span class="k">return</span> <span class="n">unpackedMessages</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">messagePartInfo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_messageMap</span><span class="p">:</span>
+                <span class="n">messagePart</span> <span class="o">=</span> <span class="n">MessageData</span><span class="p">()</span>
+                <span class="n">rawPart</span> <span class="o">=</span> <span class="n">rawPacket</span><span class="p">[</span><span class="n">messagePartInfo</span><span class="o">.</span><span class="n">positionInBytes</span> <span class="p">:</span> <span class="n">messagePartInfo</span><span class="o">.</span><span class="n">positionInBytes</span> <span class="o">+</span> <span class="n">messagePartInfo</span><span class="o">.</span><span class="n">lengthInBytes</span><span class="p">]</span>
+
+                <span class="c1"># only these values are changed, the others are just copied</span>
+                <span class="n">messagePart</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">messagePartInfo</span><span class="o">.</span><span class="n">unpackString</span><span class="p">,</span> <span class="n">rawPart</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">messagePart</span><span class="o">.</span><span class="n">positionInBytes</span> <span class="o">=</span> <span class="n">messagePartInfo</span><span class="o">.</span><span class="n">positionInBytes</span>
+                <span class="n">messagePart</span><span class="o">.</span><span class="n">lengthInBytes</span> <span class="o">=</span> <span class="n">messagePartInfo</span><span class="o">.</span><span class="n">lengthInBytes</span>
+                <span class="n">messagePart</span><span class="o">.</span><span class="n">dataType</span> <span class="o">=</span> <span class="n">messagePartInfo</span><span class="o">.</span><span class="n">dataType</span>
+                <span class="n">messagePart</span><span class="o">.</span><span class="n">unpackString</span> <span class="o">=</span> <span class="n">messagePartInfo</span><span class="o">.</span><span class="n">unpackString</span>
+                <span class="n">messagePart</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">messagePartInfo</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">messagePart</span><span class="o">.</span><span class="n">isUserChannel</span> <span class="o">=</span> <span class="n">messagePartInfo</span><span class="o">.</span><span class="n">isUserChannel</span>
+                <span class="n">messagePart</span><span class="o">.</span><span class="n">userChannelId</span> <span class="o">=</span> <span class="n">messagePartInfo</span><span class="o">.</span><span class="n">userChannelId</span>
+
+                <span class="n">message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">messagePart</span><span class="p">)</span>
+
+            <span class="n">unpackedMessages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unpackedMessages</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_ESTABLISHED</span>
+        <span class="k">return</span> <span class="n">unpackedMessages</span></div>
+
+
+<div class="viewcode-block" id="UdpCommunicator"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.UdpCommunicator">[docs]</a><span class="k">class</span> <span class="nc">UdpCommunicator</span><span class="p">(</span><span class="n">Communicator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">applicationSettings</span><span class="p">,</span> <span class="n">projectSettings</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UdpCommunicator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">applicationSettings</span><span class="p">,</span> <span class="n">projectSettings</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="UdpCommunicator.connectToController"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.UdpCommunicator.connectToController">[docs]</a>    <span class="k">def</span> <span class="nf">connectToController</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">interfaceDescription</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_projectSettings</span><span class="o">.</span><span class="n">computerIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projectSettings</span><span class="o">.</span><span class="n">udpPort</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_projectSettings</span><span class="o">.</span><span class="n">computerIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projectSettings</span><span class="o">.</span><span class="n">udpPort</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span><span class="o">.</span><span class="n">setblocking</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_ESTABLISHED</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">WSAEADDRNOTAVAIL</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">NO_CONN</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">isActive</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UdpCommunicator.disconnectFromController"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.UdpCommunicator.disconnectFromController">[docs]</a>    <span class="k">def</span> <span class="nf">disconnectFromController</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_PAUSED</span></div>
+
+<div class="viewcode-block" id="UdpCommunicator.send"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.UdpCommunicator.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commandList</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">commandList</span><span class="o">.</span><span class="n">changedCommands</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">commandToSend</span> <span class="o">=</span> <span class="n">commandList</span><span class="o">.</span><span class="n">changedCommands</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+            <span class="n">packedData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_packCommand</span><span class="p">(</span><span class="n">commandToSend</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span><span class="o">.</span><span class="n">sendto</span><span class="p">(</span><span class="n">packedData</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_projectSettings</span><span class="o">.</span><span class="n">controllerIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projectSettings</span><span class="o">.</span><span class="n">udpPort</span><span class="p">))</span>
+            <span class="c1"># print &quot;command send&quot;, commandToSend.id, commandToSend.name, commandToSend.getValue()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">commandSend</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">commandToSend</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UdpCommunicator.sendPerTimer"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.UdpCommunicator.sendPerTimer">[docs]</a>    <span class="k">def</span> <span class="nf">sendPerTimer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="UdpCommunicator.sendPendingCommands"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.UdpCommunicator.sendPendingCommands">[docs]</a>    <span class="k">def</span> <span class="nf">sendPendingCommands</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="UdpCommunicator.receive"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.UdpCommunicator.receive">[docs]</a>    <span class="k">def</span> <span class="nf">receive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">packets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">packets</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span><span class="o">.</span><span class="n">recvfrom</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_messageSize</span><span class="p">)</span>
+                <span class="n">packets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EWOULDBLOCK</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">elif</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">WSAEADDRNOTAVAIL</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">NO_CONN</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">isActive</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">WSAEMSGSIZE</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">WRONG_CONFIG</span>
+                <span class="k">elif</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">WSAEINVAL</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">NO_CONN</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">isActive</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EBADF</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">packets</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">packets</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">timeOfLastReceive</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpack</span><span class="p">(</span><span class="n">packets</span><span class="p">)</span></div></div>
+
+
+
+
+<div class="viewcode-block" id="UsbHidCommunicator"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.UsbHidCommunicator">[docs]</a><span class="k">class</span> <span class="nc">UsbHidCommunicator</span><span class="p">(</span><span class="n">Communicator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">applicationSettings</span><span class="p">,</span> <span class="n">projectSettings</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UsbHidCommunicator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">applicationSettings</span><span class="p">,</span> <span class="n">projectSettings</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UsbHidCommunicator.send"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.UsbHidCommunicator.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commandList</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="UsbHidCommunicator.receive"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.UsbHidCommunicator.receive">[docs]</a>    <span class="k">def</span> <span class="nf">receive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="SerialCommunicator"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator">[docs]</a><span class="k">class</span> <span class="nc">SerialCommunicator</span><span class="p">(</span><span class="n">Communicator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">applicationSettings</span><span class="p">,</span> <span class="n">projectSettings</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SerialCommunicator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">applicationSettings</span><span class="p">,</span> <span class="n">projectSettings</span><span class="p">)</span>
+
+        <span class="n">projectSettings</span><span class="o">.</span><span class="n">changed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">projectSettingsChanged</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">messageLength</span> <span class="o">=</span> <span class="mi">42</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastMessageRemainder</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">startByte</span> <span class="o">=</span> <span class="mi">7</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stopByte</span> <span class="o">=</span> <span class="mi">8</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">noMessageInsideCounter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span> <span class="o">=</span> <span class="n">serial</span><span class="o">.</span><span class="n">Serial</span><span class="p">()</span>
+
+
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+<div class="viewcode-block" id="SerialCommunicator.projectSettingsChanged"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.projectSettingsChanged">[docs]</a>    <span class="k">def</span> <span class="nf">projectSettingsChanged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newSettings</span><span class="p">):</span>
+        <span class="n">ports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getOpenPorts</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">ports</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">port</span><span class="o">.</span><span class="n">description</span> <span class="o">==</span> <span class="n">newSettings</span><span class="o">.</span><span class="n">comPortDescription</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">port</span> <span class="o">==</span> <span class="n">port</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+                    <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connectToController</span><span class="p">()</span></div>
+
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+<div class="viewcode-block" id="SerialCommunicator.connectToController"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.connectToController">[docs]</a>    <span class="k">def</span> <span class="nf">connectToController</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">isOpen</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="c1"># time.sleep(1)</span>
+
+        <span class="n">ports</span> <span class="o">=</span> <span class="n">serial</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">list_ports</span><span class="o">.</span><span class="n">comports</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ports</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">NO_CONN</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">isActive</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c1"># portToConnectTo = ports[0]</span>
+        <span class="n">portToConnectTo</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">ports</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">port</span><span class="o">.</span><span class="n">description</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projectSettings</span><span class="o">.</span><span class="n">comPortDescription</span><span class="p">:</span>
+                <span class="n">portToConnectTo</span> <span class="o">=</span> <span class="n">port</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">interfaceDescription</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">portToConnectTo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">NO_CONN</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">isActive</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+            <span class="k">return</span>
+
+
+        <span class="c1"># datt müssma nochmal sauber neu machen</span>
+
+        <span class="c1"># if portToConnectTo is None and self._portOfferingInProgress is False:</span>
+        <span class="c1">#     # self.alternatePortAvailable.emit(1)</span>
+        <span class="c1">#     # self._commState.state = CommState.NO_CONN</span>
+        <span class="c1">#     self._portOfferingInProgress = True</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     if self._portOfferingInProgress is True:</span>
+        <span class="c1">#         # self.reEstablishedWantedPort.emit(1)</span>
+        <span class="c1">#         self._portOfferingInProgress = False</span>
+        <span class="c1">#</span>
+        <span class="c1"># if portToConnectTo is None:</span>
+        <span class="c1">#     return</span>
+
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">baudrate</span> <span class="o">=</span> <span class="mi">115200</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">portToConnectTo</span><span class="o">.</span><span class="n">device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+        <span class="c1"># prohibits restart of the controller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">dtr</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_ESTABLISHED</span>
+        <span class="k">except</span> <span class="n">serial</span><span class="o">.</span><span class="n">SerialException</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">NO_CONN</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">isActive</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SerialCommunicator.getOpenPorts"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.getOpenPorts">[docs]</a>    <span class="k">def</span> <span class="nf">getOpenPorts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">serial</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">list_ports</span><span class="o">.</span><span class="n">comports</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SerialCommunicator.disconnectFromController"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.disconnectFromController">[docs]</a>    <span class="k">def</span> <span class="nf">disconnectFromController</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">COMM_PAUSED</span></div>
+
+<div class="viewcode-block" id="SerialCommunicator.send"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commandList</span><span class="p">):</span>
+        <span class="c1"># return</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">commandList</span><span class="o">.</span><span class="n">changedCommands</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">commandToSend</span> <span class="o">=</span> <span class="n">commandList</span><span class="o">.</span><span class="n">changedCommands</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+
+            <span class="n">startByte</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s2">&quot;&lt;1B&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+            <span class="n">packedData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_packCommand</span><span class="p">(</span><span class="n">commandToSend</span><span class="p">)</span>
+            <span class="n">stopByte</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s2">&quot;&lt;1B&quot;</span><span class="p">,</span> <span class="mi">57</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">startByte</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.0005</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">aChar</span> <span class="ow">in</span> <span class="n">packedData</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">aChar</span><span class="p">)</span>
+                <span class="c1"># print aChar</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.0005</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">stopByte</span><span class="p">)</span>
+            <span class="c1"># self.ser.write(packedData)</span>
+
+            <span class="c1"># print &quot;command send&quot;, commandToSend.id, commandToSend.name, commandToSend.getValue(), packedData, len(packedData)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">commandSend</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">commandToSend</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SerialCommunicator.receive"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.receive">[docs]</a>    <span class="k">def</span> <span class="nf">receive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">messagePositions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">play</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">messages</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">in_waiting</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">incomingMessage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ser</span><span class="o">.</span><span class="n">in_waiting</span><span class="p">)</span>
+
+                <span class="n">messageToProcess</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastMessageRemainder</span> <span class="o">+</span> <span class="n">incomingMessage</span>
+
+                <span class="n">unpackedBytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpackAsBytes</span><span class="p">(</span><span class="n">messageToProcess</span><span class="p">)</span>
+                <span class="n">backupedUnpackedBytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpackAsBytes</span><span class="p">(</span><span class="n">messageToProcess</span><span class="p">)</span>
+
+                <span class="n">messagePositions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">findNextFullMessagePosition</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">unpackedBytes</span><span class="p">))</span>
+
+
+
+                <span class="c1"># message still too short or no message inside, store it for next try</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">messageToProcess</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_messageSize</span> <span class="o">+</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">messagePositions</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">lastMessageRemainder</span> <span class="o">=</span> <span class="n">messageToProcess</span>
+
+                    <span class="c1"># prevent overfill of &#39;buffer&#39;</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lastMessageRemainder</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_messageMap</span><span class="o">.</span><span class="n">messageLengthInBytes</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">lastMessageRemainder</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">CommState</span><span class="o">.</span><span class="n">WRONG_CONFIG</span>
+
+                    <span class="k">return</span> <span class="n">messages</span>
+
+
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">lastStopPosition</span> <span class="o">=</span> <span class="n">messagePositions</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">newPosition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findNextFullMessagePosition</span><span class="p">(</span><span class="n">lastStopPosition</span><span class="p">,</span> <span class="n">unpackedBytes</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">newPosition</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="n">messagePositions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">newPosition</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">lastMessageRemainder</span> <span class="o">=</span> <span class="n">messageToProcess</span><span class="p">[</span><span class="n">lastStopPosition</span> <span class="p">:</span> <span class="p">]</span>
+                        <span class="k">break</span>
+
+                <span class="k">for</span> <span class="n">messagePosition</span> <span class="ow">in</span> <span class="n">messagePositions</span><span class="p">:</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="n">messagePosition</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">stop</span> <span class="o">=</span> <span class="n">messagePosition</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">messageToProcess</span><span class="p">[</span><span class="n">start</span> <span class="p">:</span> <span class="n">stop</span><span class="p">])</span>
+
+        <span class="k">except</span> <span class="n">serial</span><span class="o">.</span><span class="n">SerialException</span><span class="p">:</span>
+            <span class="c1"># self._commState.state = CommState.NO_CONN</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">isActive</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_connectionPollTimer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">()</span>
+
+
+        <span class="n">unpackedMessages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpack</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unpackedMessages</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commState</span><span class="o">.</span><span class="n">timeOfLastReceive</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+
+        <span class="k">return</span> <span class="n">unpackedMessages</span></div>
+
+
+
+<div class="viewcode-block" id="SerialCommunicator.findNextPossibleStartByte"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.findNextPossibleStartByte">[docs]</a>    <span class="k">def</span> <span class="nf">findNextPossibleStartByte</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">startPosition</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">unpackedByte</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">bytes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">startPosition</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">unpackedByte</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">startByte</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+
+<div class="viewcode-block" id="SerialCommunicator.findFirstPossibleStopByte"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.findFirstPossibleStopByte">[docs]</a>    <span class="k">def</span> <span class="nf">findFirstPossibleStopByte</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">unpackedByte</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">bytes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">unpackedByte</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopByte</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+
+<div class="viewcode-block" id="SerialCommunicator.findFirstMessageBorderPosition"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.findFirstMessageBorderPosition">[docs]</a>    <span class="k">def</span> <span class="nf">findFirstMessageBorderPosition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">unpackedByte</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">bytes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">unpackedByte</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopByte</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="nb">bytes</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">bytes</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">startByte</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span></div>
+
+<div class="viewcode-block" id="SerialCommunicator.findNextFullMessagePosition"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.findNextFullMessagePosition">[docs]</a>    <span class="k">def</span> <span class="nf">findNextFullMessagePosition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">startPosition</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">startBytePos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findNextPossibleStartByte</span><span class="p">(</span><span class="n">startPosition</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">startBytePos</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">remainingBytes</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">[</span><span class="n">startBytePos</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">remainingBytes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_messageSize</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">expectedStopBytePos</span> <span class="o">=</span> <span class="n">startBytePos</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_messageSize</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="nb">bytes</span><span class="p">[</span><span class="n">expectedStopBytePos</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopByte</span><span class="p">:</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="n">startBytePos</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="n">stop</span> <span class="o">=</span> <span class="n">expectedStopBytePos</span>
+        <span class="k">return</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span></div>
+
+<div class="viewcode-block" id="SerialCommunicator.getRemainderOfLastMessagePosition"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.getRemainderOfLastMessagePosition">[docs]</a>    <span class="k">def</span> <span class="nf">getRemainderOfLastMessagePosition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="n">messageBorder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findFirstMessageBorderPosition</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">messageBorder</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="n">messageBorder</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="SerialCommunicator.unpackAsBytes"><a class="viewcode-back" href="../../_apidoctest/core.html#core.communicator.SerialCommunicator.unpackAsBytes">[docs]</a>    <span class="k">def</span> <span class="nf">unpackAsBytes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">byteArray</span><span class="p">):</span>
+        <span class="n">unpackedBytes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">aByte</span> <span class="ow">in</span> <span class="n">byteArray</span><span class="p">:</span>
+            <span class="n">unpackedBytes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="n">aByte</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">unpackedBytes</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, hmcontroller.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

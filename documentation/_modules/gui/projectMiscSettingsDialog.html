@@ -1,0 +1,351 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>gui.projectMiscSettingsDialog &mdash; microRay 1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="microRay 1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> microRay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/apireference.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">microRay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>gui.projectMiscSettingsDialog</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for gui.projectMiscSettingsDialog</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- encoding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">serial.tools.list_ports</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtGui</span><span class="p">,</span> <span class="n">QtCore</span>
+
+<span class="kn">from</span> <span class="nn">gui.designerfiles.projectMiscSettingsDialog</span> <span class="k">import</span> <span class="n">Ui_ProjectMiscSettingsDialog</span>
+<span class="kn">from</span> <span class="nn">core.model.projectSettings</span> <span class="k">import</span> <span class="n">ProjectSettings</span>
+<span class="kn">from</span> <span class="nn">gui.constants</span> <span class="k">import</span> <span class="n">AVAILABLE_FRAMEWORKS</span>
+
+
+<div class="viewcode-block" id="ProjectMiscSettingsDialog"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.projectMiscSettingsDialog.ProjectMiscSettingsDialog">[docs]</a><span class="k">class</span> <span class="nc">ProjectMiscSettingsDialog</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QDialog</span><span class="p">,</span> <span class="n">Ui_ProjectMiscSettingsDialog</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ProjectMiscSettingsDialog</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupUi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lineEditControllerLoopCycleTime</span><span class="o">.</span><span class="n">setValidator</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QIntValidator</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lineEditUDPPort</span><span class="o">.</span><span class="n">setValidator</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QIntValidator</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">49151</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxFrameworkAndInterface</span><span class="o">.</span><span class="n">currentIndexChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">showHideLowerSettings</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">toolButtonSelectControllerCodeFolder</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getFolderPath</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pollComPortsTimer</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QTimer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pollComPortsTimer</span><span class="o">.</span><span class="n">setSingleShot</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pollComPortsTimer</span><span class="o">.</span><span class="n">timeout</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pollForComPorts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pollComPortsTimer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastComPortsListing</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">buttonBox</span><span class="o">.</span><span class="n">accepted</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">verifyInput</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buttonBox</span><span class="o">.</span><span class="n">rejected</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dialogRejected</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">openedDialog</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># def nameEditTextChanged(self):</span>
+    <span class="c1">#     if len(self.lineEditName.text()) == 0:</span>
+    <span class="c1">#         self.lineEditName.setStyleSheet(&quot;QLineEdit {background-color: red;}&quot;)</span>
+    <span class="c1">#         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(False)</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         self.lineEditName.setStyleSheet(&quot;QLineEdit {background-color: white;}&quot;)</span>
+    <span class="c1">#         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(True)</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ProjectMiscSettingsDialog.updateSettings"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.projectMiscSettingsDialog.ProjectMiscSettingsDialog.updateSettings">[docs]</a>    <span class="k">def</span> <span class="nf">updateSettings</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">portChanged</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="n">dialog</span> <span class="o">=</span> <span class="n">ProjectMiscSettingsDialog</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+
+        <span class="c1"># set settings to form</span>
+        <span class="c1"># dialog.lineEditName.setText(dialog.settings.projectName)</span>
+        <span class="n">dialog</span><span class="o">.</span><span class="n">lineEditControllerLoopCycleTime</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">unicode</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">controllerLoopCycleTimeInUs</span><span class="p">))</span>
+        <span class="n">dialog</span><span class="o">.</span><span class="n">lineEditPathToControllerCodeFolder</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">pathToControllerCodeFolder</span><span class="p">)</span>
+
+        <span class="n">indexToSelect</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frameworkAndInterfaceDescription</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">AVAILABLE_FRAMEWORKS</span><span class="p">):</span>
+            <span class="n">dialog</span><span class="o">.</span><span class="n">comboBoxFrameworkAndInterface</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">frameworkAndInterfaceDescription</span><span class="p">[</span><span class="s2">&quot;displayName&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">frameworkAndInterfaceDescription</span><span class="p">[</span><span class="s2">&quot;macroName&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">controllerFrameworkAndInterface</span><span class="p">:</span>
+                <span class="n">indexToSelect</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">dialog</span><span class="o">.</span><span class="n">comboBoxFrameworkAndInterface</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="n">indexToSelect</span><span class="p">)</span>
+
+
+        <span class="n">dialog</span><span class="o">.</span><span class="n">lineEditComputerIP</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">computerIP</span><span class="p">)</span>
+        <span class="n">dialog</span><span class="o">.</span><span class="n">lineEditControllerIP</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">controllerIP</span><span class="p">)</span>
+        <span class="n">dialog</span><span class="o">.</span><span class="n">lineEditUDPPort</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">unicode</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">udpPort</span><span class="p">))</span>
+
+        <span class="n">dialog</span><span class="o">.</span><span class="n">refreshComPortsCombo</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">portDescription</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">lastComPortsListing</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">portDescription</span> <span class="o">==</span> <span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">comPortDescription</span><span class="p">:</span>
+                <span class="n">dialog</span><span class="o">.</span><span class="n">comboBoxComPort</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+
+        <span class="k">if</span> <span class="n">portChanged</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">dialog</span><span class="o">.</span><span class="n">portChangedLabel</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;QLabel {  color : red; }&quot;</span><span class="p">)</span>
+            <span class="n">dialog</span><span class="o">.</span><span class="n">portChangedLabel</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dialog</span><span class="o">.</span><span class="n">portChangedLabel</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+
+        <span class="n">answer</span> <span class="o">=</span> <span class="n">dialog</span><span class="o">.</span><span class="n">exec_</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QDialog</span><span class="o">.</span><span class="n">Accepted</span><span class="p">:</span>
+            <span class="c1"># dialog.settings.projectName = unicode(dialog.lineEditName.text())</span>
+            <span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">controllerLoopCycleTimeInUs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">lineEditControllerLoopCycleTime</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+            <span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">pathToControllerCodeFolder</span> <span class="o">=</span> <span class="n">unicode</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">lineEditPathToControllerCodeFolder</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+
+            <span class="n">frameworkAndInterfaceDescriptionSelected</span> <span class="o">=</span> <span class="n">unicode</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">comboBoxFrameworkAndInterface</span><span class="o">.</span><span class="n">currentText</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">description</span> <span class="ow">in</span> <span class="n">AVAILABLE_FRAMEWORKS</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">description</span><span class="p">[</span><span class="s2">&quot;displayName&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">frameworkAndInterfaceDescriptionSelected</span><span class="p">:</span>
+                    <span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">controllerFrameworkAndInterface</span> <span class="o">=</span> <span class="n">description</span><span class="p">[</span><span class="s2">&quot;macroName&quot;</span><span class="p">]</span>
+
+            <span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">computerIP</span> <span class="o">=</span> <span class="n">unicode</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">lineEditComputerIP</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+            <span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">controllerIP</span> <span class="o">=</span> <span class="n">unicode</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">lineEditControllerIP</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+            <span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">udpPort</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">lineEditUDPPort</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+            <span class="n">dialog</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">comPortDescription</span> <span class="o">=</span> <span class="n">unicode</span><span class="p">(</span><span class="n">dialog</span><span class="o">.</span><span class="n">comboBoxComPort</span><span class="o">.</span><span class="n">currentText</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QDialog</span><span class="o">.</span><span class="n">Accepted</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QDialog</span><span class="o">.</span><span class="n">Rejected</span></div>
+
+
+<div class="viewcode-block" id="ProjectMiscSettingsDialog.verifyInput"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.projectMiscSettingsDialog.ProjectMiscSettingsDialog.verifyInput">[docs]</a>    <span class="k">def</span> <span class="nf">verifyInput</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># if len(self.lineEditName.text()) == 0:</span>
+        <span class="c1">#     return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ProjectMiscSettingsDialog.dialogRejected"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.projectMiscSettingsDialog.ProjectMiscSettingsDialog.dialogRejected">[docs]</a>    <span class="k">def</span> <span class="nf">dialogRejected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reject</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ProjectMiscSettingsDialog.showHideLowerSettings"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.projectMiscSettingsDialog.ProjectMiscSettingsDialog.showHideLowerSettings">[docs]</a>    <span class="k">def</span> <span class="nf">showHideLowerSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupBoxSerial</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groupBoxUdp</span><span class="o">.</span><span class="n">hide</span><span class="p">()</span>
+
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxFrameworkAndInterface</span><span class="o">.</span><span class="n">currentIndex</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;Serial&quot;</span> <span class="ow">in</span> <span class="n">AVAILABLE_FRAMEWORKS</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="s2">&quot;displayName&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">groupBoxSerial</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;UDP&quot;</span> <span class="ow">in</span> <span class="n">AVAILABLE_FRAMEWORKS</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="s2">&quot;displayName&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">groupBoxUdp</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ProjectMiscSettingsDialog.pollForComPorts"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.projectMiscSettingsDialog.ProjectMiscSettingsDialog.pollForComPorts">[docs]</a>    <span class="k">def</span> <span class="nf">pollForComPorts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ports</span> <span class="o">=</span> <span class="n">serial</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">list_ports</span><span class="o">.</span><span class="n">comports</span><span class="p">()</span>
+
+        <span class="n">refresh</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lastComPortsListing</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ports</span><span class="p">):</span>
+            <span class="n">refresh</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">port</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ports</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">port</span><span class="o">.</span><span class="n">description</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastComPortsListing</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">refresh</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+        <span class="k">if</span> <span class="n">refresh</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refreshComPortsCombo</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ProjectMiscSettingsDialog.refreshComPortsCombo"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.projectMiscSettingsDialog.ProjectMiscSettingsDialog.refreshComPortsCombo">[docs]</a>    <span class="k">def</span> <span class="nf">refreshComPortsCombo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastComPortsListing</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">serial</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">list_ports</span><span class="o">.</span><span class="n">comports</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastComPortsListing</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxComPort</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">portDescription</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastComPortsListing</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">comboBoxComPort</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">portDescription</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ProjectMiscSettingsDialog.getFolderPath"><a class="viewcode-back" href="../../_apidoctest/gui.html#gui.projectMiscSettingsDialog.ProjectMiscSettingsDialog.getFolderPath">[docs]</a>    <span class="k">def</span> <span class="nf">getFolderPath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">selectedFolder</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">getExistingDirectory</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">selectedFolder</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">pathToControllerCodeFolder</span> <span class="o">=</span> <span class="n">selectedFolder</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lineEditPathToControllerCodeFolder</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">selectedFolder</span><span class="p">)</span></div></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, hmcontroller.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

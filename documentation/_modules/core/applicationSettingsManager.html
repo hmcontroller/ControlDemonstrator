@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>core.applicationSettingsManager &mdash; microRay 1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="microRay 1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> microRay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/apireference.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">microRay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>core.applicationSettingsManager</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for core.applicationSettingsManager</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- encoding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">core.model.applicationSettings</span> <span class="k">import</span> <span class="n">ApplicationSettings</span>
+
+<div class="viewcode-block" id="ApplicationSettingsManager"><a class="viewcode-back" href="../../_apidoctest/core.html#core.applicationSettingsManager.ApplicationSettingsManager">[docs]</a><span class="k">class</span> <span class="nc">ApplicationSettingsManager</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pathToSetttingsFile</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">ApplicationSettings</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pathToSettingsFile</span> <span class="o">=</span> <span class="n">pathToSetttingsFile</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">changed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saveSettings</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ApplicationSettingsManager.saveSettings"><a class="viewcode-back" href="../../_apidoctest/core.html#core.applicationSettingsManager.ApplicationSettingsManager.saveSettings">[docs]</a>    <span class="k">def</span> <span class="nf">saveSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">jsonDicts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeJsonDicts</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pathToSettingsFile</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">jsonDicts</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ApplicationSettingsManager.makeJsonDicts"><a class="viewcode-back" href="../../_apidoctest/core.html#core.applicationSettingsManager.ApplicationSettingsManager.makeJsonDicts">[docs]</a>    <span class="k">def</span> <span class="nf">makeJsonDicts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">jsonAllSettingsDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">jsonMiscSettingsDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="n">jsonMiscSettingsDict</span><span class="p">[</span><span class="s2">&quot;guiUpdateIntervalLengthInMs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">guiUpdateIntervalLengthInMs</span>
+        <span class="n">jsonMiscSettingsDict</span><span class="p">[</span><span class="s2">&quot;receiveMessageIntervalLengthInMs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">receiveMessageIntervalLengthInMs</span>
+        <span class="n">jsonMiscSettingsDict</span><span class="p">[</span><span class="s2">&quot;sendMessageIntervalLengthInMs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">sendMessageIntervalLengthInMs</span>
+        <span class="n">jsonMiscSettingsDict</span><span class="p">[</span><span class="s2">&quot;bufferLength&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">bufferLength</span>
+
+        <span class="n">recentProjects</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">recentPath</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">recentProjectFilePathes</span><span class="p">:</span>
+            <span class="n">recentProjects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">recentPath</span><span class="p">)</span>
+        <span class="n">jsonMiscSettingsDict</span><span class="p">[</span><span class="s2">&quot;recentProjects&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">recentProjects</span>
+
+        <span class="n">jsonAllSettingsDict</span><span class="p">[</span><span class="s2">&quot;miscSettings&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">jsonMiscSettingsDict</span>
+
+        <span class="k">return</span> <span class="n">jsonAllSettingsDict</span></div>
+
+<div class="viewcode-block" id="ApplicationSettingsManager.restoreSettingsFromFile"><a class="viewcode-back" href="../../_apidoctest/core.html#core.applicationSettingsManager.ApplicationSettingsManager.restoreSettingsFromFile">[docs]</a>    <span class="k">def</span> <span class="nf">restoreSettingsFromFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">jsonDicts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadJsonFile</span><span class="p">()</span>
+        <span class="n">jsonMiscSettings</span> <span class="o">=</span> <span class="n">jsonDicts</span><span class="p">[</span><span class="s2">&quot;miscSettings&quot;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">ApplicationSettings</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">guiUpdateIntervalLengthInMs</span> <span class="o">=</span> <span class="n">jsonMiscSettings</span><span class="p">[</span><span class="s2">&quot;guiUpdateIntervalLengthInMs&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">receiveMessageIntervalLengthInMs</span> <span class="o">=</span> <span class="n">jsonMiscSettings</span><span class="p">[</span><span class="s2">&quot;receiveMessageIntervalLengthInMs&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">sendMessageIntervalLengthInMs</span> <span class="o">=</span> <span class="n">jsonMiscSettings</span><span class="p">[</span><span class="s2">&quot;sendMessageIntervalLengthInMs&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">bufferLength</span> <span class="o">=</span> <span class="n">jsonMiscSettings</span><span class="p">[</span><span class="s2">&quot;bufferLength&quot;</span><span class="p">]</span>
+
+        <span class="n">recentPathes</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="n">maxlen</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">recentPath</span> <span class="ow">in</span> <span class="n">jsonMiscSettings</span><span class="p">[</span><span class="s2">&quot;recentProjects&quot;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">recentPath</span><span class="p">):</span>
+                <span class="n">recentPathes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">recentPath</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">recentProjectFilePathes</span> <span class="o">=</span> <span class="n">recentPathes</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">changed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saveSettings</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span></div>
+
+<div class="viewcode-block" id="ApplicationSettingsManager.loadJsonFile"><a class="viewcode-back" href="../../_apidoctest/core.html#core.applicationSettingsManager.ApplicationSettingsManager.loadJsonFile">[docs]</a>    <span class="k">def</span> <span class="nf">loadJsonFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pathToSettingsFile</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">content</span><span class="p">)</span></div></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, hmcontroller.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

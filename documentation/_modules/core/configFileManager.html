@@ -1,0 +1,531 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>core.configFileManager &mdash; microRay 1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="microRay 1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> microRay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../_static/apireference.html">API Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">microRay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>core.configFileManager</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for core.configFileManager</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- encoding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">core.valueChannel</span> <span class="k">import</span> <span class="n">ValueChannel</span>
+<span class="kn">from</span> <span class="nn">core.command</span> <span class="k">import</span> <span class="n">Command</span>
+<span class="kn">from</span> <span class="nn">core.model.applicationSettings</span> <span class="k">import</span> <span class="n">ApplicationSettings</span>
+<span class="kn">from</span> <span class="nn">core.model.tabDescription</span> <span class="k">import</span> <span class="n">TabDescription</span>
+<span class="kn">from</span> <span class="nn">core.measurementData</span> <span class="k">import</span> <span class="n">MeasurementData</span>
+<span class="kn">from</span> <span class="nn">core.model.projectSettings</span> <span class="k">import</span> <span class="n">ProjectSettings</span>
+<span class="kn">from</span> <span class="nn">core.command</span> <span class="k">import</span> <span class="n">CommandList</span>
+<span class="kn">from</span> <span class="nn">core.messageData</span> <span class="k">import</span> <span class="n">MessageData</span><span class="p">,</span> <span class="n">Message</span>
+<span class="kn">from</span> <span class="nn">core.communicator</span> <span class="k">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="ConfigFileManager"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager">[docs]</a><span class="k">class</span> <span class="nc">ConfigFileManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">applicationSettings</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">applicationSettings</span> <span class="o">=</span> <span class="n">applicationSettings</span>
+        <span class="c1"># self.projectSettings = projectSettings</span>
+        <span class="c1"># self.channels = channels</span>
+        <span class="c1"># self.commands = commands</span>
+
+<div class="viewcode-block" id="ConfigFileManager.save"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">projectSettings</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">commands</span><span class="p">,</span> <span class="n">newPath</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">channelDescriptions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+            <span class="n">channelDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">channelDict</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">colorRgbTuple</span>
+            <span class="n">channelDict</span><span class="p">[</span><span class="s2">&quot;show&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">show</span>
+            <span class="n">channelDict</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">channelDict</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">channelDict</span><span class="p">[</span><span class="s2">&quot;displayName&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">displayName</span>
+            <span class="n">channelDict</span><span class="p">[</span><span class="s2">&quot;isRequested&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">isRequested</span>
+            <span class="n">channelDescriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">channelDict</span><span class="p">)</span>
+
+        <span class="n">commandDescriptions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
+            <span class="n">commandDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">commandDict</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">commandDict</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">commandDict</span><span class="p">[</span><span class="s2">&quot;displayName&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">displayName</span>
+            <span class="n">commandDict</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">_lowerLimit</span>
+            <span class="n">commandDict</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">_upperLimit</span>
+            <span class="n">commandDict</span><span class="p">[</span><span class="s2">&quot;initialValue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">initialValue</span>
+            <span class="n">commandDict</span><span class="p">[</span><span class="s2">&quot;pendingMode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">_pendingSendMode</span>
+            <span class="n">commandDict</span><span class="p">[</span><span class="s2">&quot;inputMethod&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">_inputMethod</span>
+            <span class="n">commandDescriptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">commandDict</span><span class="p">)</span>
+
+
+        <span class="n">projectSettingsDescriptions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># projectSettingsDescriptions[&quot;projectName&quot;] = projectSettings.projectName</span>
+        <span class="n">projectSettingsDescriptions</span><span class="p">[</span><span class="s2">&quot;controllerLoopCycleTimeInUs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">projectSettings</span><span class="o">.</span><span class="n">controllerLoopCycleTimeInUs</span>
+        <span class="n">projectSettingsDescriptions</span><span class="p">[</span><span class="s2">&quot;computerIP&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">projectSettings</span><span class="o">.</span><span class="n">computerIP</span>
+        <span class="n">projectSettingsDescriptions</span><span class="p">[</span><span class="s2">&quot;controllerIP&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">projectSettings</span><span class="o">.</span><span class="n">controllerIP</span>
+        <span class="n">projectSettingsDescriptions</span><span class="p">[</span><span class="s2">&quot;udpPort&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">projectSettings</span><span class="o">.</span><span class="n">udpPort</span>
+        <span class="n">projectSettingsDescriptions</span><span class="p">[</span><span class="s2">&quot;controllerFrameworkAndInterface&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">projectSettings</span><span class="o">.</span><span class="n">controllerFrameworkAndInterface</span>
+        <span class="n">projectSettingsDescriptions</span><span class="p">[</span><span class="s2">&quot;pathToControllerCodeFolder&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">projectSettings</span><span class="o">.</span><span class="n">pathToControllerCodeFolder</span>
+        <span class="n">projectSettingsDescriptions</span><span class="p">[</span><span class="s2">&quot;comPortDescription&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">projectSettings</span><span class="o">.</span><span class="n">comPortDescription</span>
+
+        <span class="n">tabSettings</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">aTabSetting</span> <span class="ow">in</span> <span class="n">projectSettings</span><span class="o">.</span><span class="n">tabSettingsDescriptions</span><span class="p">:</span>
+            <span class="n">tabSettingDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">tabSettingDict</span><span class="p">[</span><span class="s2">&quot;pathToClassFile&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aTabSetting</span><span class="o">.</span><span class="n">pathToClassFile</span>
+            <span class="n">tabSettingDict</span><span class="p">[</span><span class="s2">&quot;className&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aTabSetting</span><span class="o">.</span><span class="n">className</span>
+            <span class="n">tabSettingDict</span><span class="p">[</span><span class="s2">&quot;displayName&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aTabSetting</span><span class="o">.</span><span class="n">displayName</span>
+            <span class="n">tabSettings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tabSettingDict</span><span class="p">)</span>
+        <span class="n">projectSettingsDescriptions</span><span class="p">[</span><span class="s2">&quot;tabs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tabSettings</span>
+
+
+        <span class="n">everythingDict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">everythingDict</span><span class="p">[</span><span class="s2">&quot;miscSettings&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">projectSettingsDescriptions</span>
+        <span class="n">everythingDict</span><span class="p">[</span><span class="s2">&quot;channels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">channelDescriptions</span>
+        <span class="n">everythingDict</span><span class="p">[</span><span class="s2">&quot;commands&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">commandDescriptions</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">newPath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">projectSettings</span><span class="o">.</span><span class="n">openedFrom</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">newPath</span>
+            <span class="n">projectSettings</span><span class="o">.</span><span class="n">openedFrom</span> <span class="o">=</span> <span class="n">newPath</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">everythingDict</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ConfigFileManager.saveAs"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager.saveAs">[docs]</a>    <span class="k">def</span> <span class="nf">saveAs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">projectSettings</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">commands</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">projectSettings</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">commands</span><span class="p">,</span> <span class="n">newPath</span><span class="o">=</span><span class="n">path</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ConfigFileManager.open"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager.open">[docs]</a>    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">content</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConfigFileManager.buildEmptyModel"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager.buildEmptyModel">[docs]</a>    <span class="k">def</span> <span class="nf">buildEmptyModel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">newProjectMiscSettings</span> <span class="o">=</span> <span class="n">ProjectSettings</span><span class="p">()</span>
+        <span class="n">newChannelObjects</span> <span class="o">=</span> <span class="n">MeasurementData</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">applicationSettings</span><span class="o">.</span><span class="n">bufferLength</span><span class="p">)</span>
+        <span class="n">newCommandObjects</span> <span class="o">=</span> <span class="n">CommandList</span><span class="p">()</span>
+        <span class="n">newMessageFormatList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">communicator</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+        <span class="k">return</span> <span class="n">newProjectMiscSettings</span><span class="p">,</span> <span class="n">newChannelObjects</span><span class="p">,</span> <span class="n">newCommandObjects</span><span class="p">,</span> <span class="n">newMessageFormatList</span><span class="p">,</span> <span class="n">communicator</span></div>
+
+<div class="viewcode-block" id="ConfigFileManager.buildModelFromConfigFile"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager.buildModelFromConfigFile">[docs]</a>    <span class="k">def</span> <span class="nf">buildModelFromConfigFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pathToConfigFile</span><span class="p">):</span>
+        <span class="n">jsonStuff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">pathToConfigFile</span><span class="p">)</span>
+
+        <span class="n">newProjectMiscSettings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeProjectMiscSettings</span><span class="p">(</span><span class="n">jsonStuff</span><span class="p">[</span><span class="s2">&quot;miscSettings&quot;</span><span class="p">])</span>
+        <span class="n">newProjectMiscSettings</span><span class="o">.</span><span class="n">openedFrom</span> <span class="o">=</span> <span class="n">pathToConfigFile</span>
+
+        <span class="n">newChannelObjects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeChannelObjects</span><span class="p">(</span><span class="n">jsonStuff</span><span class="p">[</span><span class="s2">&quot;channels&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">applicationSettings</span><span class="o">.</span><span class="n">bufferLength</span><span class="p">)</span>
+        <span class="n">newCommandObjects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeCommandObjects</span><span class="p">(</span><span class="n">jsonStuff</span><span class="p">[</span><span class="s2">&quot;commands&quot;</span><span class="p">])</span>
+
+        <span class="n">newMessageFormatList</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getMessageFormatList</span><span class="p">(</span><span class="n">jsonStuff</span><span class="p">[</span><span class="s2">&quot;channels&quot;</span><span class="p">])</span>
+
+
+        <span class="n">communicator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeCommunicator</span><span class="p">(</span><span class="n">newProjectMiscSettings</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">newProjectMiscSettings</span><span class="p">,</span> <span class="n">newChannelObjects</span><span class="p">,</span> <span class="n">newCommandObjects</span><span class="p">,</span> <span class="n">newMessageFormatList</span><span class="p">,</span> <span class="n">communicator</span></div>
+
+<div class="viewcode-block" id="ConfigFileManager.makeCommunicator"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager.makeCommunicator">[docs]</a>    <span class="k">def</span> <span class="nf">makeCommunicator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">projectMiscSettings</span><span class="p">):</span>
+        <span class="n">serialCases</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;arduino_serial&quot;</span><span class="p">,</span> <span class="s2">&quot;ARDUINO_SERIAL&quot;</span><span class="p">,</span> <span class="s2">&quot;MBED_OS_SERIAL&quot;</span><span class="p">,</span> <span class="s2">&quot;MBED_2_SERIAL&quot;</span><span class="p">]</span>
+        <span class="n">udpCases</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;mbed_OS_udp&quot;</span><span class="p">,</span> <span class="s2">&quot;arduino_udp&quot;</span><span class="p">,</span> <span class="s2">&quot;ARDUINO_UDP&quot;</span><span class="p">,</span> <span class="s2">&quot;MBED_OS_UDP&quot;</span><span class="p">,</span> <span class="s2">&quot;MBED_2_UDP&quot;</span><span class="p">,</span> <span class="s2">&quot;ARDUINO_SERIAL&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">projectMiscSettings</span><span class="o">.</span><span class="n">controllerFrameworkAndInterface</span> <span class="ow">in</span> <span class="n">serialCases</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SerialCommunicator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">applicationSettings</span><span class="p">,</span> <span class="n">projectMiscSettings</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">projectMiscSettings</span><span class="o">.</span><span class="n">controllerFrameworkAndInterface</span> <span class="ow">in</span> <span class="n">udpCases</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">UdpCommunicator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">applicationSettings</span><span class="p">,</span> <span class="n">projectMiscSettings</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;parameter &#39;controllerFrameworkAndInterface&#39; not valid.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConfigFileManager.makeChannelObjects"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager.makeChannelObjects">[docs]</a>    <span class="k">def</span> <span class="nf">makeChannelObjects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channelDescriptions</span><span class="p">,</span> <span class="n">bufferLength</span><span class="p">):</span>
+
+        <span class="n">model</span> <span class="o">=</span> <span class="n">MeasurementData</span><span class="p">(</span><span class="n">bufferLength</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">channelDescription</span> <span class="ow">in</span> <span class="n">channelDescriptions</span><span class="p">:</span>
+            <span class="n">channel</span> <span class="o">=</span> <span class="n">ValueChannel</span><span class="p">(</span><span class="n">bufferLength</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;color&quot;</span> <span class="ow">in</span> <span class="n">channelDescription</span><span class="p">:</span>
+                <span class="n">channel</span><span class="o">.</span><span class="n">colorRgbTuple</span> <span class="o">=</span> <span class="n">channelDescription</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;show&quot;</span> <span class="ow">in</span> <span class="n">channelDescription</span><span class="p">:</span>
+                <span class="n">channel</span><span class="o">.</span><span class="n">show</span> <span class="o">=</span> <span class="n">channelDescription</span><span class="p">[</span><span class="s2">&quot;show&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;id&quot;</span> <span class="ow">in</span> <span class="n">channelDescription</span><span class="p">:</span>
+                <span class="n">channel</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">channelDescription</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="n">channelDescription</span><span class="p">:</span>
+                <span class="n">channel</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">channelDescription</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;displayName&quot;</span> <span class="ow">in</span> <span class="n">channelDescription</span><span class="p">:</span>
+                <span class="n">channel</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="n">channelDescription</span><span class="p">[</span><span class="s2">&quot;displayName&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;isRequested&quot;</span> <span class="ow">in</span> <span class="n">channelDescription</span><span class="p">:</span>
+                <span class="n">channel</span><span class="o">.</span><span class="n">isRequested</span> <span class="o">=</span> <span class="n">channelDescription</span><span class="p">[</span><span class="s2">&quot;isRequested&quot;</span><span class="p">]</span>
+
+            <span class="n">model</span><span class="o">.</span><span class="n">addChannel</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="ConfigFileManager.makeCommandObjects"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager.makeCommandObjects">[docs]</a>    <span class="k">def</span> <span class="nf">makeCommandObjects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commandDescriptions</span><span class="p">):</span>
+        <span class="n">commandList</span> <span class="o">=</span> <span class="n">CommandList</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">commandDescription</span> <span class="ow">in</span> <span class="n">commandDescriptions</span><span class="p">:</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">Command</span><span class="p">()</span>
+
+            <span class="c1"># add it to the commandList before setting values so that value changes will be transmitted</span>
+            <span class="n">commandList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s2">&quot;id&quot;</span> <span class="ow">in</span> <span class="n">commandDescription</span><span class="p">:</span>
+                <span class="n">command</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">commandDescription</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;name&quot;</span> <span class="ow">in</span> <span class="n">commandDescription</span><span class="p">:</span>
+                <span class="n">command</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">commandDescription</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;displayName&quot;</span> <span class="ow">in</span> <span class="n">commandDescription</span><span class="p">:</span>
+                <span class="n">command</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="n">commandDescription</span><span class="p">[</span><span class="s2">&quot;displayName&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;min&quot;</span> <span class="ow">in</span> <span class="n">commandDescription</span><span class="p">:</span>
+                <span class="n">command</span><span class="o">.</span><span class="n">_lowerLimit</span> <span class="o">=</span> <span class="n">commandDescription</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;max&quot;</span> <span class="ow">in</span> <span class="n">commandDescription</span><span class="p">:</span>
+                <span class="n">command</span><span class="o">.</span><span class="n">_upperLimit</span> <span class="o">=</span> <span class="n">commandDescription</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;initialValue&quot;</span> <span class="ow">in</span> <span class="n">commandDescription</span><span class="p">:</span>
+                <span class="n">command</span><span class="o">.</span><span class="n">initialValue</span> <span class="o">=</span> <span class="n">commandDescription</span><span class="p">[</span><span class="s2">&quot;initialValue&quot;</span><span class="p">]</span>
+                <span class="n">command</span><span class="o">.</span><span class="n">_value</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">initialValue</span>
+
+            <span class="k">if</span> <span class="s2">&quot;pendingMode&quot;</span> <span class="ow">in</span> <span class="n">commandDescription</span><span class="p">:</span>
+                <span class="n">command</span><span class="o">.</span><span class="n">_pendingSendMode</span> <span class="o">=</span> <span class="n">commandDescription</span><span class="p">[</span><span class="s2">&quot;pendingMode&quot;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s2">&quot;inputMethod&quot;</span> <span class="ow">in</span> <span class="n">commandDescription</span><span class="p">:</span>
+                <span class="n">command</span><span class="o">.</span><span class="n">setInputMethod</span><span class="p">(</span><span class="n">commandDescription</span><span class="p">[</span><span class="s2">&quot;inputMethod&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">commandList</span></div>
+
+<div class="viewcode-block" id="ConfigFileManager.makeProjectMiscSettings"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager.makeProjectMiscSettings">[docs]</a>    <span class="k">def</span> <span class="nf">makeProjectMiscSettings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settingsDescriptions</span><span class="p">):</span>
+        <span class="n">projectMiscSettings</span> <span class="o">=</span> <span class="n">ProjectSettings</span><span class="p">()</span>
+
+        <span class="c1"># if &quot;projectName&quot; in settingsDescriptions:</span>
+        <span class="c1">#     projectMiscSettings.projectName = settingsDescriptions[&quot;projectName&quot;]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;controllerLoopCycleTimeInUs&quot;</span> <span class="ow">in</span> <span class="n">settingsDescriptions</span><span class="p">:</span>
+            <span class="n">projectMiscSettings</span><span class="o">.</span><span class="n">controllerLoopCycleTimeInUs</span> <span class="o">=</span> <span class="n">settingsDescriptions</span><span class="p">[</span><span class="s2">&quot;controllerLoopCycleTimeInUs&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;pathToControllerCodeFolder&quot;</span> <span class="ow">in</span> <span class="n">settingsDescriptions</span><span class="p">:</span>
+            <span class="n">projectMiscSettings</span><span class="o">.</span><span class="n">pathToControllerCodeFolder</span> <span class="o">=</span> <span class="n">settingsDescriptions</span><span class="p">[</span><span class="s2">&quot;pathToControllerCodeFolder&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;computerIP&quot;</span> <span class="ow">in</span> <span class="n">settingsDescriptions</span><span class="p">:</span>
+            <span class="n">projectMiscSettings</span><span class="o">.</span><span class="n">computerIP</span> <span class="o">=</span> <span class="n">settingsDescriptions</span><span class="p">[</span><span class="s2">&quot;computerIP&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;controllerIP&quot;</span> <span class="ow">in</span> <span class="n">settingsDescriptions</span><span class="p">:</span>
+            <span class="n">projectMiscSettings</span><span class="o">.</span><span class="n">controllerIP</span> <span class="o">=</span> <span class="n">settingsDescriptions</span><span class="p">[</span><span class="s2">&quot;controllerIP&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;udpPort&quot;</span> <span class="ow">in</span> <span class="n">settingsDescriptions</span><span class="p">:</span>
+            <span class="n">projectMiscSettings</span><span class="o">.</span><span class="n">udpPort</span> <span class="o">=</span> <span class="n">settingsDescriptions</span><span class="p">[</span><span class="s2">&quot;udpPort&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;controllerFrameworkAndInterface&quot;</span> <span class="ow">in</span> <span class="n">settingsDescriptions</span><span class="p">:</span>
+            <span class="n">projectMiscSettings</span><span class="o">.</span><span class="n">controllerFrameworkAndInterface</span> <span class="o">=</span> <span class="n">settingsDescriptions</span><span class="p">[</span><span class="s2">&quot;controllerFrameworkAndInterface&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;comPortDescription&quot;</span> <span class="ow">in</span> <span class="n">settingsDescriptions</span><span class="p">:</span>
+            <span class="n">projectMiscSettings</span><span class="o">.</span><span class="n">comPortDescription</span> <span class="o">=</span> <span class="n">settingsDescriptions</span><span class="p">[</span><span class="s2">&quot;comPortDescription&quot;</span><span class="p">]</span>
+
+
+        <span class="n">tabSettingsDescriptions</span> <span class="o">=</span> <span class="n">settingsDescriptions</span><span class="p">[</span><span class="s2">&quot;tabs&quot;</span><span class="p">]</span>
+
+        <span class="n">tabDescriptionObjects</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">aTabSetting</span> <span class="ow">in</span> <span class="n">tabSettingsDescriptions</span><span class="p">:</span>
+            <span class="n">tabDescription</span> <span class="o">=</span> <span class="n">TabDescription</span><span class="p">()</span>
+
+            <span class="n">tabDescription</span><span class="o">.</span><span class="n">pathToClassFile</span> <span class="o">=</span> <span class="n">aTabSetting</span><span class="p">[</span><span class="s2">&quot;pathToClassFile&quot;</span><span class="p">]</span>
+            <span class="n">tabDescription</span><span class="o">.</span><span class="n">className</span> <span class="o">=</span> <span class="n">aTabSetting</span><span class="p">[</span><span class="s2">&quot;className&quot;</span><span class="p">]</span>
+            <span class="n">tabDescription</span><span class="o">.</span><span class="n">displayName</span> <span class="o">=</span> <span class="n">aTabSetting</span><span class="p">[</span><span class="s2">&quot;displayName&quot;</span><span class="p">]</span>
+
+            <span class="n">tabDescriptionObjects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tabDescription</span><span class="p">)</span>
+
+        <span class="n">projectMiscSettings</span><span class="o">.</span><span class="n">tabSettingsDescriptions</span> <span class="o">=</span> <span class="n">tabDescriptionObjects</span>
+
+        <span class="k">return</span> <span class="n">projectMiscSettings</span></div>
+
+
+<div class="viewcode-block" id="ConfigFileManager.getMessageFormatList"><a class="viewcode-back" href="../../_apidoctest/core.html#core.configFileManager.ConfigFileManager.getMessageFormatList">[docs]</a>    <span class="k">def</span> <span class="nf">getMessageFormatList</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channelDescriptionsOrMeasurementData</span><span class="p">):</span>
+        <span class="n">messagePartsList</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="n">messageInformation</span> <span class="o">=</span> <span class="n">Message</span><span class="p">()</span>
+
+
+        <span class="n">positionCounter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">channelCounter</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+
+        <span class="c1"># TODO dirty get the fix message stuff from some single source place</span>
+        <span class="c1"># TODO maybe put the typedefs in the config.c file</span>
+
+        <span class="c1"># loopStartTime</span>
+        <span class="n">mData</span> <span class="o">=</span> <span class="n">MessageData</span><span class="p">()</span>
+        <span class="c1"># mData.id = channelCounter</span>
+        <span class="n">channelCounter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">mData</span><span class="o">.</span><span class="n">positionInBytes</span> <span class="o">=</span> <span class="n">positionCounter</span>
+        <span class="c1"># mData.lengthInBytes = 2</span>
+        <span class="n">mData</span><span class="o">.</span><span class="n">lengthInBytes</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">positionCounter</span> <span class="o">+=</span> <span class="n">mData</span><span class="o">.</span><span class="n">lengthInBytes</span>
+        <span class="n">mData</span><span class="o">.</span><span class="n">dataType</span> <span class="o">=</span> <span class="nb">int</span>
+        <span class="c1"># mData.unpackString = &quot;&lt;h&quot;</span>
+        <span class="n">mData</span><span class="o">.</span><span class="n">unpackString</span> <span class="o">=</span> <span class="s2">&quot;&lt;I&quot;</span>
+        <span class="n">mData</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;loopStartTime&quot;</span>
+        <span class="n">messageInformation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mData</span><span class="p">)</span>
+
+        <span class="c1"># # lastLoopDuration</span>
+        <span class="c1"># mData1 = MessageData()</span>
+        <span class="c1"># # mData1.id = channelCounter</span>
+        <span class="c1"># channelCounter += 1</span>
+        <span class="c1"># mData1.positionInBytes = positionCounter</span>
+        <span class="c1"># mData1.lengthInBytes = 2</span>
+        <span class="c1"># # mData1.lengthInBytes = 4</span>
+        <span class="c1"># positionCounter += mData1.lengthInBytes</span>
+        <span class="c1"># mData1.dataType = int</span>
+        <span class="c1"># mData1.unpackString = &quot;&lt;h&quot;</span>
+        <span class="c1"># # mData1.unpackString = &quot;&lt;i&quot;</span>
+        <span class="c1"># mData1.name = &quot;lastLoopDuration&quot;</span>
+        <span class="c1"># messageInformation.append(mData1)</span>
+
+        <span class="c1"># parameterNumber</span>
+        <span class="n">mData2</span> <span class="o">=</span> <span class="n">MessageData</span><span class="p">()</span>
+        <span class="c1"># mData2.id = channelCounter</span>
+        <span class="n">channelCounter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">mData2</span><span class="o">.</span><span class="n">positionInBytes</span> <span class="o">=</span> <span class="n">positionCounter</span>
+        <span class="n">mData2</span><span class="o">.</span><span class="n">lengthInBytes</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="c1"># mData2.lengthInBytes = 4</span>
+        <span class="n">positionCounter</span> <span class="o">+=</span> <span class="n">mData2</span><span class="o">.</span><span class="n">lengthInBytes</span>
+        <span class="n">mData2</span><span class="o">.</span><span class="n">dataType</span> <span class="o">=</span> <span class="nb">int</span>
+        <span class="n">mData2</span><span class="o">.</span><span class="n">unpackString</span> <span class="o">=</span> <span class="s2">&quot;&lt;I&quot;</span>
+        <span class="c1"># mData2.unpackString = &quot;&lt;i&quot;</span>
+        <span class="n">mData2</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;parameterNumber&quot;</span>
+        <span class="n">messageInformation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mData2</span><span class="p">)</span>
+
+        <span class="c1"># parameterValue</span>
+        <span class="n">mData3</span> <span class="o">=</span> <span class="n">MessageData</span><span class="p">()</span>
+        <span class="c1"># mData3.id = channelCounter</span>
+        <span class="n">channelCounter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">mData3</span><span class="o">.</span><span class="n">positionInBytes</span> <span class="o">=</span> <span class="n">positionCounter</span>
+        <span class="n">mData3</span><span class="o">.</span><span class="n">lengthInBytes</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="n">positionCounter</span> <span class="o">+=</span> <span class="n">mData3</span><span class="o">.</span><span class="n">lengthInBytes</span>
+        <span class="n">mData3</span><span class="o">.</span><span class="n">dataType</span> <span class="o">=</span> <span class="nb">float</span>
+        <span class="n">mData3</span><span class="o">.</span><span class="n">unpackString</span> <span class="o">=</span> <span class="s2">&quot;&lt;f&quot;</span>
+        <span class="n">mData3</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;parameterValue&quot;</span>
+        <span class="n">messageInformation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mData3</span><span class="p">)</span>
+
+        <span class="c1"># channels</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">channelDescriptionsOrMeasurementData</span><span class="p">,</span> <span class="n">MeasurementData</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">channelDescriptionsOrMeasurementData</span><span class="o">.</span><span class="n">channels</span><span class="p">):</span>
+                <span class="n">messageData</span> <span class="o">=</span> <span class="n">MessageData</span><span class="p">()</span>
+                <span class="c1"># messageData.id = i</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">positionInBytes</span> <span class="o">=</span> <span class="n">positionCounter</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">lengthInBytes</span> <span class="o">=</span> <span class="mi">4</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">dataType</span> <span class="o">=</span> <span class="nb">float</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">unpackString</span> <span class="o">=</span> <span class="s2">&quot;&lt;f&quot;</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">isUserChannel</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">userChannelId</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="n">messageInformation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">messageData</span><span class="p">)</span>
+                <span class="n">positionCounter</span> <span class="o">+=</span> <span class="n">messageData</span><span class="o">.</span><span class="n">lengthInBytes</span>
+                <span class="n">channelCounter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">channelDescription</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">channelDescriptionsOrMeasurementData</span><span class="p">):</span>
+                <span class="n">messageData</span> <span class="o">=</span> <span class="n">MessageData</span><span class="p">()</span>
+                <span class="c1"># messageData.id = i</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">positionInBytes</span> <span class="o">=</span> <span class="n">positionCounter</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">lengthInBytes</span> <span class="o">=</span> <span class="mi">4</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">dataType</span> <span class="o">=</span> <span class="nb">float</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">unpackString</span> <span class="o">=</span> <span class="s2">&quot;&lt;f&quot;</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">channelDescription</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">isUserChannel</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">messageData</span><span class="o">.</span><span class="n">userChannelId</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="n">messageInformation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">messageData</span><span class="p">)</span>
+                <span class="n">positionCounter</span> <span class="o">+=</span> <span class="n">messageData</span><span class="o">.</span><span class="n">lengthInBytes</span>
+                <span class="n">channelCounter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">messageInformation</span><span class="o">.</span><span class="n">messageLengthInBytes</span> <span class="o">=</span> <span class="n">positionCounter</span>
+
+        <span class="k">return</span> <span class="n">messageInformation</span></div></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, hmcontroller.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
