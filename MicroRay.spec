@@ -3,8 +3,8 @@
 block_cipher = None
 
 
-a = Analysis(['ControlDemonstrator.py'],
-             pathex=['C:\\Users\\Karlheinz\\Desktop\\ControlDemonstrator'],
+a = Analysis(['MicroRay.py'],
+             pathex=['C:\\Users\\Karlheinz\\Desktop\\microRay'],
              binaries=[],
              datas=[('applicationSettings.json', '.'),
                     ('README.md', '.'),
@@ -25,6 +25,7 @@ exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
           name='microRay',
+          icon='icon.ico',
           debug=False,
           strip=False,
           upx=True,
@@ -35,4 +36,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='ControlDemonstrator')
+               name='MicroRay')

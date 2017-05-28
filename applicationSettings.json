@@ -4,7 +4,8 @@
         "guiUpdateIntervalLengthInMs": 100, 
         "sendMessageIntervalLengthInMs": 15, 
         "recentProjects": [
-            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/mRayProjects/testUnoSerial.mRay"
+            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/mRayProjects/testUnoSerial.mRay", 
+            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/mRayProjects/wasserstand.mRay"
         ], 
         "bufferLength": 10000
     }

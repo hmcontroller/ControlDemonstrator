@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'projectMiscSettingsDialog.ui'
 #
-# Created: Thu May 25 10:04:32 2017
+# Created: Sun May 28 17:06:36 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -65,6 +65,12 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.verticalLayout.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 10, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         self.verticalLayout.addItem(spacerItem)
+        self.portChangedLabel = QtGui.QLabel(ProjectMiscSettingsDialog)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.portChangedLabel.setFont(font)
+        self.portChangedLabel.setObjectName(_fromUtf8("portChangedLabel"))
+        self.verticalLayout.addWidget(self.portChangedLabel)
         self.groupBoxUdp = QtGui.QGroupBox(ProjectMiscSettingsDialog)
         self.groupBoxUdp.setObjectName(_fromUtf8("groupBoxUdp"))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.groupBoxUdp)
@@ -122,6 +128,7 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.label_3.setText(_translate("ProjectMiscSettingsDialog", "path to controller code folder", None))
         self.toolButtonSelectControllerCodeFolder.setText(_translate("ProjectMiscSettingsDialog", "...", None))
         self.label_4.setText(_translate("ProjectMiscSettingsDialog", "Framework and interface", None))
+        self.portChangedLabel.setText(_translate("ProjectMiscSettingsDialog", "original port lost, alternatives are available", None))
         self.groupBoxUdp.setTitle(_translate("ProjectMiscSettingsDialog", "Framework and interface settings", None))
         self.label_5.setText(_translate("ProjectMiscSettingsDialog", "computer IP", None))
         self.label_6.setText(_translate("ProjectMiscSettingsDialog", "controller IP", None))

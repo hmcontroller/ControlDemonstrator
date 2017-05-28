@@ -1,4 +1,3 @@
-#include "controlDemonstrator.h"
 
 #ifdef ARDUINO_UDP
 
@@ -75,7 +74,7 @@ MessageIn messageInBuffer;
 
 
 #ifdef ARDUINO_UDP
-void initControlDemonstrator()
+void microRayInit()
 {
     setInitialValues();
     // Bring up the network interface
@@ -83,18 +82,18 @@ void initControlDemonstrator()
     Udp.begin(port);
 }
 #elif defined(ARDUINO_SERIAL)
-void initControlDemonstrator() {
+void microRayInit() {
     setInitialValues();
     Serial.begin(BAUD_RATE);
 }
 
 #elif defined(MBED_2_USBHID)
-void initControlDemonstrator() {
+void microRayInit() {
     setInitialValues();
 }
 
 #elif defined(MBED_OS_UDP)
-void initControlDemonstrator() {
+void microRayInit() {
     setInitialValues();
 
     // Bring up the network interface
@@ -122,7 +121,7 @@ void initControlDemonstrator() {
 }
 
 #else
-void initControlDemonstrator() {
+void microRayInit() {
     setInitialValues();
 }
 #endif
@@ -161,7 +160,7 @@ void prepareOutMessage()
 }
 
 
-void communicate()
+void microRayCommunicate()
 {
     sendMessage();
     receiveMessage();

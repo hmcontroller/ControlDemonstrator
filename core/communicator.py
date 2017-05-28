@@ -66,6 +66,8 @@ class CommState(QtCore.QObject):
 class Communicator(QtCore.QObject):
 
     commandSend = QtCore.pyqtSignal(object)
+    alternatePortAvailable = QtCore.pyqtSignal(object)
+    reEstablishedWantedPort = QtCore.pyqtSignal(object)
 
     def __init__(self, applicationSettings, projectSettings):
         super(Communicator, self).__init__()
@@ -76,6 +78,8 @@ class Communicator(QtCore.QObject):
         self._messageMap = None
 
         self._commState = CommState()
+
+        self._portOfferingInProgress = False
 
         self._directCommandSendBuffer = deque()
         self._pendingCommandSendBuffer = deque()
@@ -113,19 +117,17 @@ class Communicator(QtCore.QObject):
             self.disconnectFromController()
 
     def checkCommTimeOut(self):
-        if self._commState.state == CommState.COMM_PAUSED:
-            return
-
-        if datetime.datetime.now() - self._commState.timeOfLastReceive > datetime.timedelta(seconds=2):
-            if self._commState.state == CommState.COMM_TIMEOUT:
-                return
+        if self._commState.state == CommState.COMM_ESTABLISHED:
+            if datetime.datetime.now() - self._commState.timeOfLastReceive > datetime.timedelta(seconds=2):
+                if self._commState.state == CommState.COMM_TIMEOUT:
+                    return
+                else:
+                    self._commState.state = CommState.COMM_TIMEOUT
+                    # if self._connectionPollTimer.isActive() is False:
+                    #     self._connectionPollTimer.start(1000)
             else:
-                self._commState.state = CommState.COMM_TIMEOUT
-                # if self._connectionPollTimer.isActive() is False:
-                #     self._connectionPollTimer.start(1000)
-        else:
-            if self._commState.state != CommState.COMM_ESTABLISHED:
-                self._commState.state = CommState.COMM_ESTABLISHED
+                if self._commState.state != CommState.COMM_ESTABLISHED:
+                    self._commState.state = CommState.COMM_ESTABLISHED
 
     def send(self, commandList):
         raise NotImplementedError()
@@ -171,6 +173,8 @@ class Communicator(QtCore.QObject):
 
             unpackedMessages.append(message)
 
+        if len(unpackedMessages) > 0:
+            self._commState.state = CommState.COMM_ESTABLISHED
         return unpackedMessages
 
 
@@ -311,12 +315,34 @@ class SerialCommunicator(Communicator):
                 self._connectionPollTimer.start(1000)
             return
 
-        portToConnectTo = ports[0]
+        # portToConnectTo = ports[0]
+        portToConnectTo = None
         for port in ports:
             if port.description == self._projectSettings.comPortDescription:
                 portToConnectTo = port
+                self._commState.interfaceDescription = u"{}".format(port.description)
 
-        self._commState.interfaceDescription = u"{}".format(port.description)
+        if portToConnectTo is None:
+            self._commState.state = CommState.NO_CONN
+            if self._connectionPollTimer.isActive() is False:
+                self._connectionPollTimer.start(1000)
+            return
+
+
+        # datt müssma nochmal sauber neu machen
+
+        # if portToConnectTo is None and self._portOfferingInProgress is False:
+        #     # self.alternatePortAvailable.emit(1)
+        #     # self._commState.state = CommState.NO_CONN
+        #     self._portOfferingInProgress = True
+        # else:
+        #     if self._portOfferingInProgress is True:
+        #         # self.reEstablishedWantedPort.emit(1)
+        #         self._portOfferingInProgress = False
+        #
+        # if portToConnectTo is None:
+        #     return
+
 
 
         self.ser.baudrate = 115200
@@ -389,6 +415,8 @@ class SerialCommunicator(Communicator):
                 # message still too short or no message inside, store it for next try
                 if len(messageToProcess) < self._messageSize + 2 or messagePositions[0][0] == -1:
                     self.lastMessageRemainder = messageToProcess
+
+                    # prevent overfill of 'buffer'
                     if len(self.lastMessageRemainder) > self._messageMap.messageLengthInBytes * 3:
                         self.lastMessageRemainder = b""
                         self._commState.state = CommState.WRONG_CONFIG
@@ -411,7 +439,7 @@ class SerialCommunicator(Communicator):
                     messages.append(messageToProcess[start : stop])
 
         except serial.SerialException:
-            self._commState.state = CommState.NO_CONN
+            # self._commState.state = CommState.NO_CONN
             if self._connectionPollTimer.isActive() is False:
                 self._connectionPollTimer.start(1000)
             return list()
@@ -421,6 +449,7 @@ class SerialCommunicator(Communicator):
 
         if len(unpackedMessages) > 0:
             self._commState.timeOfLastReceive = datetime.datetime.now()
+
 
         return unpackedMessages
 

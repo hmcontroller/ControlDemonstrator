@@ -1,5 +1,5 @@
-# ControlDemonstrator
+# microRay
 
-The Control Demonstrator is used to measure and regulate.
+The microRay is used to measure and regulate.
 
 

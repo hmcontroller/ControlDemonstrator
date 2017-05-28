@@ -9,7 +9,7 @@ from core.exceptHook import ExceptHook
 
 from PyQt4 import QtGui
 
-from gui.mainWindow import ControlDemonstratorMainWindow
+from gui.mainWindow import MicroRayMainWindow
 
 ABSOLUTE_PROGRAM_ROOT_FOLDER = os.path.dirname(os.path.realpath(__file__))
 
@@ -55,7 +55,7 @@ class MicroRay(QtGui.QApplication):
         # sys.excepthook = self.excepthook.hook
 
 
-        self.mainW = ControlDemonstratorMainWindow(ABSOLUTE_PROGRAM_ROOT_FOLDER, self.excepthook)
+        self.mainW = MicroRayMainWindow(ABSOLUTE_PROGRAM_ROOT_FOLDER, self.excepthook)
         self.mainW.show()
 
     def notify(self, object, event):

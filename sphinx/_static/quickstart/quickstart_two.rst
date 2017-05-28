@@ -9,13 +9,13 @@ Arduino
    :linenos:
 
     #include <arduino.h>
-    #include "controlDemonstrator.h"
+    #include "microRay.h"
 
     unsigned long loopStart = micros();
     unsigned long lastLoopDuration = 0;
 
     void setup() {
-        initControlDemonstrator();
+        microRayInit();
         while(1)
         {
             loopStart = micros();
@@ -33,7 +33,7 @@ Arduino
         superSinusFunction = 1000.0f * (float)sin(0.001f * millis());
         testParameterChannel = testParameter;
         loopDuration = (float)lastLoopDuration;
-        communicate();
+        microRayCommunicate();
     }
 
 
@@ -44,13 +44,13 @@ Mbed
    :linenos:
 
     #include <arduino.h>
-    #include "controlDemonstrator.h"
+    #include "microRay.h"
 
     unsigned long loopStart = micros();
     unsigned long lastLoopDuration = 0;
 
     void setup() {
-        initControlDemonstrator();
+        microRayInit();
         while(1)
         {
             loopStart = micros();
@@ -68,7 +68,7 @@ Mbed
         superSinusFunction = 1000.0f * (float)sin(0.001f * millis());
         testParameterChannel = testParameter;
         loopDuration = (float)lastLoopDuration;
-        communicate();
+        microRayCommunicate();
     }
 
 

@@ -24,17 +24,17 @@ and interface are:
   * Ethernet
   * Usb
 
-The following code example shows the basic usage of the ControlDemonstrator in your microcontroller code.
+The following code example shows the basic usage of the microRay in your microcontroller code.
 The testparameter can be controlled from the connected pc and the channelOne variable will be transmitted and
 displayed on the pc.
 
 .. code-block:: c
    :linenos:
 
-    #include "ControlDemonstrator.h"
+    #include "microRay.h"
 
     int main() {
-        initControlDemonstrator();
+        microRayInit();
         while(1) {
             if (testparameter > 0.5f) {
                 channelOne = 12.0f;
@@ -47,8 +47,8 @@ displayed on the pc.
     }
 
 
-ControlDemonstrator SuperApp
-----------------------------
+microRay SuperApp
+-----------------
 
 Bla guggu das ist ein Testtext.
 

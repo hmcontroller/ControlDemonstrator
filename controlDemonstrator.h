@@ -26,7 +26,7 @@
 #define New                                      (parameters[2])
 #define New                                      (parameters[3])
 
-void initControlDemonstrator();
+void microRayInitControlDemonstrator();
 void communicate();
 
 

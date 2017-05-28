@@ -1,5 +1,5 @@
-void initControlDemonstrator();
-void communicate();
+void microRayInit();
+void microRayCommunicate();
 
 
 #include <stdint.h>

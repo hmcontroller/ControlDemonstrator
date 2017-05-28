@@ -10,7 +10,7 @@ Contents:
     :maxdepth: 20
 
     ../_apidoctest/cCodeConfigMaker
-    ../_apidoctest/ControlDemonstrator
+    ../_apidoctest/MicroRay
     ../_apidoctest/core
     ../_apidoctest/gui
     ../_apidoctest/modules

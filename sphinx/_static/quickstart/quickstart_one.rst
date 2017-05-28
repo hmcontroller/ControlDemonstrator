@@ -37,7 +37,7 @@ Create a new microRay project under "Datei" -> "Neues Projekt...".
 * the include files will be generated in the folder you have specified in "Projekteinstellungen" or if not in the program root folder.
   and will be named
 
-  * ControlDemonstrator.h
-  * ControlDemonstrator.cpp
+  * microRay.h
+  * microRay.cpp
 
 

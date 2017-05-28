@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# ControlDemonstrator documentation build configuration file, created by
+# microRay documentation build configuration file, created by
 # sphinx-quickstart on Mon Feb 20 10:09:11 2017.
 #
 # This file is execfile()d with the current directory set to its
@@ -48,7 +48,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'ControlDemonstrator'
+project = u'microRay'
 copyright = u'2017, hmcontroller'
 author = u'hmcontroller'
 

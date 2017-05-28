@@ -1,5 +1,5 @@
-ControlDemonstrator
-===================
+MicroRay
+========
 
 .. toctree::
    :maxdepth: 4

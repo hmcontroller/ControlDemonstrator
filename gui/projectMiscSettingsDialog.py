@@ -43,6 +43,61 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
     #         self.lineEditName.setStyleSheet("QLineEdit {background-color: white;}")
     #         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(True)
 
+    @staticmethod
+    def updateSettings(settings, portChanged=False):
+
+        dialog = ProjectMiscSettingsDialog(settings)
+
+        # set settings to form
+        # dialog.lineEditName.setText(dialog.settings.projectName)
+        dialog.lineEditControllerLoopCycleTime.setText(unicode(dialog.settings.controllerLoopCycleTimeInUs))
+        dialog.lineEditPathToControllerCodeFolder.setText(dialog.settings.pathToControllerCodeFolder)
+
+        indexToSelect = 0
+        for i, frameworkAndInterfaceDescription in enumerate(AVAILABLE_FRAMEWORKS):
+            dialog.comboBoxFrameworkAndInterface.addItem(frameworkAndInterfaceDescription["displayName"])
+            if frameworkAndInterfaceDescription["macroName"] == dialog.settings.controllerFrameworkAndInterface:
+                indexToSelect = i
+        dialog.comboBoxFrameworkAndInterface.setCurrentIndex(indexToSelect)
+
+
+        dialog.lineEditComputerIP.setText(dialog.settings.computerIP)
+        dialog.lineEditControllerIP.setText(dialog.settings.controllerIP)
+        dialog.lineEditUDPPort.setText(unicode(dialog.settings.udpPort))
+
+        dialog.refreshComPortsCombo()
+        for i, portDescription in enumerate(dialog.lastComPortsListing):
+            if portDescription == dialog.settings.comPortDescription:
+                dialog.comboBoxComPort.setCurrentIndex(i)
+
+
+        if portChanged is True:
+            dialog.portChangedLabel.setStyleSheet("QLabel {  color : red; }")
+            dialog.portChangedLabel.setVisible(True)
+        else:
+            dialog.portChangedLabel.setVisible(False)
+
+
+        answer = dialog.exec_()
+
+        if answer == QtGui.QDialog.Accepted:
+            # dialog.settings.projectName = unicode(dialog.lineEditName.text())
+            dialog.settings.controllerLoopCycleTimeInUs = int(dialog.lineEditControllerLoopCycleTime.text())
+            dialog.settings.pathToControllerCodeFolder = unicode(dialog.lineEditPathToControllerCodeFolder.text())
+
+            frameworkAndInterfaceDescriptionSelected = unicode(dialog.comboBoxFrameworkAndInterface.currentText())
+            for description in AVAILABLE_FRAMEWORKS:
+                if description["displayName"] == frameworkAndInterfaceDescriptionSelected:
+                    dialog.settings.controllerFrameworkAndInterface = description["macroName"]
+
+            dialog.settings.computerIP = unicode(dialog.lineEditComputerIP.text())
+            dialog.settings.controllerIP = unicode(dialog.lineEditControllerIP.text())
+            dialog.settings.udpPort = int(dialog.lineEditUDPPort.text())
+            dialog.settings.comPortDescription = unicode(dialog.comboBoxComPort.currentText())
+            return QtGui.QDialog.Accepted
+        else:
+            return QtGui.QDialog.Rejected
+
 
     def verifyInput(self):
         # if len(self.lineEditName.text()) == 0:
@@ -98,50 +153,3 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
 
         self.lineEditPathToControllerCodeFolder.setText(selectedFolder)
 
-    def updateSettings(self):
-
-        # self.settings = ProjectSettings()
-
-        # set settings to form
-        # self.lineEditName.setText(self.settings.projectName)
-        self.lineEditControllerLoopCycleTime.setText(unicode(self.settings.controllerLoopCycleTimeInUs))
-        self.lineEditPathToControllerCodeFolder.setText(self.settings.pathToControllerCodeFolder)
-
-        indexToSelect = 0
-        for i, frameworkAndInterfaceDescription in enumerate(AVAILABLE_FRAMEWORKS):
-            self.comboBoxFrameworkAndInterface.addItem(frameworkAndInterfaceDescription["displayName"])
-            if frameworkAndInterfaceDescription["macroName"] == self.settings.controllerFrameworkAndInterface:
-                indexToSelect = i
-        self.comboBoxFrameworkAndInterface.setCurrentIndex(indexToSelect)
-
-
-        self.lineEditComputerIP.setText(self.settings.computerIP)
-        self.lineEditControllerIP.setText(self.settings.controllerIP)
-        self.lineEditUDPPort.setText(unicode(self.settings.udpPort))
-
-        self.refreshComPortsCombo()
-        for i, portDescription in enumerate(self.lastComPortsListing):
-            if portDescription == self.settings.comPortDescription:
-                self.comboBoxComPort.setCurrentIndex(i)
-
-
-
-        answer = self.exec_()
-
-        if answer == QtGui.QDialog.Accepted:
-            # self.settings.projectName = unicode(self.lineEditName.text())
-            self.settings.controllerLoopCycleTimeInUs = int(self.lineEditControllerLoopCycleTime.text())
-            self.settings.pathToControllerCodeFolder = unicode(self.lineEditPathToControllerCodeFolder.text())
-
-            frameworkAndInterfaceDescriptionSelected = unicode(self.comboBoxFrameworkAndInterface.currentText())
-            for description in AVAILABLE_FRAMEWORKS:
-                if description["displayName"] == frameworkAndInterfaceDescriptionSelected:
-                    self.settings.controllerFrameworkAndInterface = description["macroName"]
-
-            self.settings.computerIP = unicode(self.lineEditComputerIP.text())
-            self.settings.controllerIP = unicode(self.lineEditControllerIP.text())
-            self.settings.udpPort = int(self.lineEditUDPPort.text())
-            self.settings.comPortDescription = unicode(self.comboBoxComPort.currentText())
-            return QtGui.QDialog.Accepted
-        else:
-            return QtGui.QDialog.Rejected

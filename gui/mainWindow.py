@@ -28,7 +28,7 @@ from gui.tabGenericView import TabGenericView
 from gui.tabSmallGenericView import TabSmallGenericView
 from gui.resources import *
 
-class ControlDemonstratorMainWindow(QtGui.QMainWindow):
+class MicroRayMainWindow(QtGui.QMainWindow):
 
     displayMessage = QtCore.pyqtSignal(object, object)
 
@@ -65,7 +65,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
 
 
-        self.setWindowTitle("ControlDemonstrator")
+        self.setWindowTitle("microRay")
 
         self.screenRect = QtGui.QApplication.desktop().screenGeometry()
         self.setGeometry(self.screenRect.width() * 0.05, self.screenRect.height() * 0.05,
@@ -343,6 +343,9 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
     def makeEmptyProject(self):
         self.projectSettings, self.channels, self.commands, self.messageFormatList, self.communicator = self.projectConfigManager.buildEmptyModel()
         self.projectSettings.changed.connect(self.projectSettingsChanged)
+        self.communicator.alternatePortAvailable.connect(self.offerAlternatePort)
+        self.communicator.reEstablishedWantedPort.connect(self.closeAlternatePortOffer)
+
 
     def closeCurrentProject(self):
         while self.centralWidgetLayout.count() > 0:
@@ -361,7 +364,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         projectFilePath = QtGui.QFileDialog.getOpenFileName(self,
                                                               "Open project file",
                                                               folderSuggestion,
-                                                              "Project Settings (*.mRay *.json *)")
+                                                              "mRay project (*.mRay *.json *)")
         projectFilePath = str(projectFilePath)
         if projectFilePath == "":
             return
@@ -385,6 +388,9 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
         self.communicator.setMessageMap(self.messageFormatList)
         self.communicator.connectToController()
+        self.communicator.alternatePortAvailable.connect(self.offerAlternatePort)
+        self.communicator.reEstablishedWantedPort.connect(self.closeAlternatePortOffer)
+
 
         self.addTabs(self.projectSettings.tabSettingsDescriptions)
 
@@ -452,7 +458,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
             projectFilePath = QtGui.QFileDialog.getSaveFileName(self,
                                                                   "Projekt speichern unter...",
                                                                   filePathSuggestion,
-                                                                  "Project Settings (*.mRay *.json *)")
+                                                                  "mRay project (*.mRay *)")
             projectFilePath = unicode(projectFilePath)
         else:
             projectFilePath = unicode(path)
@@ -460,6 +466,10 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
         if len(projectFilePath) == 0:
             return
         else:
+            if projectFilePath.endswith(".mRay"):
+                pass
+            else:
+                projectFilePath += ".mRay"
             try:
                 self.projectConfigManager.saveAs(projectFilePath, self.projectSettings, self.channels, self.commands)
                 self.applicationSettings.addRecentProjectPath(projectFilePath)
@@ -500,7 +510,7 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
             settings = self.projectSettings
 
         dialog = ProjectMiscSettingsDialog(settings)
-        return dialog.updateSettings()
+        return ProjectMiscSettingsDialog.updateSettings(settings)
 
 
     def editChannels(self, settings):
@@ -609,3 +619,12 @@ class ControlDemonstratorMainWindow(QtGui.QMainWindow):
 
     def uncaughtExceptionOccured(self, exceptionString):
         print exceptionString
+
+
+    def offerAlternatePort(self, something):
+        print "offering"
+
+
+
+    def closeAlternatePortOffer(self, something):
+        print "close offering"

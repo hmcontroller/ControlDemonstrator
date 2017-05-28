@@ -14,8 +14,8 @@ import serial.tools.list_ports
 import os
 
 P_CONFIG_FILE_PATH = "config.txt"
-C_FILE_HEADER_PATH = "controlDemonstrator.h"
-C_FILE_CPP_PATH = "controlDemonstrator.cpp"
+C_FILE_HEADER_PATH = "microRay.h"
+C_FILE_CPP_PATH = "microRay.cpp"
 C_HEADER_TEMPLATE = "c_template.h"
 C_C_TEMPLATE = "c_template.c"
 
@@ -169,7 +169,7 @@ def run():
 
     with open(fullDestinationPathCFile, "w") as f:
         #
-        # f.write('#include "controlDemonstrator.h"\n\n')
+        # f.write('#include "microRay.h"\n\n')
 
         # # channel mapping
         # f.write("// Channel values that will be send to the pc at every loop cycle\n")

@@ -15,8 +15,8 @@ class IncludeFileMaker(object):
         self.commands = None
         self.requestedChannels = list()
         self.unrequestedChannels = list()
-        self.cFileName = "controlDemonstrator.cpp"
-        self.headerFileName = "controlDemonstrator.h"
+        self.cFileName = "microRay.cpp"
+        self.headerFileName = "microRay.h"
 
 
 
@@ -60,8 +60,8 @@ class IncludeFileMaker(object):
         self.addCTemplate()
 
     def writeFilesToDisk(self):
-        targetPathHeaderFile = os.path.join(self.projectSettings.pathToControllerCodeFolder, "controlDemonstrator.h")
-        targetPathCFile = os.path.join(self.projectSettings.pathToControllerCodeFolder, "controlDemonstrator.cpp")
+        targetPathHeaderFile = os.path.join(self.projectSettings.pathToControllerCodeFolder, self.headerFileName)
+        targetPathCFile = os.path.join(self.projectSettings.pathToControllerCodeFolder, self.cFileName)
 
         with open(targetPathHeaderFile, "w") as f:
             f.write(self.headerFileString)
@@ -143,7 +143,7 @@ class IncludeFileMaker(object):
         self.headerFileString += templateText
 
     def addIncludeToCFile(self):
-        self.cFileString += '#include "controlDemonstrator.h"\n\n'
+        self.cFileString += '#include "{}"\n\n'.format(self.headerFileName)
 
     def addSetInitialValuesFunctionToCFile(self):
         self.cFileString += "void setInitialValues() {\n"

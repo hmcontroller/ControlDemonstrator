@@ -88,6 +88,18 @@
     </spacer>
    </item>
    <item>
+    <widget class="QLabel" name="portChangedLabel">
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>original port lost, alternatives are available</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBoxUdp">
      <property name="title">
       <string>Framework and interface settings</string>

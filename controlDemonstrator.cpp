@@ -1,4 +1,4 @@
-#include "controlDemonstrator.h"
+#include "microRay.h"
 
 #ifdef ARDUINO_UDP
 
@@ -75,23 +75,23 @@ MessageIn messageInBuffer;
 
 
 #ifdef ARDUINO_UDP
-void initControlDemonstrator()
+void microRayInit()
 {
     // Bring up the network interface
     Ethernet.begin(macAddress, ownIp);
     Udp.begin(port);
 }
 #elif defined(ARDUINO_SERIAL)
-void initControlDemonstrator() {
+void microRayInit() {
     Serial.begin(BAUD_RATE);
 }
 
 #elif defined(MBED_2_USBHID)
-void initControlDemonstrator() {
+void microRayInit() {
 }
 
 #elif defined(MBED_OS_UDP)
-void initControlDemonstrator() {
+void microRayInit() {
 
     // Bring up the network interface
 
@@ -118,7 +118,7 @@ void initControlDemonstrator() {
 }
 
 #else
-void initControlDemonstrator() {
+void microRayInit() {
 }
 #endif
 
