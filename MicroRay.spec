@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['MicroRay.py'],
+a = Analysis(['microRay.py'],
              pathex=['C:\\Users\\Karlheinz\\Desktop\\microRay'],
              binaries=[],
              datas=[('applicationSettings.json', '.'),

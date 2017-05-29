@@ -4,9 +4,6 @@ gui.graphicItems.gauges package
 Submodules
 ----------
 
-gui.graphicItems.gauges.tankGauge module
-----------------------------------------
-
 .. automodule:: gui.graphicItems.gauges.tankGauge
     :members:
     :undoc-members:

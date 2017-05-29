@@ -13,16 +13,15 @@ Subpackages
 Submodules
 ----------
 
-gui.graphicItems.floatValidator module
---------------------------------------
+.. automodule:: gui.graphicItems.button
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 .. automodule:: gui.graphicItems.floatValidator
     :members:
     :undoc-members:
     :show-inheritance:
-
-gui.graphicItems.lineEditDoubleClickSpecial module
---------------------------------------------------
 
 .. automodule:: gui.graphicItems.lineEditDoubleClickSpecial
     :members:

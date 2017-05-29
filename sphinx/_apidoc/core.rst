@@ -1,83 +1,97 @@
 core package
 ============
 
+Subpackages
+-----------
+
+.. toctree::
+
+    core.businessLogic
+    core.includeFileTemplates
+    core.model
+
 Submodules
 ----------
 
-core.command module
--------------------
+.. automodule:: core.applicationSettingsManager
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 .. automodule:: core.command
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.communicator module
-------------------------
+.. automodule:: core.commandArgument
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: core.commandArgumentsParser
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: core.commandArgumentsSetter
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 .. automodule:: core.communicator
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.constants module
----------------------
+.. automodule:: core.configFileManager
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 .. automodule:: core.constants
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.measurementData module
----------------------------
+.. automodule:: core.exceptHook
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: core.includeFileMaker
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
 .. automodule:: core.measurementData
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.messageData module
------------------------
-
 .. automodule:: core.messageData
     :members:
     :undoc-members:
     :show-inheritance:
-
-core.messageInterpreter module
-------------------------------
 
 .. automodule:: core.messageInterpreter
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.modelMaker module
-----------------------
-
 .. automodule:: core.modelMaker
     :members:
     :undoc-members:
     :show-inheritance:
 
-core.settingsModel module
--------------------------
-
-.. automodule:: core.settingsModel
+.. automodule:: core.signalGeneratorCommandGroup
     :members:
     :undoc-members:
     :show-inheritance:
-
-core.testSpace module
----------------------
 
 .. automodule:: core.testSpace
     :members:
     :undoc-members:
     :show-inheritance:
-
-core.valueChannel module
-------------------------
 
 .. automodule:: core.valueChannel
     :members:

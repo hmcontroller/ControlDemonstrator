@@ -7,11 +7,6 @@ and displays measurement data and parameters, that arrive from the microcontroll
 Contents:
 
 .. toctree::
-    :maxdepth: 20
 
-    ../_apidoctest/cCodeConfigMaker
-    ../_apidoctest/MicroRay
-    ../_apidoctest/core
-    ../_apidoctest/gui
-    ../_apidoctest/modules
-    ../_apidoctest/setup
+    ../_apidoc/core
+    ../_apidoc/gui

@@ -3,19 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+
 Welcome to microRay's documentation!
 ====================================
 
 .. toctree::
-   :maxdepth: 1
+   :hidden:
 
    _static/introduction
    _static/quickstart
    _static/apireference
+   _static/sphinxExamples
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

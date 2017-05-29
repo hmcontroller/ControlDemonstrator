@@ -103,11 +103,14 @@ import sphinx_rtd_theme
 html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
-# html_theme_options = {
-#     'rightsidebar': True,
-#     # 'content_fixed': True,
+html_theme_options = {
+    # 'rightsidebar': True,
+    # 'content_fixed': False,
+    "collapse_navigation" : False,
 #     # 'content_width': '700px',
-# }
+}
+
+html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'], }
 
 # import sphinx_bootstrap_theme
 # html_theme = 'bootstrap'
@@ -139,7 +142,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ControlDemonstratordoc'
+htmlhelp_basename = 'microRayDocumentation'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -166,7 +169,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'ControlDemonstrator.tex', u'ControlDemonstrator Documentation',
+    (master_doc, 'microRay.tex', u'microRay Documentation',
      u'hmcontroller', 'manual'),
 ]
 
@@ -176,7 +179,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'controldemonstrator', u'ControlDemonstrator Documentation',
+    (master_doc, 'microRay', u'microRay Documentation',
      [author], 1)
 ]
 
@@ -187,8 +190,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'ControlDemonstrator', u'ControlDemonstrator Documentation',
-     author, 'ControlDemonstrator', 'One line description of project.',
+    (master_doc, 'microRay', u'microRay Documentation',
+     author, 'microRay', 'One line description of project.',
      'Miscellaneous'),
 ]
 

@@ -14,7 +14,7 @@ home/
 .log
 examples/
 log.log
-/docs
+/documentation
 doxyConfig
 /doxygen-qmi-style-master
 /inkScapeLogos

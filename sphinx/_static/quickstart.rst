@@ -1,10 +1,12 @@
 Quickstart
 ==========
 
-.. toctree::
-   :maxdepth: 1
+If you want to start without reading much, start reading here.
 
-   ../_static/quickstart/quickstart_one
-   ../_static/quickstart/quickstart_two
-   ../_static/quickstart/microRayGuiIntroduction
+.. toctree::
+   :hidden:
+
+   ../_static/quickstart/quickCreateProject
+   ../_static/quickstart/quickCreateControllerCode
+   ../_static/quickstart/quickMicroRayGuiIntroduction
 

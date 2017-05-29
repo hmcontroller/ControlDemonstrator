@@ -31,10 +31,10 @@ Create a new microRay project under "Datei" -> "Neues Projekt...".
 .. image:: ../../_resources/parameterSettingsDialog.png
 
 
-**Generate a include files**
+**Generate include files**
 
 * Click on "Bearbeiten" -> "CCode generieren"
-* the include files will be generated in the folder you have specified in "Projekteinstellungen" or if not in the program root folder.
+* the include files will be generated in the folder you have specified in "Projekteinstellungen" or if not so, in the program root folder.
   and will be named
 
   * microRay.h

@@ -6,7 +6,6 @@ Arduino
 -------
 
 .. code-block:: c
-   :linenos:
 
     #include <arduino.h>
     #include "microRay.h"
@@ -41,7 +40,6 @@ Mbed
 ----
 
 .. code-block:: c
-   :linenos:
 
     #include <arduino.h>
     #include "microRay.h"
@@ -70,5 +68,4 @@ Mbed
         loopDuration = (float)lastLoopDuration;
         microRayCommunicate();
     }
-
 
