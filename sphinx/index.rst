@@ -7,11 +7,14 @@
 Welcome to microRay's documentation!
 ====================================
 
+.. image:: _resources/mRayFullView.png
+
 .. toctree::
    :hidden:
 
    _static/introduction
    _static/quickstart
+   _static/advancedUsage
    _static/apireference
    _static/sphinxExamples
 

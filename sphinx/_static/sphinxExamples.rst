@@ -1,5 +1,5 @@
-microRay SuperApp
------------------
+sphinx Examples
+---------------
 
 Bla guggu das ist ein Testtext.
 
@@ -17,6 +17,38 @@ example::
     print "Hallo"
     for i in range(0, 10):
         pass
+
+
+.. code-block:: c
+
+    #include <arduino.h>
+    #include "microRay.h"
+
+    unsigned long loopStart = micros();
+    unsigned long lastLoopDuration = 0;
+
+.. code-block:: python
+
+    # -*- encoding: utf-8 -*-
+    import datetime
+    from collections import deque
+
+    from PyQt4 import QtCore
+
+
+    # TODO make a good list inheritance
+    [docs]
+    class CommandList(QtCore.QObject):
+
+        changed = QtCore.pyqtSignal(object)
+
+        def __init__(self):
+            super(CommandList, self).__init__()
+
+            self.cmdList = list()
+            self.changedCommands = deque()
+            self.pendingCommands = deque()
+
 
 HALLO
 =====

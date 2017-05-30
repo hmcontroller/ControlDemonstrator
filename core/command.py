@@ -1,4 +1,11 @@
 # -*- encoding: utf-8 -*-
+
+
+"""
+Hallo, das sollte in der Hilfe erscheinen.
+"""
+
+
 import datetime
 from collections import deque
 
@@ -7,10 +14,17 @@ from PyQt4 import QtCore
 
 # TODO make a good list inheritance
 class CommandList(QtCore.QObject):
+    """
+    Hallo, schöne CommandList.
+    """
 
+    """kommt das auch ?"""
     changed = QtCore.pyqtSignal(object)
 
     def __init__(self):
+        """
+        schöne Init-Methode ?
+        """
         super(CommandList, self).__init__()
 
         self.cmdList = list()
@@ -18,6 +32,9 @@ class CommandList(QtCore.QObject):
         self.pendingCommands = deque()
 
     def append(self, cmd):
+        """
+        schöne append-Methode ?
+        """
         cmd.valueChanged.connect(self.commandChanged)
         self.cmdList.append(cmd)
         self.changed.emit(self)

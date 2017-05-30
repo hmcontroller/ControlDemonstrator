@@ -10,3 +10,4 @@ Contents:
 
     ../_apidoc/core
     ../_apidoc/gui
+    ../_apidoc/testClass

@@ -2,8 +2,8 @@ Create your microcontroller code
 ================================
 
 
-Arduino
--------
+Arduino example
+---------------
 
 .. code-block:: c
 
@@ -36,32 +36,40 @@ Arduino
     }
 
 
-Mbed
-----
+Mbed example
+------------
 
 .. code-block:: c
 
-    #include <arduino.h>
+    #include "mbed.h"
     #include "microRay.h"
 
-    unsigned long loopStart = micros();
-    unsigned long lastLoopDuration = 0;
+    Timer loopTimer;
 
-    void setup() {
-        microRayInit();
+    int main()
+    {
+        init();
+
         while(1)
         {
-            loopStart = micros();
+            loopTimer.start();
             loop();
-            lastLoopDuration = micros() - loopStart;
-            while(micros() - loopStart < loopCycleTimeUs)
+            while(loopTimer.read_us() < loopCycleTimeUs)
             {
                 // do nothing
             }
+            loopTimer.reset();
         }
     }
 
-    void loop() {
+    void init()
+    {
+        initControlDemonstrator();
+        ...
+    }
+
+    void loop()
+    {
         analogIn0 = analogRead(A0);
         superSinusFunction = 1000.0f * (float)sin(0.001f * millis());
         testParameterChannel = testParameter;
