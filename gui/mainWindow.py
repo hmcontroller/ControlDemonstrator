@@ -32,9 +32,11 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     displayMessage = QtCore.pyqtSignal(object, object)
 
-    def __init__(self, rootFolder, exceptHook):
+    def __init__(self, rootFolder, sysArgs, exceptHook):
         QtGui.QMainWindow.__init__(self)
 
+
+        self.sysArgs = sysArgs
         exceptHook.caughtException.connect(self.uncaughtExceptionOccured)
 
         self.programRootFolder = rootFolder
@@ -96,13 +98,27 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
 
 
+        if len(self.sysArgs) > 1:
+            pathToProjectFile = u""
+            try:
+                pathToProjectFile = unicode(self.sysArgs[1])
+                self.loadProject(pathToProjectFile)
+            except IOError:
+                dialog = QtGui.QErrorMessage(self)
+                dialog.showMessage(u"Projektdatei wurde nicht gefunden.\n\n{}".format(pathToProjectFile))
+            except:
+                dialog = QtGui.QErrorMessage()
+                dialog.showMessage(u"Projektdatei konnte nicht geladen werden.")
 
-
-        if len(self.applicationSettings.recentProjectFilePathes) > 0:
+        elif len(self.applicationSettings.recentProjectFilePathes) > 0:
             try:
                 self.loadProject(self.applicationSettings.recentProjectFilePathes[0])
             except IOError:
-                self.displayMessage.emit("Konnte die Projektdatei nicht finden.", "warning")
+                dialog = QtGui.QErrorMessage()
+                dialog.showMessage(u"Projektdatei wurde nicht gefunden.\n\n{}".format(self.applicationSettings.recentProjectFilePathes[0]))
+            except:
+                dialog = QtGui.QErrorMessage()
+                dialog.showMessage(u"Projektdatei konnte nicht geladen werden.")
 
 
 
@@ -140,9 +156,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         logging.info("GUI load complete")
 
 
-
     def setupUi(self):
-        self.centralwidget = QtGui.QWidget(self)
+        self.centralwidget = BackgroundWidget(self)
         self.centralwidget.setEnabled(True)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -150,6 +165,12 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
         self.centralwidget.setSizePolicy(sizePolicy)
         self.centralwidget.setObjectName("centralwidget")
+
+        styleSheetPartOne = "{" + "background-image: url({});".format("./gui/resources/iconWithoutBackground.png") + "}"
+        styleSheet = "BackgroundWidget#centralwidget {}".format(styleSheetPartOne)
+        print styleSheet
+
+        self.centralwidget.setStyleSheet(styleSheet)
 
         self.centralWidgetLayout = QtGui.QHBoxLayout(self.centralwidget)
         self.centralWidgetLayout.setMargin(0)
@@ -628,3 +649,36 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     def closeAlternatePortOffer(self, something):
         print "close offering"
+
+
+
+class BackgroundWidget(QtGui.QWidget):
+    def __init__(self, parent=None):
+        super(BackgroundWidget, self).__init__(parent)
+
+    # def paintEvent(self, QPaintEvent):
+    #     styleOption = QtGui.QStyleOption()
+    #     styleOption.init(self)
+    #     painter = QtGui.QPainter(self)
+    #     self.style().drawPrimitive(QtGui.QStyle.PE_Widget, styleOption, painter, self)
+
+    def paintEvent(self, QPaintEvent):
+        pixmap = QtGui.QPixmap(iconWithLightBackgroundPath)
+        painter = QtGui.QPainter(self)
+        pixmap = pixmap.scaled(200, 200)
+        painter.drawPixmap((self.width() / 2) - 100, (self.height() / 2) - 100, pixmap)
+
+        # pen = QtGui.QPen(QtCore.Qt.darkGray)
+        # painter.setPen(pen)
+        #
+        # font = QtGui.QFont("Monospace", 60)
+        # font.setStyleHint(QtGui.QFont.TypeWriter)
+        # painter.setFont(font)
+        #
+        # textRect = QtCore.QRect(0, 0, self.width(), self.height())
+        #
+        #
+        #
+        # painter.drawText(textRect,
+        #                  QtCore.Qt.AlignCenter,
+        #                  QtCore.QString(u"μR"))

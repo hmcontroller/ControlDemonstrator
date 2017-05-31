@@ -55,7 +55,7 @@ class MicroRay(QtGui.QApplication):
         # sys.excepthook = self.excepthook.hook
 
 
-        self.mainW = MicroRayMainWindow(ABSOLUTE_PROGRAM_ROOT_FOLDER, self.excepthook)
+        self.mainW = MicroRayMainWindow(ABSOLUTE_PROGRAM_ROOT_FOLDER, sys.argv, self.excepthook)
         self.mainW.show()
 
     def notify(self, object, event):
