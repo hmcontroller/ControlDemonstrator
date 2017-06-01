@@ -95,7 +95,7 @@ class ConfigFileManager(object):
         newCommandObjects = CommandList()
         newMessageFormatList = list()
 
-        communicator = self.makeCommunicator(newProjectMiscSettings)
+        communicator = self.makeCommunicator(newProjectMiscSettings, newMessageFormatList)
 
 
         return newProjectMiscSettings, newChannelObjects, newCommandObjects, newMessageFormatList, communicator

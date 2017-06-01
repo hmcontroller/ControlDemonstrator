@@ -47,7 +47,10 @@ class HardwareInterface(QtCore.QObject):
 
     def setMessageMap(self, formatList):
         self._messageMap = formatList
-        self._messageSize = self._messageMap[-1].positionInBytes + self._messageMap[-1].lengthInBytes
+        if len(formatList) > 0:
+            self._messageSize = self._messageMap[-1].positionInBytes + self._messageMap[-1].lengthInBytes
+        else:
+            self._messageSize = 0
 
     def connectToController(self):
         raise NotImplementedError()

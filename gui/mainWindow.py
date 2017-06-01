@@ -566,7 +566,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         accepted = ProjectMiscSettingsDialog.updateSettings(settings)
 
-        if accepted:
+        if accepted and hasattr(self, "communicator"):
             self.receiveTimer.stop()
             self.communicator.setInterface(self.messageFormatList)
             self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
