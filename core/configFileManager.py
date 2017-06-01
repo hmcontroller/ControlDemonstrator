@@ -9,7 +9,7 @@ from core.measurementData import MeasurementData
 from core.model.projectSettings import ProjectSettings
 from core.command import CommandList
 from core.messageData import MessageData, Message
-from core.communicator import *
+from core.communicator import Communicator
 
 class ConfigFileManager(object):
     def __init__(self, applicationSettings):
@@ -94,7 +94,8 @@ class ConfigFileManager(object):
         newChannelObjects = MeasurementData(self.applicationSettings.bufferLength)
         newCommandObjects = CommandList()
         newMessageFormatList = list()
-        communicator = None
+
+        communicator = self.makeCommunicator(newProjectMiscSettings)
 
 
         return newProjectMiscSettings, newChannelObjects, newCommandObjects, newMessageFormatList, communicator
@@ -111,20 +112,12 @@ class ConfigFileManager(object):
         newMessageFormatList = self.getMessageFormatList(jsonStuff["channels"])
 
 
-        communicator = self.makeCommunicator(newProjectMiscSettings)
+        communicator = self.makeCommunicator(newProjectMiscSettings, newMessageFormatList)
 
         return newProjectMiscSettings, newChannelObjects, newCommandObjects, newMessageFormatList, communicator
 
-    def makeCommunicator(self, projectMiscSettings):
-        serialCases = ["arduino_serial", "ARDUINO_SERIAL", "MBED_OS_SERIAL", "MBED_2_SERIAL"]
-        udpCases = ["mbed_OS_udp", "arduino_udp", "ARDUINO_UDP", "MBED_OS_UDP", "MBED_2_UDP", "ARDUINO_SERIAL"]
-
-        if projectMiscSettings.controllerFrameworkAndInterface in serialCases:
-            return SerialCommunicator(self.applicationSettings, projectMiscSettings)
-        elif projectMiscSettings.controllerFrameworkAndInterface in udpCases:
-            return UdpCommunicator(self.applicationSettings, projectMiscSettings)
-        else:
-            raise Exception("parameter 'controllerFrameworkAndInterface' not valid.")
+    def makeCommunicator(self, projectMiscSettings, messageFormatList):
+        return Communicator(self.applicationSettings, projectMiscSettings, messageFormatList)
 
 
     def makeChannelObjects(self, channelDescriptions, bufferLength):

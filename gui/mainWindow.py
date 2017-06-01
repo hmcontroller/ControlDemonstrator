@@ -1,14 +1,18 @@
 # -*- encoding: utf-8 -*-
 import os
+import sys
 import logging
 import webbrowser
 import errno
 import traceback
+from importlib import import_module
+import imp
 
 from PyQt4 import QtCore, QtGui
 
-from core.communicator import UdpCommunicator, CommState
-from core.communicator import SerialCommunicator
+from core.communicator import Communicator
+from core.hardwareInterfaces import UdpInterface, UsbHidInterface, SerialInterface
+from core.model.commState import CommState
 from core.messageInterpreter import MessageInterpreter
 from core.configFileManager import ConfigFileManager
 from core.applicationSettingsManager import ApplicationSettingsManager
@@ -39,7 +43,11 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.sysArgs = sysArgs
         exceptHook.caughtException.connect(self.uncaughtExceptionOccured)
 
+
+
         self.programRootFolder = rootFolder
+
+        self.myPrinter = MyPrinter(self)
 
         pixmap = QtGui.QPixmap(iconPath)
         icon = QtGui.QIcon(pixmap)
@@ -166,11 +174,9 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.centralwidget.setSizePolicy(sizePolicy)
         self.centralwidget.setObjectName("centralwidget")
 
-        styleSheetPartOne = "{" + "background-image: url({});".format("./gui/resources/iconWithoutBackground.png") + "}"
-        styleSheet = "BackgroundWidget#centralwidget {}".format(styleSheetPartOne)
-        print styleSheet
-
-        self.centralwidget.setStyleSheet(styleSheet)
+        # styleSheetPartOne = "{" + "background-image: url({});".format("./gui/resources/iconWithoutBackground.png") + "}"
+        # styleSheet = "BackgroundWidget#centralwidget {}".format(styleSheetPartOne)
+        # self.centralwidget.setStyleSheet(styleSheet)
 
         self.centralWidgetLayout = QtGui.QHBoxLayout(self.centralwidget)
         self.centralWidgetLayout.setMargin(0)
@@ -229,6 +235,38 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
 
             tabLayout.addWidget(classInstance)
+
+
+
+
+
+        # tabPath = "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\microRay\\tabWaterLineExperiment.py"
+        # # tabClassName = "TabWaterLineExperiment"
+        # #
+        # # tabContentClass = getattr(import_module(tabPath), tabClassName)
+        # # tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
+        #
+        # tabContentClass = imp.load_source("tabWaterLineExperiment.TabWaterLineExperiment", tabPath)
+        #
+        # tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
+        #
+        # tab = QtGui.QWidget()
+        # tab.setFont(font)
+        # tabLayout = QtGui.QHBoxLayout(tab)
+        # tabLayout.setSpacing(0)
+        # tabLayout.setMargin(0)
+        # self.tabWidget.addTab(tab, u"TESTTAB")
+        #
+        # # don't do this dynamically, otherwise pyinstaller stops working
+        # # tabContentClass = getattr(import_module(givenTab.pathToClassFile), givenTab.className)
+        # # tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
+        #
+        # tabLayout.addWidget(tabContentClassInstance)
+
+
+
+
+
 
     def addOnlyOneWidget(self, tabs):
         tab = tabs[0]
@@ -349,7 +387,6 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             self.closeCurrentProject()
             self.makeEmptyProject()
             self.projectSettings = tempProjectSettings
-            self.projectSettings.tabSettingsDescriptions.append(TabDescription())
             self.projectSettings.changed.connect(self.projectSettingsChanged)
 
             tempPath = os.path.join(self.programRootFolder, "tempNew.mRay")
@@ -364,8 +401,6 @@ class MicroRayMainWindow(QtGui.QMainWindow):
     def makeEmptyProject(self):
         self.projectSettings, self.channels, self.commands, self.messageFormatList, self.communicator = self.projectConfigManager.buildEmptyModel()
         self.projectSettings.changed.connect(self.projectSettingsChanged)
-        self.communicator.alternatePortAvailable.connect(self.offerAlternatePort)
-        self.communicator.reEstablishedWantedPort.connect(self.closeAlternatePortOffer)
 
 
     def closeCurrentProject(self):
@@ -409,8 +444,6 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         self.communicator.setMessageMap(self.messageFormatList)
         self.communicator.connectToController()
-        self.communicator.alternatePortAvailable.connect(self.offerAlternatePort)
-        self.communicator.reEstablishedWantedPort.connect(self.closeAlternatePortOffer)
 
 
         self.addTabs(self.projectSettings.tabSettingsDescriptions)
@@ -457,7 +490,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         try:
             self.projectConfigManager.save(self.projectSettings, self.channels, self.commands)
         except IOError:
-            self.displayMessage.emit("could not save project file", "warning")
+            # self.displayMessage.emit("could not save project file", "warning")
             self.saveAs(None)
         self.projectSettings.unsavedChanges = False
 
@@ -530,11 +563,19 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             # happens when this function is called from a signal
             settings = self.projectSettings
 
-        dialog = ProjectMiscSettingsDialog(settings)
-        return ProjectMiscSettingsDialog.updateSettings(settings)
+
+        accepted = ProjectMiscSettingsDialog.updateSettings(settings)
+
+        if accepted:
+            self.receiveTimer.stop()
+            self.communicator.setInterface(self.messageFormatList)
+            self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
+        return accepted
+
 
 
     def editChannels(self, settings):
+        # raise Exception(u"guuä")
         dialog = ChannelSettingsDialog(self.channels, self.applicationSettings)
         self.channels = dialog.updateChannels()
 
@@ -557,17 +598,22 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     def generateCCode(self):
 
-        if isinstance(self.communicator, SerialCommunicator):
+        if isinstance(self.communicator.interface, SerialInterface):
             self.communicator.disconnectFromController()
+
+        showControllerPathHint = False
 
         try:
             self.includeFileMaker.generateIncludeFiles(self.projectSettings, self.channels, self.commands)
             if len(self.projectSettings.pathToControllerCodeFolder) == 0:
                 path = self.programRootFolder
-                self.displayMessage.emit(u"You can specify the include files target folder in the project settings.", "softWarning")
+                showControllerPathHint = True
+
             else:
                 path = self.projectSettings.pathToControllerCodeFolder
-            self.displayMessage.emit(u"Include file generated in {}".format(path), "softWarning")
+            self.displayMessage.emit(u"Include file generated in {}".format(path), "normal")
+            if showControllerPathHint is True:
+                self.displayMessage.emit(u"You can specify the include files target folder in the project settings.", "softWarning")
         except IOError as ex:
             if ex.errno == errno.ENOENT:
                 self.displayMessage.emit(u"failed to generate code. Please specify output folder.", "warning")
@@ -575,7 +621,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             errorMessage = traceback.format_exc()
             self.displayMessage.emit(u"failed to generate code. Errormessage:\n{}".format(errorMessage), "warning")
 
-        if isinstance(self.communicator, SerialCommunicator):
+        if isinstance(self.communicator.interface, SerialInterface):
             self.displayMessage.emit(u"Communication paused, please recompile your controller code.", "warning")
         else:
             self.displayMessage.emit(u"Please recompile your controller code.", "warning")
@@ -614,8 +660,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             command = self.commands.getCommandById(returnedCommand.id)
             self.commands[returnedCommand.id].checkMicroControllerReturnValue(returnedCommand)
         except:
-            self.communicator._commState.state = CommState.WRONG_CONFIG
-            self.communicator.commStateChanged.emit(self.communicator._commState)
+            self.communicator.commState.state = CommState.WRONG_CONFIG
 
 
     def calculateSomeStuff(self, message):
@@ -639,16 +684,15 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         QtGui.QApplication.quit()
 
     def uncaughtExceptionOccured(self, exceptionString):
-        print exceptionString
+        # print exceptionString
 
 
-    def offerAlternatePort(self, something):
-        print "offering"
+        if len(exceptionString) > 0 and exceptionString != '' and exceptionString != ' ' and exceptionString != '\n':
+            if isinstance(exceptionString, str):
+                exceptionString = exceptionString.decode('utf-8')
+            self.displayMessage.emit(exceptionString, "warning")
 
 
-
-    def closeAlternatePortOffer(self, something):
-        print "close offering"
 
 
 
@@ -682,3 +726,17 @@ class BackgroundWidget(QtGui.QWidget):
         # painter.drawText(textRect,
         #                  QtCore.Qt.AlignCenter,
         #                  QtCore.QString(u"μR"))
+
+
+
+class MyPrinter(object):
+    def __init__(self, mainW):
+        sys.stdout = self
+        self.mainW = mainW
+
+    def write(self, someString):
+        if len(someString) > 0 and someString != '' and someString != ' ' and someString != '\n':
+            if isinstance(someString, str):
+                someString = someString.decode('utf-8')
+            self.mainW.displayMessage.emit(u"PRINT: {}".format(someString), "softWarning")
+            # self.mainW.printMessage(someString, "warning")

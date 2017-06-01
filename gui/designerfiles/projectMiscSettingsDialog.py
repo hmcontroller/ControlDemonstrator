@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'projectMiscSettingsDialog.ui'
 #
-# Created: Sun May 28 17:06:36 2017
+# Created: Thu Jun 01 20:49:43 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -81,18 +81,21 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.label_5.setObjectName(_fromUtf8("label_5"))
         self.formLayout_2.setWidget(0, QtGui.QFormLayout.LabelRole, self.label_5)
         self.lineEditComputerIP = QtGui.QLineEdit(self.groupBoxUdp)
+        self.lineEditComputerIP.setReadOnly(True)
         self.lineEditComputerIP.setObjectName(_fromUtf8("lineEditComputerIP"))
         self.formLayout_2.setWidget(0, QtGui.QFormLayout.FieldRole, self.lineEditComputerIP)
         self.label_6 = QtGui.QLabel(self.groupBoxUdp)
         self.label_6.setObjectName(_fromUtf8("label_6"))
         self.formLayout_2.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_6)
         self.lineEditControllerIP = QtGui.QLineEdit(self.groupBoxUdp)
+        self.lineEditControllerIP.setReadOnly(True)
         self.lineEditControllerIP.setObjectName(_fromUtf8("lineEditControllerIP"))
         self.formLayout_2.setWidget(1, QtGui.QFormLayout.FieldRole, self.lineEditControllerIP)
         self.label_7 = QtGui.QLabel(self.groupBoxUdp)
         self.label_7.setObjectName(_fromUtf8("label_7"))
         self.formLayout_2.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_7)
         self.lineEditUDPPort = QtGui.QLineEdit(self.groupBoxUdp)
+        self.lineEditUDPPort.setReadOnly(True)
         self.lineEditUDPPort.setObjectName(_fromUtf8("lineEditUDPPort"))
         self.formLayout_2.setWidget(2, QtGui.QFormLayout.FieldRole, self.lineEditUDPPort)
         self.horizontalLayout_2.addLayout(self.formLayout_2)

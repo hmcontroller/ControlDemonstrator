@@ -46,8 +46,8 @@ Supported combinations of controller and interface are:
   * Usb
 
 The following code example shows the basic usage of microRay in your microcontroller code.
-The **testparameter** can be controlled from the connected pc and the **channelOne** variable will be transmitted and
-displayed on the pc.
+The **testparameter** can be controlled from the connected pc and the **channelOne** variable will be transmitted via
+the selected interface and displayed on the pc.
 
 .. code-block:: c
 

@@ -17,7 +17,7 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
 
         self.commandList = commandList
         self.communicator = communicator
-        self.communicator._commState.changed.connect(self.commStateChanged)
+        self.communicator.commStateChanged.connect(self.commStateChanged)
         self.communicator.commandSend.connect(self.reportCommandSend)
 
         if mainWindow is not None:
@@ -70,10 +70,13 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.commStateBlinkTimer.setInterval(100)
         self.commStateBlinkTimer.timeout.connect(self.clearCommStateBlink)
 
-        self.commStateChanged(self.communicator._commState)
+        self.commStateChanged(self.communicator.commState)
 
     def togglePlayPause(self):
-        self.communicator.toggleCommunication()
+        if self.communicator.commState._play is True:
+            self.communicator.disconnectFromController()
+        else:
+            self.communicator.connectToController()
 
     def commStateChanged(self, commState):
 

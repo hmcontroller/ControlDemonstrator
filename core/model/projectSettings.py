@@ -2,10 +2,12 @@
 
 from PyQt4 import QtCore
 
+from core.model.tabDescription import TabDescription
 
 class ProjectSettings(QtCore.QObject):
 
     changed = QtCore.pyqtSignal(object)
+    frameworkAndInterfaceChanged = QtCore.pyqtSignal(object)
 
     def __init__(self):
         super(ProjectSettings, self).__init__()
@@ -14,8 +16,8 @@ class ProjectSettings(QtCore.QObject):
         self._controllerIP = "192.168.0.15"
         self._udpPort = 10000
         self._comPortDescription = ""
-        self._controllerFrameworkAndInterface = "mbed_OS_udp"
-        self._tabSettingsDescriptions = list()
+        self._controllerFrameworkAndInterface = "ARDUINO_SERIAL"
+        self._tabSettingsDescriptions = [TabDescription()]
         self._pathToControllerCodeFolder = u""
         self._openedFrom = ""
         self._unsavedChanges = False
@@ -86,6 +88,7 @@ class ProjectSettings(QtCore.QObject):
     def controllerFrameworkAndInterface(self, value):
         self._controllerFrameworkAndInterface = value
         self.somethingChanged()
+        self.frameworkAndInterfaceChanged.emit(self)
 
     @property
     def tabSettingsDescriptions(self):
@@ -95,7 +98,6 @@ class ProjectSettings(QtCore.QObject):
     def tabSettingsDescriptions(self, value):
         self._tabSettingsDescriptions = value
         self.somethingChanged()
-
 
     @property
     def pathToControllerCodeFolder(self):
