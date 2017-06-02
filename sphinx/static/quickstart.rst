@@ -14,8 +14,8 @@ All steps are explained in the following chapters in more detail.
 .. toctree::
    :hidden:
 
-   ../_static/quickstart/quickCreateProject
-   ../_static/quickstart/quickGenerateIncludeFiles
-   ../_static/quickstart/quickCreateControllerCode
-   ../_static/quickstart/quickMicroRayGuiIntroduction
+   quickstart/quickCreateProject
+   quickstart/quickGenerateIncludeFiles
+   quickstart/quickCreateControllerCode
+   quickstart/quickMicroRayGuiIntroduction
 
