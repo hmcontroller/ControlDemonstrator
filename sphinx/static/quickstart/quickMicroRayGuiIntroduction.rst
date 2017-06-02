@@ -20,7 +20,7 @@ command every certain interval, so that the controller doesn't get disturbed too
 this should work fine. When you made a wrong input to one parameter, just enter a new value. Only the last given value
 of a parameter will be send to the controller. You can cancel all pending parameters by clicking the cancel button.
 
-.. image:: ../../_resources/pendingCommands.png
+.. image:: ../../resources/pendingCommands.png
 
 Then you have a play / pause button. This button triggers the connection to the controller fron the pc side. If you use
 a serial connection, the com port will be closed or opened. If you use a Udp connection, the used socket will be closed
@@ -36,14 +36,14 @@ Parameter Section
 
 This is the input section for a single parameter.
 
-.. image:: ../../_resources/genericParameterControl.png
+.. image:: ../../resources/genericParameterControl.png
 
 
 
 Plot section
 ------------
 
-.. image:: ../../_resources/plotControl.png
+.. image:: ../../resources/plotControl.png
 
 If you own a mouse with a scroll wheel, position your mouse on the plot and rotate the scroll wheel to zoom.
 If you only want to change the scale of one axis, position your mouse over the axis and then turn your scroll wheel.

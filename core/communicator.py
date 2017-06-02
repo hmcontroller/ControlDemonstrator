@@ -63,12 +63,14 @@ class Communicator(QtCore.QObject):
                     self.interface = UdpInterface(self._applicationSettings, self._projectSettings)
                     self.interface.setMessageMap(messageMap)
                     self.interface._commState.changed.connect(self.commStateChanged)
+                    self.interface.commandSend.connect(self.commandSend)
                     self.connectToController()
                     return
                 elif availableFramework["interface"] == "SERIAL":
                     self.interface = SerialInterface(self._applicationSettings, self._projectSettings)
                     self.interface.setMessageMap(messageMap)
                     self.interface._commState.changed.connect(self.commStateChanged)
+                    self.interface.commandSend.connect(self.commandSend)
                     self.connectToController()
                     return
 

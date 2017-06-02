@@ -6,5 +6,5 @@ graphical representation of your parameters. An example is given below. Contact 
 if you want to use this feature.
 
 
-.. image:: ../_resources/individualTab.png
+.. image:: ../resources/individualTab.png
 

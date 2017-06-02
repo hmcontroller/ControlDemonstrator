@@ -1,9 +1,6 @@
 # -*- encoding: utf-8 -*-
 
 
-"""
-Hallo, das sollte in der Hilfe erscheinen.
-"""
 
 
 import datetime
@@ -18,18 +15,28 @@ class CommandList(QtCore.QObject):
     Hallo, schöne CommandList.
     """
 
-    """kommt das auch ?"""
     changed = QtCore.pyqtSignal(object)
+    """oder das?"""
 
     def __init__(self):
         """
-        schöne Init-Methode ?
+        schöne Init-Methode WIRD NICHT ANGEZEIGT
         """
         super(CommandList, self).__init__()
 
         self.cmdList = list()
+        # """initialized with an empty list"""
+
+        self.specialCmdList = list()
+
         self.changedCommands = deque()
         self.pendingCommands = deque()
+
+        loopTimeExceededCheck = Command()
+        loopTimeExceededCheck.id = -1
+        loopTimeExceededCheck._value = 0
+        loopTimeExceededCheck.name = "loopCycleTimeExceededByUs"
+        self.appendSpecialCommand(loopTimeExceededCheck)
 
     def append(self, cmd):
         """
@@ -39,6 +46,12 @@ class CommandList(QtCore.QObject):
         self.cmdList.append(cmd)
         self.changed.emit(self)
 
+    def appendSpecialCommand(self, cmd):
+        """
+        schöne append-Methode ?
+        """
+        self.specialCmdList.append(cmd)
+
     def removeCommand(self, command):
         for i in range(0, len(self.cmdList)):
             if command.id == self.cmdList[i].id:
@@ -46,9 +59,14 @@ class CommandList(QtCore.QObject):
                 self.changed.emit(self)
                 break
 
-
     def getCommandById(self, id):
         for cmd in self.cmdList:
+            if cmd.id == id:
+                return cmd
+        raise Exception("Command with id {} not found. Maybe you have to edit the config file.".format(id))
+
+    def getSpecialCommandById(self, id):
+        for cmd in self.specialCmdList:
             if cmd.id == id:
                 return cmd
         raise Exception("Command with id {} not found. Maybe you have to edit the config file.".format(id))
@@ -99,27 +117,46 @@ class CommandList(QtCore.QObject):
 
 
 class Command(QtCore.QObject):
+    """
+    Hello Command.
 
-    # This signal is intended for the communicator, so that he can send a new value to the microcontroller,
-    # It carries an instance of this class.
+    ============== =============================================================
+    **Arguments**
+    keine          eine
+    ============== =============================================================
+
+    """
+
+
     valueChanged = QtCore.pyqtSignal(object)
+    """
+    This signal is intended for the communicator, so that he can send a new value to the microcontroller,
+    It carries an instance of this class.
+    """
 
-    # These signals should allow all gui elements to update their views, if the values changed per other gui elements.
-    # They are intended to serve for the synchronization of all gui elements.
-    #
-    # The signals carry an instance of the widget, that initiated the command.
-    #
-    # The widget, that initiated a value change should break a possible loop condition. For that it can check, whether
-    # the instance delivered with this signal is its own one.
     valueChangedPerWidget = QtCore.pyqtSignal(object)
+    """
+    These signals should allow all gui elements to update their views, if the values changed per other gui elements.
+    They are intended to serve for the synchronization of all gui elements.
+
+    The signals carry an instance of the widget, that initiated the command.
+
+    The widget, that initiated a value change should break a possible loop condition. For that it can check, whether
+    the instance delivered with this signal is its own one.
+    """
+
+    specialCommandReceived = QtCore.pyqtSignal(object)
+
     minChangedPerWidget = QtCore.pyqtSignal(object)
     maxChangedPerWidget = QtCore.pyqtSignal(object)
     pendingModeChanged = QtCore.pyqtSignal(object)
     pendingValueCanceled = QtCore.pyqtSignal(object)
     inputMethodChanged = QtCore.pyqtSignal(object)
 
-    # These signals allow the gui elements to signalize the user an uncommanded value change.
     commTimeOut = QtCore.pyqtSignal(object)
+    """
+    These signals allow the gui elements to signalize the user an uncommanded value change.
+    """
     sameValueReceived = QtCore.pyqtSignal(object)
     differentValueReceived = QtCore.pyqtSignal(object)
 
@@ -273,6 +310,25 @@ class Command(QtCore.QObject):
                 self.adaptLimitsToValue(commandConfirmation.returnValue)
                 self._value = commandConfirmation.returnValue
                 self.differentValueReceived.emit(self)
+
+    def checkSpecialCommandReturnValue(self, commandConfirmation):
+        self.timeOfLastResponse = datetime.datetime.now()
+        self.valueOfLastResponse = commandConfirmation.returnValue
+
+        self.specialCommandReceived.emit(self)
+
+        # # check if the returned value equals the own value
+        # if abs(commandConfirmation.returnValue - self._value) < self.smallNumber:
+        #     pass
+        # else:
+        #     if datetime.datetime.now() - self.timeOfSend < self.differentValueSuppressionDuration:
+        #         pass
+        #     else:
+        #         # the value coming from the controller will be set to the gui
+        #         self.adaptLimitsToValue(commandConfirmation.returnValue)
+        #         self._value = commandConfirmation.returnValue
+        #         self.specialCommandValueChanged.emit(self)
+
 
     def setValueWithLimitsAdaptation(self, value):
         self.adaptLimitsToValue(value)

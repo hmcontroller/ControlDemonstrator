@@ -14,7 +14,7 @@ typedef struct MessageOut
 
 typedef struct MessageIn
 {
-    uint32_t parameterNumber;
+    int32_t parameterNumber;
     float value;
 } MessageIn;
 
@@ -23,6 +23,7 @@ extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
 
 // storage for parameters, that could be set from the pc
 extern float parameters[PARAMETER_COUNT];
+extern float specialCommands[SPECIAL_COMMANDS_COUNT];
 
 extern MessageOut messageOutBuffer;
 

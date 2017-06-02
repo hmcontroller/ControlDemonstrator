@@ -23,6 +23,7 @@ class CommState(QtCore.QObject):
         self._state = self.UNKNOWN
         self._interfaceDescription = u""
         self.timeOfLastReceive = datetime.datetime.now() - datetime.timedelta(hours=1000)
+        self._specialFailures = u""
 
     @property
     def play(self):
@@ -54,3 +55,12 @@ class CommState(QtCore.QObject):
             self._interfaceDescription = value
             self.changed.emit(self)
 
+    @property
+    def specialFailures(self):
+        return self._specialFailures
+
+    @specialFailures.setter
+    def specialFailures(self, value):
+        if value != self._specialFailures:
+            self._specialFailures = value
+            self.changed.emit(self)

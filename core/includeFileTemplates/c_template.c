@@ -1,4 +1,6 @@
 
+
+
 #ifdef ARDUINO_UDP
 
 #include <arduino.h>
@@ -64,6 +66,7 @@ float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
 
 // storage for parameters, that could be set from the pc
 float parameters[PARAMETER_COUNT] = {0.0f};
+float specialCommands[SPECIAL_COMMANDS_COUNT] = {0.0f};
 
 int parameterSendCounter = 0;
 int receivedBytesCount = 0;
@@ -147,15 +150,23 @@ void prepareOutMessage()
 
     // map rotating parameters
     // on each cycle, only one of the "controlled parameters" is send to the pc
-    messageOutBuffer.parameterNumber = parameterSendCounter;
-    //messageOutBuffer.parameterValue = parameters[requestedControlledParameters[parameterSendCounter]];
-    messageOutBuffer.parameterValue = parameters[parameterSendCounter];
+
+    if (parameterSendCounter < 0) {
+        messageOutBuffer.parameterNumber = parameterSendCounter;
+        //messageOutBuffer.parameterValue = parameters[requestedControlledParameters[parameterSendCounter]];
+        messageOutBuffer.parameterValue = specialCommands[(parameterSendCounter + 1) * -1];
+    }
+    else {
+        messageOutBuffer.parameterNumber = parameterSendCounter;
+        //messageOutBuffer.parameterValue = parameters[requestedControlledParameters[parameterSendCounter]];
+        messageOutBuffer.parameterValue = parameters[parameterSendCounter];
+    }
 
     // increment the counter for sending the "slow parameters"
     parameterSendCounter += 1;
     if (parameterSendCounter >= PARAMETER_COUNT)
     {
-        parameterSendCounter = 0;
+        parameterSendCounter = SPECIAL_COMMANDS_COUNT * -1;
     }
 }
 
@@ -231,7 +242,12 @@ void receiveMessage() {
     int availableBytes = Udp.parsePacket();
     if (availableBytes > 0) {
         Udp.read((char *)&messageInBuffer, sizeof(messageInBuffer));
-        parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
+        if (messageInBuffer.parameterNumber >= 0) {
+            parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
+        }
+        else {
+            specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
+    }
     }
     else {
     }
@@ -284,6 +300,9 @@ void copyOldMessageToIncomingBuffer() {
 
 void readIncomingBytesIntoBuffer() {
 //    dataToProcessPosition = bytesInDataToProcess;
+    if (Serial.available() < (IN_MESSAGE_SIZE + 2)) {
+        return;
+    }
     while ((Serial.available() > 0) && (dataToProcessPosition < BUFFER_SIZE)) {
         dataToProcess[dataToProcessPosition] = Serial.read();
         dataToProcessPosition++;
@@ -312,7 +331,13 @@ int findMessageAndProcess() {
 void processMessage(int messageStartPosition) {
     memcpy(&messageInBuffer.parameterNumber, &dataToProcess[messageStartPosition], 4);
     memcpy(&messageInBuffer.value, &dataToProcess[messageStartPosition + 4], 4);
-    parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
+    if (messageInBuffer.parameterNumber >= 0) {
+        parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
+    }
+    else {
+        specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
+    }
+
 }
 
 
@@ -343,8 +368,13 @@ void receiveMessage() {
     // if a command has been received
     if (RECEIVED_BYTES_COUNT > 0.5f)
     {
-        parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
 
+        if (messageInBuffer.parameterNumber >= 0) {
+            parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
+        }
+        else {
+            specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
+        }
         // for debugging
         LAST_COMMAND_ID = messageInBuffer.parameterNumber;
         LAST_COMMAND_VALUE = messageInBuffer.value;

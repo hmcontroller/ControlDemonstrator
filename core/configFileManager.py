@@ -274,8 +274,8 @@ class ConfigFileManager(object):
         # mData2.lengthInBytes = 4
         positionCounter += mData2.lengthInBytes
         mData2.dataType = int
-        mData2.unpackString = "<I"
-        # mData2.unpackString = "<i"
+        # mData2.unpackString = "<I"
+        mData2.unpackString = "<i"
         mData2.name = "parameterNumber"
         messageInformation.append(mData2)
 

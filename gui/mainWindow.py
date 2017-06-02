@@ -43,7 +43,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.sysArgs = sysArgs
         exceptHook.caughtException.connect(self.uncaughtExceptionOccured)
 
-
+        self.lastDutyCycleTimeExceededWarning = u""
 
         self.programRootFolder = rootFolder
 
@@ -68,7 +68,6 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         self.projectConfigManager = ConfigFileManager(self.applicationSettings)
 
-        self.includeFileMaker = IncludeFileMaker()
 
         self.setupUi()
 
@@ -402,6 +401,9 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.projectSettings, self.channels, self.commands, self.messageFormatList, self.communicator = self.projectConfigManager.buildEmptyModel()
         self.projectSettings.changed.connect(self.projectSettingsChanged)
 
+        for cmd in self.commands.specialCmdList:
+            cmd.specialCommandValueChanged.connect(self.specialCommandChanged)
+
 
     def closeCurrentProject(self):
         while self.centralWidgetLayout.count() > 0:
@@ -441,6 +443,9 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.projectSettings, self.channels, self.commands, self.messageFormatList, self.communicator = self.projectConfigManager.buildModelFromConfigFile(pathToProjectFile)
         self.projectSettings.changed.connect(self.projectSettingsChanged)
         self.channels.changed.connect(self.channelSetupChanged)
+
+        for cmd in self.commands.specialCmdList:
+            cmd.specialCommandReceived.connect(self.specialCommandCheck)
 
         self.communicator.setMessageMap(self.messageFormatList)
         self.communicator.connectToController()
@@ -604,7 +609,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         showControllerPathHint = False
 
         try:
-            self.includeFileMaker.generateIncludeFiles(self.projectSettings, self.channels, self.commands)
+            IncludeFileMaker.generateIncludeFiles(self.projectSettings, self.channels, self.commands)
             if len(self.projectSettings.pathToControllerCodeFolder) == 0:
                 path = self.programRootFolder
                 showControllerPathHint = True
@@ -660,7 +665,11 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             command = self.commands.getCommandById(returnedCommand.id)
             self.commands[returnedCommand.id].checkMicroControllerReturnValue(returnedCommand)
         except:
-            self.communicator.commState.state = CommState.WRONG_CONFIG
+            try:
+                command = self.commands.getSpecialCommandById(returnedCommand.id)
+                command.checkSpecialCommandReturnValue(returnedCommand)
+            except:
+                self.communicator.commState.state = CommState.WRONG_CONFIG
 
 
     def calculateSomeStuff(self, message):
@@ -692,7 +701,13 @@ class MicroRayMainWindow(QtGui.QMainWindow):
                 exceptionString = exceptionString.decode('utf-8')
             self.displayMessage.emit(exceptionString, "warning")
 
-
+    def specialCommandCheck(self, command):
+        if command.id == -1:
+            if command.valueOfLastResponse > 0.2:
+                warning = "Duty cycle time exceeded by {} us.".format(command.valueOfLastResponse)
+                if warning != self.lastDutyCycleTimeExceededWarning:
+                    self.displayMessage.emit(warning, "warning")
+                    self.lastDutyCycleTimeExceededWarning = warning
 
 
 

@@ -186,8 +186,9 @@ class PlotWidget(QtGui.QWidget):
             # update all curves
             biggestTime = self.channels.timeValues[self.applicationSettings.bufferLength - 1]
             for id, controller in self.channelControllers.iteritems():
-                controller["plotCurve"].setData(self.channels.timeValues, self.channels.getChannelById(id))
+                controller["plotCurve"].setData(self.channels.timeValues, self.channels.getChannelById(id), noUpdate=1, antialias=False)
                 controller["plotCurve"].setPos(-biggestTime, 0)
+            # self.plotWidget.update()
             self.updateValueLabels()
 
     def updateValueLabels(self):

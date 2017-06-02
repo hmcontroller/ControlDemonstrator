@@ -20,21 +20,19 @@ class IncludeFileMaker(object):
 
 
 
+    @staticmethod
+    def generateIncludeFiles(projectSettings, channels, commands):
+        iMaker = IncludeFileMaker()
+        iMaker.projectSettings = projectSettings
+        iMaker.channels = channels
+        iMaker.commands = commands
 
-    def generateIncludeFiles(self, projectSettings, channels, commands):
-        self.projectSettings = projectSettings
-        self.channels = channels
-        self.commands = commands
+        iMaker.analyseModel()
 
-        self.cFileString = ""
-        self.headerFileString = ""
+        iMaker.makeHeaderFileString()
+        iMaker.makeCFileString()
 
-        self.analyseModel()
-
-        self.makeHeaderFileString()
-        self.makeCFileString()
-
-        self.writeFilesToDisk()
+        iMaker.writeFilesToDisk()
 
     def analyseModel(self):
         for channel in self.channels.channels:
@@ -104,6 +102,11 @@ class IncludeFileMaker(object):
             "PARAMETER_COUNT", len(self.commands),
             nameWidth=self.nameWidth, valueWidth=self.valueWidth)
 
+        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "SPECIAL_COMMANDS_COUNT", len(self.commands.specialCmdList),
+            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
+
+
         self.headerFileString += "\n"
 
 
@@ -135,6 +138,14 @@ class IncludeFileMaker(object):
                 command.name, macro, nameWidth=self.nameWidth, valueWidth=self.valueWidth)
         self.headerFileString += "\n"
 
+        # all special parameters
+        self.headerFileString += "// all special parameters\n"
+        for i, command in enumerate(self.commands.specialCmdList):
+            macro = "(specialCommands[{}])".format(i)
+            self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+                command.name, macro, nameWidth=self.nameWidth, valueWidth=self.valueWidth)
+        self.headerFileString += "\n"
+
     def addHeaderTemplate(self):
         with open(headerTemplatePath, "r") as headerTemplate:
             lines = headerTemplate.readlines()
@@ -149,6 +160,9 @@ class IncludeFileMaker(object):
         self.cFileString += "void setInitialValues() {\n"
 
         for command in self.commands:
+            self.cFileString += "    {} = {}f;\n".format(command.name, command.initialValue)
+
+        for command in self.commands.specialCmdList:
             self.cFileString += "    {} = {}f;\n".format(command.name, command.initialValue)
 
         self.cFileString += "}\n\n"

@@ -61,7 +61,7 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.singleLineTextEdit.setPalette(pal)
         self.singleLineTextEdit.setCurrentFont(QtGui.QFont("Courier New"))
         self.singleLineTextEdit.setFontPointSize(12)
-        self.singleLineTextEdit.document().setMaximumBlockCount(2)
+        self.singleLineTextEdit.document().setMaximumBlockCount(3)
         self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
 
 
@@ -112,6 +112,10 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
         self.singleLineTextEdit.append(commState.interfaceDescription)
 
+        self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
+        self.singleLineTextEdit.append(commState.specialFailures)
+
+        # if commState.specialFailures
 
         self.singleLineTextEdit.verticalScrollBar().setValue(self.singleLineTextEdit.verticalScrollBar().maximum())
 
@@ -130,13 +134,13 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
 
 
     def reportCommandSend(self, command):
-        now = datetime.datetime.now().strftime("%H:%M:%S.%f")
+
         name = u""
         if len(command.displayName) > 0:
             name = command.displayName
         else:
             name = command.name
-        message = u"{: <15} {: <40} {}".format(now, name, command._value)
+        message = u"{: <40} {}".format(name, command._value)
 
 
         # "#define {:{nameWidth}} {:>{valueWidth}}\n".format
@@ -150,6 +154,8 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.commandList.cancelPendingCommands()
 
     def showMessage(self, message, kindOfMessage="normal"):
+        now = datetime.datetime.now().strftime("%H:%M:%S.%f")
+        messageToShow = u"{} {}".format(now, message)
         if kindOfMessage == "normal":
             self.messageTextEdit.setTextColor(QtCore.Qt.darkGreen)
         elif kindOfMessage == "softWarning":
@@ -159,5 +165,5 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         else:
             self.messageTextEdit.setTextColor(QtCore.Qt.lightGray)
 
-        self.messageTextEdit.append(message)
+        self.messageTextEdit.append(messageToShow)
         self.messageTextEdit.verticalScrollBar().setValue(self.messageTextEdit.verticalScrollBar().maximum())

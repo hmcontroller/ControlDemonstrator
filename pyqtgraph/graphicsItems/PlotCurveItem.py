@@ -374,8 +374,15 @@ class PlotCurveItem(GraphicsObject):
         
         
         profiler('set')
-        self.update()
+
+
+        if 'noUpdate' in kargs:
+            pass
+        else:
+            self.update()
+
         profiler('update')
+
         self.sigPlotChanged.emit(self)
         profiler('emit')
         

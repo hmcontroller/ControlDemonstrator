@@ -9,13 +9,13 @@ The basic steps to use microRay are as follows:
 * Compile and upload the code.
 * Now watch the channel values changing and adapt parameter values on the controller.
 
-All steps are explained in the following chapters in more detail.
+All steps are explained in more detail in the following chapters.
 
 .. toctree::
    :hidden:
 
    quickstart/quickCreateProject
-   quickstart/quickGenerateIncludeFiles
    quickstart/quickCreateControllerCode
+   quickstart/quickGenerateIncludeFiles
    quickstart/quickMicroRayGuiIntroduction
 
