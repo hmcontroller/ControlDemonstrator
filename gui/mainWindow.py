@@ -179,10 +179,10 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         try:
             actualVersionNumber = self.getCurrentOnlineVersionNumber()
             if actualVersionNumber > self.applicationSettings.currentVersion:
-                self.displayMessage.emit(u"Newer version v{} is online, current version is v{}.".format(
-                    actualVersionNumber, self.applicationSettings.currentVersion), "softWarning",)
+                self.displayMessage.emit(u"Newer version v{} is online, installed version is v{}.".format(
+                    actualVersionNumber, self.applicationSettings.currentVersion), "softWarning")
         except:
-            pass
+            self.displayMessage.emit(u"{}".format(traceback.format_exc()), "softWarning")
 
 
     def getCurrentOnlineVersionNumber(self):
