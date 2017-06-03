@@ -1,5 +1,5 @@
 # microRay
 
-The microRay is used to measure and regulate.
+[a link](http://mray.org)
 
 
