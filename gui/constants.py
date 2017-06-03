@@ -1,6 +1,14 @@
 # -*- encoding: utf-8 -*-
 from PyQt4 import QtGui
 
+
+VERSION_NUMBER = 0
+
+MRAY_URI = "https://intern.zeitraffer-aufnahmen.de/mRay"
+MRAY_VERSION_FILE = MRAY_URI + "/currentVersion.txt"
+MRAY_ONLINE_HELP = MRAY_URI + "/docs/index.html"
+MRAY_WEBSITE = MRAY_URI + "/index.html"
+
 AVAILABLE_FRAMEWORKS = [
     {"macroName": "MBED_2_UDP", "displayName": u"Mbed 2 UDP", "interface": "UDP"},
     {"macroName": "MBED_2_SERIAL", "displayName": u"Mbed 2 Serial", "interface": "SERIAL"},
@@ -29,3 +37,4 @@ CABLE_PEN = QtGui.QPen()
 CABLE_PEN.setColor(QtGui.QColor(0, 0, 0))
 CABLE_PEN.setCosmetic(True)
 CABLE_PEN.setWidth(2)
+

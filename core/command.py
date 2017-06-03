@@ -38,6 +38,12 @@ class CommandList(QtCore.QObject):
         loopTimeExceededCheck.name = "loopCycleTimeExceededByUs"
         self.appendSpecialCommand(loopTimeExceededCheck)
 
+        serialTransmissionLag = Command()
+        serialTransmissionLag.id = -2
+        serialTransmissionLag._value = 0
+        serialTransmissionLag.name = "serialTransmissionLag"
+        self.appendSpecialCommand(serialTransmissionLag)
+
     def append(self, cmd):
         """
         schöne append-Methode ?

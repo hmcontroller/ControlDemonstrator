@@ -13,6 +13,8 @@ class MeasurementData(QtCore.QObject):
 
     changed = QtCore.pyqtSignal(object)
 
+    bufferLengthChanged = QtCore.pyqtSignal(object)
+
     def __init__(self, bufferLength):
         super(MeasurementData, self).__init__()
         self.bufferLength = bufferLength
@@ -57,4 +59,22 @@ class MeasurementData(QtCore.QObject):
             if channel.name == name:
                 return channel
         raise Exception("no channel available with name {}".format(name))
+
+    def actualizeBufferLength(self, length):
+        self.bufferLength = length
+
+        oldBiggestTime = self.timeValues[-1]
+
+        self.timeValues.setBufferLength(self.bufferLength)
+        for channel in self.channels:
+            channel.setBufferLength(self.bufferLength)
+
+        self.clear(oldBiggestTime)
+
+        # TODO attention dirty hack
+        # if doing so, the message interpreter sets correct zero values on next message arrival
+        self.isEmpty = True
+
+
+        self.bufferLengthChanged.emit(self.bufferLength)
 

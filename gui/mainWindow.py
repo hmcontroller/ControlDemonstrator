@@ -7,6 +7,7 @@ import errno
 import traceback
 from importlib import import_module
 import imp
+import urllib2
 
 from PyQt4 import QtCore, QtGui
 
@@ -21,6 +22,7 @@ from core.includeFileMaker import IncludeFileMaker
 from core.model.tabDescription import TabDescription
 
 from gui.aboutDialog import AboutDialog
+from gui.applicationSettingsDialog import ApplicationSettingsDialog
 from gui.projectMiscSettingsDialog import ProjectMiscSettingsDialog
 from gui.channelSettingsDialog import ChannelSettingsDialog
 from gui.commandSettingsDialog import CommandSettingsDialog
@@ -44,6 +46,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         exceptHook.caughtException.connect(self.uncaughtExceptionOccured)
 
         self.lastDutyCycleTimeExceededWarning = u""
+        self.lastTransmissionLagWarning = u""
 
         self.programRootFolder = rootFolder
 
@@ -51,14 +54,21 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         pixmap = QtGui.QPixmap(iconPath)
         icon = QtGui.QIcon(pixmap)
-        QtGui.QApplication.setApplicationName(u"microRay")
         QtGui.QApplication.setWindowIcon(icon)
 
         appSettingsPath = os.path.join(self.programRootFolder, RELATIVE_PATH_TO_APPLICATION_SETTINGS)
 
         self.appSettingsManager = ApplicationSettingsManager(appSettingsPath)
         self.applicationSettings = self.appSettingsManager.restoreSettingsFromFile()
+
+        self.applicationSettings.currentVersion = VERSION_NUMBER
+
+
+        self.appSettingsManager.saveSettings()
         self.applicationSettings.changed.connect(self.appSettingsChanged)
+
+        self.setWindowTitle("microRay v{}".format(self.applicationSettings.currentVersion))
+
 
         # setup a timer, that triggers to read from the controller
         self.receiveTimer = QtCore.QTimer()
@@ -74,7 +84,6 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
 
 
-        self.setWindowTitle("microRay")
 
         self.screenRect = QtGui.QApplication.desktop().screenGeometry()
         self.setGeometry(self.screenRect.width() * 0.05, self.screenRect.height() * 0.05,
@@ -159,9 +168,27 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
 
 
+        self.checkForUpdates()
+
+
+
         splashScreen.finish(self)
         logging.info("GUI load complete")
 
+    def checkForUpdates(self):
+        try:
+            actualVersionNumber = self.getCurrentOnlineVersionNumber()
+            if actualVersionNumber > self.applicationSettings.currentVersion:
+                self.displayMessage.emit(u"Newer version v{} is online, current version is v{}.".format(
+                    actualVersionNumber, self.applicationSettings.currentVersion), "softWarning",)
+        except:
+            pass
+
+
+    def getCurrentOnlineVersionNumber(self):
+        response = urllib2.urlopen(MRAY_VERSION_FILE)
+        html = response.read()
+        return int(html.replace("\n", "").replace("\r", ""))
 
     def setupUi(self):
         self.centralwidget = BackgroundWidget(self)
@@ -308,6 +335,9 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         saveAsAction.setShortcut("Shift+Ctrl+N")
         saveAsAction.triggered.connect(self.saveAs)
 
+        editAppSettingsAction = QtGui.QAction(u"Einstellungen...", self)
+        editAppSettingsAction.triggered.connect(self.editApplicationSettings)
+
         closeAction = QtGui.QAction(u"Programm beenden...", self)
         closeAction.setShortcut("Ctrl+Q")
         closeAction.triggered.connect(self.close)
@@ -322,30 +352,46 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         self.fileMenu.addAction(saveAction)
         self.fileMenu.addAction(saveAsAction)
+
+        self.fileMenu.addSeparator()
+
+        self.fileMenu.addAction(editAppSettingsAction)
+
+        self.fileMenu.addSeparator()
+
         self.fileMenu.addAction(closeAction)
 
 
         editProjectMiscSettingsAction = QtGui.QAction(u"Projekteinstellungen...", self)
         editProjectMiscSettingsAction.triggered.connect(self.editProjectMiscSettings)
 
-        editChannelsAction = QtGui.QAction(u"Kanaleinstellungen...", self)
-        editChannelsAction.triggered.connect(self.editChannels)
 
         editCommandsAction = QtGui.QAction(u"Parametereinstellungen...", self)
         editCommandsAction.triggered.connect(self.editCommands)
+
+        editChannelsAction = QtGui.QAction(u"Kanaleinstellungen...", self)
+        editChannelsAction.triggered.connect(self.editChannels)
+
+
 
         generateCCodeAction = QtGui.QAction(u"C-Code generieren", self)
         generateCCodeAction.setShortcut("Ctrl+G")
         generateCCodeAction.triggered.connect(self.generateCCode)
 
-        actualValuesToInitialValuesAction = QtGui.QAction(u"aktuelle Werte als Startwerte übernehmen...", self)
+        actualValuesToInitialValuesAction = QtGui.QAction(u"aktuelle Parameterwerte als Startwerte übernehmen...", self)
         actualValuesToInitialValuesAction.triggered.connect(self.setActualValuesToInitialValues)
 
         editMenu = mainMenu.addMenu("Schnittstelle")
         editMenu.addAction(editProjectMiscSettingsAction)
-        editMenu.addAction(editChannelsAction)
         editMenu.addAction(editCommandsAction)
+        editMenu.addAction(editChannelsAction)
+
+        editMenu.addSeparator()
+
         editMenu.addAction(generateCCodeAction)
+
+        editMenu.addSeparator()
+
         editMenu.addAction(actualValuesToInitialValuesAction)
 
 
@@ -354,12 +400,23 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         showHelpAction.setStatusTip(u"todo")
         showHelpAction.triggered.connect(self.showHelp)
 
+        showOnlineHelpAction = QtGui.QAction(u"Onlinehilfe anzeigen...", self)
+        showOnlineHelpAction.triggered.connect(self.showOnlineHelp)
+
+        showOfficialWebsiteAction = QtGui.QAction(u"inoffizielle Website anzeigen...", self)
+        showOfficialWebsiteAction.triggered.connect(self.showWebsite)
+
+
         aboutAction = QtGui.QAction(u"Über das Programm...", self)
         aboutAction.triggered.connect(self.showAboutWindow)
 
         helpMenu = mainMenu.addMenu("Hilfe")
         helpMenu.addAction(showHelpAction)
+        helpMenu.addAction(showOnlineHelpAction)
+        helpMenu.addAction(showOfficialWebsiteAction)
+        helpMenu.addSeparator()
         helpMenu.addAction(aboutAction)
+
 
     def refreshRecentProjectsMenu(self):
         self.openRecentMenu.clear()
@@ -458,7 +515,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         displayPath = self.getProjectDisplayPath(pathToProjectFile)
 
         # self.setWindowTitle(u"microRay - {}".format(displayPath))
-        self.setWindowTitle(u"microRay - {}".format(displayPath))
+        self.setWindowTitle(u"microRay v{} - {}".format(self.applicationSettings.currentVersion, displayPath))
 
         self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
 
@@ -494,10 +551,11 @@ class MicroRayMainWindow(QtGui.QMainWindow):
     def save(self):
         try:
             self.projectConfigManager.save(self.projectSettings, self.channels, self.commands)
+            self.projectSettings.unsavedChanges = False
+            self.displayMessage.emit("Project file saved.", "normal")
         except IOError:
             # self.displayMessage.emit("could not save project file", "warning")
             self.saveAs(None)
-        self.projectSettings.unsavedChanges = False
 
     def saveAs(self, something, path=None):
 
@@ -533,8 +591,9 @@ class MicroRayMainWindow(QtGui.QMainWindow):
                 self.projectConfigManager.saveAs(projectFilePath, self.projectSettings, self.channels, self.commands)
                 self.applicationSettings.addRecentProjectPath(projectFilePath)
                 self.projectSettings.unsavedChanges = False
+                self.displayMessage.emit(u"Project file saved under {}.".format(projectFilePath), "normal")
             except IOError:
-                self.displayMessage.emit("could not save project file", "warning")
+                self.displayMessage.emit(u"could not save project file", "warning")
                 return
 
         # self.loadProject(projectFilePath)
@@ -553,6 +612,17 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         # fileNameSuggestion = self.projectSettings.projectName + ".json"
         # filePathSuggestion = os.path.join(folderSuggestion, fileNameSuggestion)
+
+
+    def editApplicationSettings(self):
+        self.communicator.disconnectFromController()
+        accepted = ApplicationSettingsDialog.updateSettings(self.applicationSettings)
+
+        if accepted:
+            self.appSettingsManager.saveSettings()
+            self.channels.actualizeBufferLength(self.applicationSettings.bufferLength)
+
+        self.communicator.connectToController()
 
 
     def close(self):
@@ -619,6 +689,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             self.displayMessage.emit(u"Include file generated in {}".format(path), "normal")
             if showControllerPathHint is True:
                 self.displayMessage.emit(u"You can specify the include files target folder in the project settings.", "softWarning")
+            self.save()
         except IOError as ex:
             if ex.errno == errno.ENOENT:
                 self.displayMessage.emit(u"failed to generate code. Please specify output folder.", "warning")
@@ -639,6 +710,12 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         pathToIndexHtml = os.path.abspath(os.path.join(self.programRootFolder, "documentation/index.html"))
         url = "file://" + pathToIndexHtml
         webbrowser.open(url)
+
+    def showOnlineHelp(self):
+        webbrowser.open(MRAY_ONLINE_HELP)
+
+    def showWebsite(self):
+        webbrowser.open(MRAY_WEBSITE)
 
     def showAboutWindow(self):
         aboutDialog = AboutDialog()
@@ -702,6 +779,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             self.displayMessage.emit(exceptionString, "warning")
 
     def specialCommandCheck(self, command):
+
+        # duty cylce time exceeded
         if command.id == -1:
             if command.valueOfLastResponse > 0.2:
                 warning = "Duty cycle time exceeded by {} us.".format(command.valueOfLastResponse)
@@ -709,6 +788,14 @@ class MicroRayMainWindow(QtGui.QMainWindow):
                     self.displayMessage.emit(warning, "warning")
                     self.lastDutyCycleTimeExceededWarning = warning
 
+        # serial send took took too long
+        if command.id == -2:
+            # print command.valueOfLastResponse
+            if command.valueOfLastResponse > 0.2:
+                warning = "Transmission lag. {} bytes from last loop. Deactivate some channels.".format(int(command.valueOfLastResponse))
+                if warning != self.lastTransmissionLagWarning:
+                    self.displayMessage.emit(warning, "warning")
+                    self.lastTransmissionLagWarning = warning
 
 
 class BackgroundWidget(QtGui.QWidget):

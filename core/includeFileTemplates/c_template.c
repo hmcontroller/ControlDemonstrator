@@ -204,6 +204,13 @@ void sendMessage() {
     //     Serial.write(messageOutBuffer.channels[i]);
     // }
 
+    // check, if there is still data not send from the previous loop
+
+    int bytesStillInBuffer = SERIAL_TX_BUFFER_SIZE - Serial.availableForWrite();
+    if (bytesStillInBuffer > 1) {
+        serialTransmissionLag = SERIAL_TX_BUFFER_SIZE - Serial.availableForWrite();
+    }
+
     Serial.write(7);
     Serial.write((byte *)&messageOutBuffer, sizeof(messageOutBuffer));
     Serial.write(8);

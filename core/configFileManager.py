@@ -124,24 +124,38 @@ class ConfigFileManager(object):
 
         model = MeasurementData(bufferLength)
 
-        for channelDescription in channelDescriptions:
-            channel = ValueChannel(bufferLength)
-            if "color" in channelDescription:
-                channel.colorRgbTuple = channelDescription["color"]
-            if "show" in channelDescription:
-                channel.show = channelDescription["show"]
-            if "id" in channelDescription:
-                channel.id = channelDescription["id"]
-            if "name" in channelDescription:
-                channel.name = channelDescription["name"]
-            if "displayName" in channelDescription:
-                channel.displayName = channelDescription["displayName"]
-            if "isRequested" in channelDescription:
-                channel.isRequested = channelDescription["isRequested"]
+        if isinstance(channelDescriptions, MeasurementData):
+            for oldChannel in channelDescriptions.channels:
+                channel = ValueChannel(bufferLength)
+                channel.colorRgbTuple = oldChannel.colorRgbTuple
+                channel.show = oldChannel.show
+                channel.id = oldChannel.id
+                channel.name = oldChannel.name
+                channel.displayName = oldChannel.displayName
+                channel.isRequested = oldChannel.isRequested
 
-            model.addChannel(channel)
+                model.addChannel(channel)
+        else:
+            for channelDescription in channelDescriptions:
+                channel = ValueChannel(bufferLength)
+                if "color" in channelDescription:
+                    channel.colorRgbTuple = channelDescription["color"]
+                if "show" in channelDescription:
+                    channel.show = channelDescription["show"]
+                if "id" in channelDescription:
+                    channel.id = channelDescription["id"]
+                if "name" in channelDescription:
+                    channel.name = channelDescription["name"]
+                if "displayName" in channelDescription:
+                    channel.displayName = channelDescription["displayName"]
+                if "isRequested" in channelDescription:
+                    channel.isRequested = channelDescription["isRequested"]
+
+                model.addChannel(channel)
 
         return model
+
+
 
     def makeCommandObjects(self, commandDescriptions):
         commandList = CommandList()

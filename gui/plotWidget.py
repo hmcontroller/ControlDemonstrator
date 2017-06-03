@@ -16,6 +16,7 @@ class PlotWidget(QtGui.QWidget):
         self.channels.channelChanged.connect(self.updateCurve)
         self.channels.changed.connect(self.createCurves)
         self.channels.channelConfigChanged.connect(self.createCurves)
+        self.channels.bufferLengthChanged.connect(self.adjustScaleToBufferLength)
 
         self.applicationSettings = applicationSettings
         self.projectSettings = projectSettings
@@ -79,6 +80,11 @@ class PlotWidget(QtGui.QWidget):
         self.plotUpdateTimer.setSingleShot(False)
         self.plotUpdateTimer.timeout.connect(self.updatePlots)
         self.plotUpdateTimer.start(self.applicationSettings.guiUpdateIntervalLengthInMs)
+
+    def adjustScaleToBufferLength(self, newBufferLength):
+        self.plotWidget.setXRange(-float(newBufferLength)*(self.projectSettings.controllerLoopCycleTimeInUs / float(1000000)), 0)
+        self.plotWidget.setYRange(-1000, 1000)
+
 
     def createCurves(self):
 
@@ -184,20 +190,30 @@ class PlotWidget(QtGui.QWidget):
     def updatePlots(self):
         if self.movePlot is True and self.isVisible() is True:
             # update all curves
-            biggestTime = self.channels.timeValues[self.applicationSettings.bufferLength - 1]
+
+            valuesCount = len(self.channels.timeValues)
+            biggestTime = self.channels.timeValues[valuesCount - 1]
+            # print biggestTime
+            # biggestTime = self.channels.timeValues[self.applicationSettings.bufferLength - 1]
             for id, controller in self.channelControllers.iteritems():
-                controller["plotCurve"].setData(self.channels.timeValues, self.channels.getChannelById(id), noUpdate=1, antialias=False)
+                # controller["plotCurve"].setData(self.channels.timeValues, self.channels.getChannelById(id), noUpdate=1, antialias=False)
+                controller["plotCurve"].setData(self.channels.timeValues, self.channels.getChannelById(id), antialias=False)
+                # controller["plotCurve"].setPos(0, 0)
                 controller["plotCurve"].setPos(-biggestTime, 0)
             # self.plotWidget.update()
             self.updateValueLabels()
 
     def updateValueLabels(self):
         timeOfVerticalLine = self.verticalLine.getXPos()
-        indexAtVerticalLine = int(self.applicationSettings.bufferLength + ((timeOfVerticalLine * 1000000) / self.projectSettings.controllerLoopCycleTimeInUs) - 1)
+
+        valuesCount = len(self.channels.timeValues)
+        # indexAtVerticalLine = int(self.applicationSettings.bufferLength + ((timeOfVerticalLine * 1000000) / self.projectSettings.controllerLoopCycleTimeInUs) - 1)
+        indexAtVerticalLine = int(valuesCount + ((timeOfVerticalLine * 1000000) / self.projectSettings.controllerLoopCycleTimeInUs) - 1)
 
         for key, something in self.channelControllers.iteritems():
             xData, yData = something["plotCurve"].getData()
-            if 0 <= indexAtVerticalLine < self.applicationSettings.bufferLength:
+            # if 0 <= indexAtVerticalLine < self.applicationSettings.bufferLength:
+            if 0 <= indexAtVerticalLine < valuesCount:
                 yDataAtIndex = yData[indexAtVerticalLine]
                 something["controllerBox"].setValue(str(yDataAtIndex))
             else:
@@ -206,11 +222,16 @@ class PlotWidget(QtGui.QWidget):
 
     def updateCurve(self, timeValues, channel):
         if self.movePlot is True: # and self.isVisible() is True:
-            biggestTime = timeValues[self.settings.bufferLength - 1]
+
+            valuesCount = len(self.channels.timeValues)
+            biggestTime = timeValues[valuesCount - 1]
+            # biggestTime = timeValues[self.settings.bufferLength - 1]
+
             curve = self.channelControllers[channel.id]["plotCurve"]
 
             curve.setData(timeValues, channel)
-            curve.setPos(-biggestTime, 0)
+            curve.setPos(0, 0)
+            # curve.setPos(-biggestTime, 0)
 
     def togglePlayPause(self):
         self.movePlot = not self.movePlot
