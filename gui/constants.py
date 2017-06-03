@@ -4,7 +4,7 @@ from PyQt4 import QtGui
 
 VERSION_NUMBER = 1
 
-MRAY_URI = "https://intern.zeitraffer-aufnahmen.de/mRay"
+MRAY_URI = "http://intern.zeitraffer-aufnahmen.de/mRay"
 MRAY_VERSION_FILE = MRAY_URI + "/currentVersion.txt"
 MRAY_ONLINE_HELP = MRAY_URI + "/docs/index.html"
 MRAY_WEBSITE = MRAY_URI + "/index.html"
