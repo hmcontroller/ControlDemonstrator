@@ -1,0 +1,1 @@
+pyuic4 -o applicationSettingsDialog.py applicationSettingsDialog.ui

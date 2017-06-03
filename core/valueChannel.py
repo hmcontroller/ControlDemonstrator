@@ -33,6 +33,10 @@ class ValueChannel(QtCore.QObject):
     def appendSilently(self, value):
         self._values.append(value)
 
+    def setBufferLength(self, length):
+        self._values = deque(maxlen=length)
+        # for i in range(0, length):
+        #     self.appendSilently(0.0)
 
     @property
     def id(self):

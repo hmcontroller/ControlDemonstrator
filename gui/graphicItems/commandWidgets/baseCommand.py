@@ -47,7 +47,7 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.command.sameValueReceived.connect(self.sameValueReceived)
         self.command.differentValueReceived.connect(self.differentValueReceived)
         self.command.commTimeOut.connect(self.commTimeOut)
-        self.command.pendingValueCanceled.connect(self.pendingValueCanceled)
+        self.command.pendingValueCanceled.connect(self.pendingValueWasCanceled)
 
         # here brushes are defined to give a constant look of all warnings
         self.userInputWarningBrush = QtGui.QBrush(USER_INPUT_WARNING_COLOR)
@@ -149,7 +149,7 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.update()
 
     @QtCore.pyqtSlot()
-    def pendingValueCanceled(self, command):
+    def pendingValueWasCanceled(self, command=None):
         self.update()
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):

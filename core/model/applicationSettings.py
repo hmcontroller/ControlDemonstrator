@@ -10,11 +10,13 @@ class ApplicationSettings(QtCore.QObject):
 
     def __init__(self):
         super(ApplicationSettings, self).__init__()
-        self.guiUpdateIntervalLengthInMs = 0
-        self.receiveMessageIntervalLengthInMs = 0
-        self.sendMessageIntervalLengthInMs = 0
+        self.currentVersion = 1
+        self.guiUpdateIntervalLengthInMs = 40
+        self.receiveMessageIntervalLengthInMs = 15
+        self.sendMessageIntervalLengthInMs = 10
         self.bufferLength = 1000
         self.recentProjectFilePathes = deque(maxlen=10)
+        self.autoSaveAfterCodeGeneration = False
 
     def addRecentProjectPath(self, path):
         newRecentPathes = deque(maxlen=10)

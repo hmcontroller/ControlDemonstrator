@@ -16,6 +16,7 @@ class MessageInterpreter():
                 newestTimeInSec = float(messagePart.value) / 1000000.0
 
         lastTime = measurementDataModel.timeValues[len(measurementDataModel.timeValues) - 1]
+        # lastTime = measurementDataModel.timeValues[-1]
 
         if measurementDataModel.isEmpty or newestTimeInSec < lastTime:
             measurementDataModel.clear(newestTimeInSec)

@@ -22,10 +22,12 @@ class ApplicationSettingsManager():
         jsonAllSettingsDict = dict()
         jsonMiscSettingsDict = dict()
 
+        jsonMiscSettingsDict["currentVersion"] = self.settings.currentVersion
         jsonMiscSettingsDict["guiUpdateIntervalLengthInMs"] = self.settings.guiUpdateIntervalLengthInMs
         jsonMiscSettingsDict["receiveMessageIntervalLengthInMs"] = self.settings.receiveMessageIntervalLengthInMs
         jsonMiscSettingsDict["sendMessageIntervalLengthInMs"] = self.settings.sendMessageIntervalLengthInMs
         jsonMiscSettingsDict["bufferLength"] = self.settings.bufferLength
+        jsonMiscSettingsDict["autoSaveAfterCodeGeneration"] = self.settings.autoSaveAfterCodeGeneration
 
         recentProjects = list()
         for recentPath in self.settings.recentProjectFilePathes:
@@ -41,16 +43,34 @@ class ApplicationSettingsManager():
         jsonMiscSettings = jsonDicts["miscSettings"]
 
         self.settings = ApplicationSettings()
-        self.settings.guiUpdateIntervalLengthInMs = jsonMiscSettings["guiUpdateIntervalLengthInMs"]
-        self.settings.receiveMessageIntervalLengthInMs = jsonMiscSettings["receiveMessageIntervalLengthInMs"]
-        self.settings.sendMessageIntervalLengthInMs = jsonMiscSettings["sendMessageIntervalLengthInMs"]
-        self.settings.bufferLength = jsonMiscSettings["bufferLength"]
 
-        recentPathes = deque(maxlen=5)
-        for recentPath in jsonMiscSettings["recentProjects"]:
-            if os.path.isfile(recentPath):
-                recentPathes.append(recentPath)
-        self.settings.recentProjectFilePathes = recentPathes
+        if "currentVersion" in jsonMiscSettings:
+            self.settings.currentVersion = jsonMiscSettings["currentVersion"]
+
+        if "guiUpdateIntervalLengthInMs" in jsonMiscSettings:
+            self.settings.guiUpdateIntervalLengthInMs = jsonMiscSettings["guiUpdateIntervalLengthInMs"]
+
+        if "receiveMessageIntervalLengthInMs" in jsonMiscSettings:
+            self.settings.receiveMessageIntervalLengthInMs = jsonMiscSettings["receiveMessageIntervalLengthInMs"]
+
+        if "sendMessageIntervalLengthInMs" in jsonMiscSettings:
+            self.settings.sendMessageIntervalLengthInMs = jsonMiscSettings["sendMessageIntervalLengthInMs"]
+
+        if "bufferLength" in jsonMiscSettings:
+            self.settings.bufferLength = jsonMiscSettings["bufferLength"]
+
+
+        if "recentProjects" in jsonMiscSettings:
+            recentPathes = deque(maxlen=5)
+            for recentPath in jsonMiscSettings["recentProjects"]:
+                if os.path.isfile(recentPath):
+                    recentPathes.append(recentPath)
+            self.settings.recentProjectFilePathes = recentPathes
+
+        if "autoSaveAfterCodeGeneration" in jsonMiscSettings:
+            self.settings.autoSaveAfterCodeGeneration = jsonMiscSettings["autoSaveAfterCodeGeneration"]
+
+
 
         self.settings.changed.connect(self.saveSettings)
 

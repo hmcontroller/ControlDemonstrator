@@ -73,7 +73,7 @@ language = None
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-add_module_names = False
+# add_module_names = False
 
 # autodoc_member_order = "groupwise"
 autodoc_member_order = "bysource"
@@ -92,7 +92,7 @@ todo_include_todos = False
 #
 # html_theme = 'default'
 
-html_logo = "_resources/iconSmall.png"
+html_logo = "resources/iconSmall.png"
 
 
 # from better import better_theme_path
@@ -136,7 +136,7 @@ html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ['static']
 
 
 # -- Options for HTMLHelp output ------------------------------------------

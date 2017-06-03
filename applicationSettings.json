@@ -1,12 +1,13 @@
 {
     "miscSettings": {
         "receiveMessageIntervalLengthInMs": 10, 
-        "guiUpdateIntervalLengthInMs": 100, 
+        "guiUpdateIntervalLengthInMs": 40, 
         "sendMessageIntervalLengthInMs": 15, 
+        "currentVersion": 0, 
         "recentProjects": [
-            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/microRayProjects/testUnoSerial.mRay", 
-            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/microRayProjects/wasserstand.mRay"
+            "D:/00 eigene Daten/000 FH/S 4/Regelungstechnik/Regelungsversuch/microRayProjects/testUnoSerial.mRay"
         ], 
-        "bufferLength": 10000
+        "bufferLength": 1000, 
+        "autoSaveAfterCodeGeneration": true
     }
 }

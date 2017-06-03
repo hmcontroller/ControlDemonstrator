@@ -15,7 +15,7 @@ Create a microRay project
 
 * Go to "Bearbeiten" -> "Kanaleinstellungen"
 
-.. image:: ../../_resources/channelSettingsDialog.png
+.. image:: ../../resources/channelSettingsDialog.png
 
 * Click the green plus symbol in the upper right corner to add a variable,
   that will be send from the controller on every loop cycle.
@@ -31,7 +31,7 @@ Create a microRay project
 * Go to "Bearbeiten" -> "Parametereinstellungen"
 * add a parameter, that allows you to set values from within microRay directly on the controller
 
-.. image:: ../../_resources/parameterSettingsDialog.png
+.. image:: ../../resources/parameterSettingsDialog.png
 
 
 

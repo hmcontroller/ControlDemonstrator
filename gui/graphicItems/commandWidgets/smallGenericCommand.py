@@ -403,6 +403,7 @@ class SmallGenericCommand(BaseCommand):
         else:
             self.pendingButton.symbol.setColor(QtCore.Qt.red)
 
+    @QtCore.pyqtSlot()
     def pendingValueCanceled(self, command):
         self.valueLineEdit.clear()
         self.valueLineEdit.setStyleSheet(self.normalStyleSheet)

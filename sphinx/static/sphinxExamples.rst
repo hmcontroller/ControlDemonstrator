@@ -62,7 +62,7 @@ Aufzählung
 **Fett gedruckt**
 
 
-.. image:: ../_resources/channelSettingsDialog.png
+.. image:: ../resources/channelSettingsDialog.png
 
 .. warning:: This is something dangerous
 

@@ -7,7 +7,7 @@ import os
 
 from core.exceptHook import ExceptHook
 
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 
 from gui.mainWindow import MicroRayMainWindow
 
@@ -34,28 +34,31 @@ LOGGER.addHandler(my_handler)
 
 
 
+class ExceptionMagnet(QtCore.QObject):
 
-def myExcepthook(exc_type, exc_value, exc_traceback):
-    exc_string = ""
-    for line in traceback.format_exception(exc_type, exc_value, exc_traceback):
-        exc_string += line
-    LOGGER.critical("uncaught exception:\n\n" + exc_string)
-    print exc_string
+    caughtException = QtCore.pyqtSignal(object)
+
+    def __init__(self):
+        super(ExceptionMagnet, self).__init__()
+
+    def myExcepthook(self, exc_type, exc_value, exc_traceback):
+        exc_string = ""
+        for line in traceback.format_exception(exc_type, exc_value, exc_traceback):
+            exc_string += line
+        LOGGER.critical("uncaught exception:\n\n" + exc_string)
+        self.caughtException.emit(exc_string)
 
 
 class MicroRay(QtGui.QApplication):
     """
     Main entry point for the application.
     """
-    def __init__(self, args):
+    def __init__(self, sysArgs, exceptionMagnet):
         LOGGER.info("application start")
-        QtGui.QApplication.__init__(self, args)
 
-        self.excepthook = ExceptHook()
-        # sys.excepthook = self.excepthook.hook
+        QtGui.QApplication.__init__(self, sysArgs)
 
-
-        self.mainW = MicroRayMainWindow(ABSOLUTE_PROGRAM_ROOT_FOLDER, sys.argv, self.excepthook)
+        self.mainW = MicroRayMainWindow(ABSOLUTE_PROGRAM_ROOT_FOLDER, sysArgs, exceptionMagnet)
         self.mainW.show()
 
     def notify(self, object, event):
@@ -73,9 +76,10 @@ class MicroRay(QtGui.QApplication):
 
 
 def run():
-    sys.excepthook = myExcepthook
+    exceptionMagnet = ExceptionMagnet()
+    sys.excepthook = exceptionMagnet.myExcepthook
 
-    app = MicroRay(sys.argv)
+    app = MicroRay(sys.argv, exceptionMagnet)
 
     exitCode = app.exec_()
     sys.exit(exitCode)
