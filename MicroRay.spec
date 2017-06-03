@@ -2,7 +2,7 @@
 
 block_cipher = None
 
-
+options = [('v', None, 'OPTION')]
 a = Analysis(['microRay.py'],
              pathex=['C:\\Users\\Karlheinz\\Desktop\\microRay'],
              binaries=[],
@@ -23,6 +23,7 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
+          options,
           exclude_binaries=True,
           name='microRay',
           icon='icon.ico',
