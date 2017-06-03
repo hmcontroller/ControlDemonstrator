@@ -6,7 +6,7 @@ VERSION_NUMBER = 1
 
 MRAY_URI = "http://mRay.org"
 MRAY_VERSION_FILE = MRAY_URI + "/currentVersion.txt"
-MRAY_ONLINE_HELP = MRAY_URI + "/docs/index.html"
+MRAY_ONLINE_HELP = MRAY_URI + "/documentation/index.html"
 MRAY_WEBSITE = MRAY_URI + "/index.html"
 GITHUB_SITE = "https://github.com/hmcontroller/microRay"
 
