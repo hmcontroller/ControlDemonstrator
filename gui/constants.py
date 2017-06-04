@@ -22,6 +22,7 @@ AVAILABLE_FRAMEWORKS = [
 
 RELATIVE_PATH_TO_APPLICATION_SETTINGS = "applicationSettings.json"
 
+
 CHECK_BOX_FONT = QtGui.QFont()
 CHECK_BOX_FONT.setPointSize(8)
 

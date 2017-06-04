@@ -5,13 +5,10 @@ import logging
 import webbrowser
 import errno
 import traceback
-from importlib import import_module
-import imp
-import urllib2
+import subprocess
 
 from PyQt4 import QtCore, QtGui
 
-from core.communicator import Communicator
 from core.hardwareInterfaces import UdpInterface, UsbHidInterface, SerialInterface
 from core.model.commState import CommState
 from core.messageInterpreter import MessageInterpreter
@@ -19,7 +16,9 @@ from core.configFileManager import ConfigFileManager
 from core.applicationSettingsManager import ApplicationSettingsManager
 from core.model.projectSettings import ProjectSettings
 from core.includeFileMaker import IncludeFileMaker
-from core.model.tabDescription import TabDescription
+from core.updateChecker import UpdateChecker
+from core.backGroundTask import BackgroundTask
+from core.updateDownloader import UpdateDownloader
 
 from gui.aboutDialog import AboutDialog
 from gui.applicationSettingsDialog import ApplicationSettingsDialog
@@ -34,23 +33,41 @@ from gui.tabGenericView import TabGenericView
 from gui.tabSmallGenericView import TabSmallGenericView
 from gui.resources import *
 
+
+
+
 class MicroRayMainWindow(QtGui.QMainWindow):
 
     displayMessage = QtCore.pyqtSignal(object, object)
 
-    def __init__(self, rootFolder, sysArgs, exceptHook):
+    def __init__(self, rootFolder, sysArgs, exceptHook, logger=None):
         QtGui.QMainWindow.__init__(self)
 
 
         self.sysArgs = sysArgs
+
         exceptHook.caughtException.connect(self.uncaughtExceptionOccured)
+        self.myPrinter = MyPrinter(self)
+        self.logger = logger
+
+        self.runningFromSource = True
+        if getattr( sys, 'frozen', False ) :
+            self.runningFromSource = False
+
+        # show a splash image
+        splashPixMap = QtGui.QPixmap(iconPath)
+        splashPixMap = splashPixMap.scaled(400, 400)
+        splashScreen = QtGui.QSplashScreen(splashPixMap)
+        splashScreen.show()
+        QtGui.qApp.processEvents()
+        QtGui.qApp.processEvents()
+
 
         self.lastDutyCycleTimeExceededWarning = u""
         self.lastTransmissionLagWarning = u""
 
         self.programRootFolder = rootFolder
 
-        self.myPrinter = MyPrinter(self)
 
         pixmap = QtGui.QPixmap(iconPath)
         icon = QtGui.QIcon(pixmap)
@@ -59,12 +76,14 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         appSettingsPath = os.path.join(self.programRootFolder, RELATIVE_PATH_TO_APPLICATION_SETTINGS)
 
         self.appSettingsManager = ApplicationSettingsManager(appSettingsPath)
-        self.applicationSettings = self.appSettingsManager.restoreSettingsFromFile()
+        if os.path.isfile(appSettingsPath):
+            self.applicationSettings = self.appSettingsManager.restoreSettingsFromFile()
+        else:
+            self.applicationSettings = self.appSettingsManager.settings
 
         self.applicationSettings.currentVersion = VERSION_NUMBER
-
-
         self.appSettingsManager.saveSettings()
+
         self.applicationSettings.changed.connect(self.appSettingsChanged)
 
         self.setWindowTitle("microRay v{}".format(self.applicationSettings.currentVersion))
@@ -91,19 +110,13 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
 
         # show the application on the second monitor as maximized window
-        self.screenRectSecondMonitor = QtGui.QApplication.desktop().screenGeometry(1)
-        self.setGeometry(self.screenRect.width(), 0,
-                         self.screenRectSecondMonitor.width() * 0.9, self.screenRectSecondMonitor.height() * 0.9)
+        if self.runningFromSource:
+            self.screenRectSecondMonitor = QtGui.QApplication.desktop().screenGeometry(1)
+            self.setGeometry(self.screenRect.width(), 0,
+                             self.screenRectSecondMonitor.width() * 0.9, self.screenRectSecondMonitor.height() * 0.9)
         self.showMaximized()
 
 
-        # show a splash image
-        splashImagePath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Regelkreis.gif")
-        splashMap = QtGui.QPixmap(splashImagePath)
-        splashScreen = QtGui.QSplashScreen(splashMap)
-        splashScreen.show()
-        QtGui.qApp.processEvents()
-        QtGui.qApp.processEvents()
 
 
 
@@ -163,32 +176,69 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.loopDurationSum = 0
         self.loopDurationCounter = 0
 
+        self.displayMessage.emit("Dev version 1", "warning")
 
+        self.updateCheckerTask = BackgroundTask(UpdateChecker, self.updateCheckFinished)
+        self.downloadUpdateTask = BackgroundTask(UpdateDownloader, self.updateDownloadFinished, self.updateDownloadProgress)
 
-
-
-
-        self.checkForUpdates()
-
-
+        self.updateCheckerTask.startWork()
 
         splashScreen.finish(self)
         logging.info("GUI load complete")
 
-    def checkForUpdates(self):
-        try:
-            actualVersionNumber = self.getCurrentOnlineVersionNumber()
-            if actualVersionNumber > self.applicationSettings.currentVersion:
-                self.displayMessage.emit(u"Newer version v{} is online, installed version is v{}.".format(
-                    actualVersionNumber, self.applicationSettings.currentVersion), "softWarning")
-        except:
-            self.displayMessage.emit(u"{}".format(traceback.format_exc()), "softWarning")
+    def updateCheckFinished(self, something):
+        if something[0] is None:
+            self.displayMessage.emit("update check failed:\n{}".format(something[1]), "softWarning")
+        else:
+            availableVersion = something[0]
+            pathToArchive = something[1]
+
+            if availableVersion > self.applicationSettings.currentVersion:
+
+                dialog = QtGui.QMessageBox(self)
+                dialog.setWindowTitle(u"New version alert")
+                dialog.setText(u"Good morning. A new version of microRay called v{} is available.".format(availableVersion))
+                dialog.setInformativeText(u"Would you like to download it now?")
+                dialog.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+                dialog.setDefaultButton(QtGui.QMessageBox.Ok)
+
+                userResponse = dialog.exec_()
+
+                if userResponse == QtGui.QMessageBox.Ok:
+                    if self.runningFromSource is False:
+                        self.displayMessage.emit(u"Update started.", "normal")
+                        fullUri = MRAY_URI + "/" + pathToArchive
+                        self.downloadUpdateTask.startWork((fullUri, self.programRootFolder))
+                else:
+                    pass
 
 
-    def getCurrentOnlineVersionNumber(self):
-        response = urllib2.urlopen(MRAY_VERSION_FILE)
-        html = response.read()
-        return int(html.replace("\n", "").replace("\r", ""))
+
+    def updateDownloadProgress(self, progress):
+        self.displayMessage.emit(progress, "normal")
+
+    def updateDownloadFinished(self, something):
+        if something[0] is not None:
+            dialog = QtGui.QMessageBox(self)
+            dialog.setWindowTitle(u"Last update")
+            dialog.setText(u"Update complete. Restart now?")
+            dialog.setStandardButtons(QtGui.QMessageBox.Ok)
+            dialog.setDefaultButton(QtGui.QMessageBox.Ok)
+            userResponse = dialog.exec_()
+
+            if userResponse == QtGui.QMessageBox.Ok:
+                self.restartMRayAndApplyUpdate()
+
+    def restartMRayAndApplyUpdate(self):
+        if self.runningFromSource is False:
+            exePath = os.path.join(self.programRootFolder, "ucomplete.exe")
+
+            try:
+                subprocess.Popen(exePath)
+                QtGui.QApplication.quit()
+                # sys.exit(0)
+            except:
+                self.displayMessage.emit(traceback.format_exc(), "warning")
 
     def setupUi(self):
         self.centralwidget = BackgroundWidget(self)
@@ -775,7 +825,11 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         if len(exceptionString) > 0 and exceptionString != '' and exceptionString != ' ' and exceptionString != '\n':
             if isinstance(exceptionString, str):
-                exceptionString = exceptionString.decode('utf-8')
+                try:
+                    exceptionString = exceptionString.decode('utf-8')
+                except:
+                    return
+
             self.displayMessage.emit(exceptionString, "warning")
 
     def specialCommandCheck(self, command):
