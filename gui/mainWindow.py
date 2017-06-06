@@ -95,6 +95,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.appSettingsManager.saveSettings()
 
         self.applicationSettings.changed.connect(self.appSettingsChanged)
+        self.applicationSettings.bufferLengthChanged.connect(self.bufferLengthChanged)
+
 
         self.setWindowTitle("microRay v{}".format(self.applicationSettings.currentVersion))
 
@@ -671,15 +673,20 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
 
     def editApplicationSettings(self):
-        self.communicator.disconnectFromController()
+        # self.communicator.disconnectFromController()
         accepted = ApplicationSettingsDialog.updateSettings(self.applicationSettings)
 
         if accepted:
             self.appSettingsManager.saveSettings()
-            self.channels.actualizeBufferLength(self.applicationSettings.bufferLength)
+            # self.channels.actualizeBufferLength(self.applicationSettings.bufferLength)
 
+        # self.communicator.connectToController()
+
+
+    def bufferLengthChanged(self):
+        self.communicator.disconnectFromController()
+        self.channels.actualizeBufferLength(self.applicationSettings.bufferLength)
         self.communicator.connectToController()
-
 
     def close(self):
         if self.projectSettings.unsavedChanges is True:

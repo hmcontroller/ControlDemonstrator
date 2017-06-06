@@ -19,6 +19,7 @@ class PlotWidget(QtGui.QWidget):
         self.channels.bufferLengthChanged.connect(self.adjustScaleToBufferLength)
 
         self.applicationSettings = applicationSettings
+        self.applicationSettings.changed.connect(self.applicationSettingsChanged)
         self.projectSettings = projectSettings
 
 
@@ -85,6 +86,8 @@ class PlotWidget(QtGui.QWidget):
         self.plotWidget.setXRange(-float(newBufferLength)*(self.projectSettings.controllerLoopCycleTimeInUs / float(1000000)), 0)
         self.plotWidget.setYRange(-1000, 1000)
 
+    def applicationSettingsChanged(self, settings=None):
+        self.plotUpdateTimer.start(self.applicationSettings.guiUpdateIntervalLengthInMs)
 
     def createCurves(self):
 

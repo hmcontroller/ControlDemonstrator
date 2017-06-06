@@ -8,15 +8,37 @@ class ApplicationSettings(QtCore.QObject):
 
     changed = QtCore.pyqtSignal(object)
 
+    bufferLengthChanged = QtCore.pyqtSignal(object)
+
     def __init__(self):
         super(ApplicationSettings, self).__init__()
         self.currentVersion = 1
-        self.guiUpdateIntervalLengthInMs = 40
+        self._guiUpdateIntervalLengthInMs = 40
         self.receiveMessageIntervalLengthInMs = 15
         self.sendMessageIntervalLengthInMs = 10
-        self.bufferLength = 5000
+        self._bufferLength = 5000
         self.recentProjectFilePathes = deque(maxlen=10)
         self.autoSaveAfterCodeGeneration = True
+
+    @property
+    def bufferLength(self):
+        return self._bufferLength
+
+    @bufferLength.setter
+    def bufferLength(self, value):
+        oldLength = self._bufferLength
+        self._bufferLength = value
+        if oldLength != self._bufferLength:
+            self.bufferLengthChanged.emit(self)
+
+    @property
+    def guiUpdateIntervalLengthInMs(self):
+        return self._guiUpdateIntervalLengthInMs
+
+    @guiUpdateIntervalLengthInMs.setter
+    def guiUpdateIntervalLengthInMs(self, value):
+        self._guiUpdateIntervalLengthInMs = value
+        self.changed.emit(self)
 
     def addRecentProjectPath(self, path):
         newRecentPathes = deque(maxlen=10)
