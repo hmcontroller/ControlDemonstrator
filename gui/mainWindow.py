@@ -58,20 +58,15 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         # catch stdout
         self.myPrinter = MyPrinter(self)
 
+        dialog = QtGui.QMessageBox(self)
+        dialog.setText(u"{}".format(self.programRootFolder))
 
-
-
-        # # show a splash image
-        # splashPixMap = QtGui.QPixmap(iconPath)
-        # splashPixMap = splashPixMap.scaled(400, 400)
-        # splashScreen = QtGui.QSplashScreen(splashPixMap)
-        # splashScreen.show()
-        # QtGui.qApp.processEvents()
-        # QtGui.qApp.processEvents()
+        userResponse = dialog.exec_()
 
 
         self.lastDutyCycleTimeExceededWarning = u""
         self.lastTransmissionLagWarning = u""
+        self.loopDurationMin = 1000000
 
         splashScreen.setProgress(0.4)
         splashScreen.setMessage(u"loading settings")
@@ -794,7 +789,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         messages = self.communicator.receive()
         for message in messages:
             self.handleNewData(message)
-            self.calculateSomeStuff(message)
+            # self.calculateSomeStuff(message)
 
     def send(self):
         self.communicator.send(self.commands)

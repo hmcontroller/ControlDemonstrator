@@ -67,7 +67,7 @@ class MicroRay(QtGui.QApplication):
     def __init__(self, sysArgs, exceptionMagnet):
 
         self.logger = getLogger()
-        self.logger.info("application start")
+        self.logger.info("starting application")
         QtGui.QApplication.__init__(self, sysArgs)
 
 
