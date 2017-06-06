@@ -6,6 +6,7 @@ import webbrowser
 import errno
 import traceback
 import subprocess
+import time
 
 from PyQt4 import QtCore, QtGui
 
@@ -40,33 +41,42 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     displayMessage = QtCore.pyqtSignal(object, object)
 
-    def __init__(self, rootFolder, sysArgs, exceptHook, logger=None):
+    def __init__(self, exceptionMagnet, logger, rootFolder, splashScreen):
         QtGui.QMainWindow.__init__(self)
 
+        exceptionMagnet.caughtException.connect(self.uncaughtExceptionOccured)
 
-        self.sysArgs = sysArgs
-
-        exceptHook.caughtException.connect(self.uncaughtExceptionOccured)
-        self.myPrinter = MyPrinter(self)
         self.logger = logger
 
         self.runningFromSource = True
-        if getattr( sys, 'frozen', False ) :
+        if getattr(sys, 'frozen', False):
             self.runningFromSource = False
+            self.programRootFolder = sys._MEIPASS
+        else :
+            self.programRootFolder = rootFolder
 
-        # show a splash image
-        splashPixMap = QtGui.QPixmap(iconPath)
-        splashPixMap = splashPixMap.scaled(400, 400)
-        splashScreen = QtGui.QSplashScreen(splashPixMap)
-        splashScreen.show()
-        QtGui.qApp.processEvents()
-        QtGui.qApp.processEvents()
+        # catch stdout
+        self.myPrinter = MyPrinter(self)
+
+
+
+
+        # # show a splash image
+        # splashPixMap = QtGui.QPixmap(iconPath)
+        # splashPixMap = splashPixMap.scaled(400, 400)
+        # splashScreen = QtGui.QSplashScreen(splashPixMap)
+        # splashScreen.show()
+        # QtGui.qApp.processEvents()
+        # QtGui.qApp.processEvents()
 
 
         self.lastDutyCycleTimeExceededWarning = u""
         self.lastTransmissionLagWarning = u""
 
-        self.programRootFolder = rootFolder
+        splashScreen.setProgress(0.4)
+        splashScreen.setMessage(u"loading settings")
+
+        QtGui.qApp.processEvents()
 
 
         pixmap = QtGui.QPixmap(iconPath)
@@ -100,6 +110,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         self.setupUi()
 
+        splashScreen.setProgress(0.5)
+        QtGui.qApp.processEvents()
 
 
 
@@ -117,6 +129,9 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.showMaximized()
 
 
+        splashScreen.setProgress(0.6)
+        splashScreen.setMessage(u"loading project")
+        QtGui.qApp.processEvents()
 
 
 
@@ -125,12 +140,10 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.setInitialValuesTimer.setSingleShot(True)
         self.setInitialValuesTimer.timeout.connect(self.setInitialValues)
 
-
-
-        if len(self.sysArgs) > 1:
+        if len(sys.argv) > 1:
             pathToProjectFile = u""
             try:
-                pathToProjectFile = unicode(self.sysArgs[1])
+                pathToProjectFile = unicode(sys.argv[1])
                 self.loadProject(pathToProjectFile)
             except IOError:
                 dialog = QtGui.QErrorMessage(self)
@@ -149,19 +162,10 @@ class MicroRayMainWindow(QtGui.QMainWindow):
                 dialog = QtGui.QErrorMessage()
                 dialog.showMessage(u"Projektdatei konnte nicht geladen werden.")
 
-
-
-
-
-
-
-
-
-
-
-
         # self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
 
+        splashScreen.setProgress(0.8)
+        QtGui.qApp.processEvents()
 
         # for debugging purpose
         self.loopReportTimer = QtCore.QTimer()
@@ -176,15 +180,17 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.loopDurationSum = 0
         self.loopDurationCounter = 0
 
-        self.displayMessage.emit("Dev version 1", "warning")
+
+        # self.displayMessage.emit("Dev version 30", "normal")
 
         self.updateCheckerTask = BackgroundTask(UpdateChecker, self.updateCheckFinished)
         self.downloadUpdateTask = BackgroundTask(UpdateDownloader, self.updateDownloadFinished, self.updateDownloadProgress)
 
         self.updateCheckerTask.startWork()
 
+        # time.sleep(3)
         splashScreen.finish(self)
-        logging.info("GUI load complete")
+        self.logger.info("GUI load complete")
 
     def updateCheckFinished(self, something):
         if something[0] is None:
