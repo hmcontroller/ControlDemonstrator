@@ -6,8 +6,8 @@
 
 Name "microRay"
 !define INSTALLATIONNAME "microRay"
-!define VERSION "v1"
-OutFile "microRayInstaller_${VERSION}_win32.exe"
+!define VERSION "v2"
+OutFile "officialWebsite\microRayInstaller_${VERSION}_win32.exe"
 InstallDir $PROGRAMFILES\microRay
 
 !insertmacro MUI_PAGE_DIRECTORY

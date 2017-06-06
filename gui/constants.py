@@ -2,7 +2,7 @@
 from PyQt4 import QtGui
 
 
-VERSION_NUMBER = 1
+VERSION_NUMBER = 2
 
 MRAY_URI = "http://mRay.org"
 MRAY_VERSION_FILE = MRAY_URI + "/currentVersion.txt"

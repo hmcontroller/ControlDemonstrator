@@ -196,7 +196,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     def updateCheckFinished(self, something):
         if something[0] is None:
-            self.displayMessage.emit("update check failed:\n{}".format(something[1]), "softWarning")
+            # self.displayMessage.emit("Update check failed:\n{}".format(something[1]), "softWarning")
+            self.displayMessage.emit(u"Could not check for updates.", "softWarning")
         else:
             availableVersion = something[0]
             pathToArchive = something[1]
@@ -219,7 +220,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
                         self.downloadUpdateTask.startWork((fullUri, self.programRootFolder))
                 else:
                     pass
-
+            else:
+                self.displayMessage.emit("Newest version installed.", "normal")
 
 
     def updateDownloadProgress(self, progress):

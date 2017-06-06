@@ -1,7 +1,7 @@
 *.pyc
 *.zip
 *.exe
-*.log
+mRay.log
 *~
 .*
 .*/
@@ -29,3 +29,4 @@ doxyConfig
 
 
 applicationSettings.json
+mRay.log

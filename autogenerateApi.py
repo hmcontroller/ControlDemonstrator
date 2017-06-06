@@ -75,7 +75,7 @@ class ApiMaker():
     def removeTargetFolder(self):
         try:
             shutil.rmtree(self.targetFolder)
-            print "targetFolder {} deleted".format(self.targetFolder)
+            # print "targetFolder {} deleted".format(self.targetFolder)
         except WindowsError as er:
             if er.args[0] == errno.WSAEADDRNOTAVAIL:
                 pass
@@ -252,3 +252,4 @@ def run():
 
 if __name__ == "__main__":
     run()
+    print "sphinx rst-files generated successfully"
