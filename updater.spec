@@ -2,7 +2,7 @@
 
 block_cipher = None
 
-
+options = [('v', None, 'OPTION')]
 a = Analysis(['updater.py'],
              pathex=['D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\microRay'],
              binaries=[],
@@ -26,3 +26,11 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           console=True )
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               name='ucomplete')
+

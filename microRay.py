@@ -5,6 +5,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 import time
+import tempfile
 
 from core.exceptHook import ExceptHook
 
@@ -17,18 +18,31 @@ from gui.resources import *
 
 
 if getattr(sys, 'frozen', False):
-    PROGRAM_ROOT_FOLDER = sys._MEIPASS
-else :
-    PROGRAM_ROOT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+    # running from pyinstaller exe
+    ROOT_FOLDER = sys._MEIPASS
+
+    TEMP_FOLDER = os.path.join(tempfile.gettempdir(), "microRay")
+    if not os.path.isdir(TEMP_FOLDER):
+        os.makedirs(TEMP_FOLDER)
+
+    SETTINGS_FOLDER = os.path.join(os.getenv('APPDATA'), "microRay")
+    if not os.path.isdir(SETTINGS_FOLDER):
+        os.makedirs(SETTINGS_FOLDER)
+else:
+    ROOT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+    TEMP_FOLDER = ROOT_FOLDER
+    SETTINGS_FOLDER = ROOT_FOLDER
+
+
 
 
 def getLogger():
     logFormatter = logging.Formatter('%(asctime)s %(levelname)-9s%(message)s')
 
-    logFile = os.path.join(PROGRAM_ROOT_FOLDER, 'mRay.log')
+    logFile = os.path.join(SETTINGS_FOLDER, 'mRay.log')
 
-    my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=5*1024*1024,
-                                     backupCount=2, encoding=None, delay=0)
+    my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=100*1024,
+                                     backupCount=0, encoding=None, delay=0)
     my_handler.setFormatter(logFormatter)
     my_handler.setLevel(logging.INFO)
 
@@ -71,11 +85,6 @@ class MicroRay(QtGui.QApplication):
         QtGui.QApplication.__init__(self, sysArgs)
 
 
-        # show a splash image
-        # splashPixMap = QtGui.QPixmap(iconPath)
-        # splashPixMap = splashPixMap.scaled(400, 400)
-        # splashScreen = QtGui.QSplashScreen(splashPixMap)
-        # splashScreen = SplashScreen(splashPixMap)
         splashScreen = SplashScreen()
 
         splashScreen.show()
@@ -92,7 +101,12 @@ class MicroRay(QtGui.QApplication):
         splashScreen.setMessage(u"loading main window")
         QtGui.qApp.processEvents()
 
-        self.mainW = MicroRayMainWindow(exceptionMagnet, self.logger, PROGRAM_ROOT_FOLDER, splashScreen)
+        self.mainW = MicroRayMainWindow(exceptionMagnet,
+                                        self.logger,
+                                        ROOT_FOLDER,
+                                        TEMP_FOLDER,
+                                        SETTINGS_FOLDER,
+                                        splashScreen)
         self.mainW.show()
 
     def notify(self, object, event):

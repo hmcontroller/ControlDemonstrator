@@ -1,7 +1,8 @@
+*.mRay
 *.pyc
 *.zip
 *.exe
-mRay.log
+*.log
 *~
 .*
 .*/
@@ -32,3 +33,4 @@ applicationSettings.json
 mRay.log
 
 mRay.log
+

@@ -1,12 +1,14 @@
 # -*- encoding: utf-8 -*-
 import os
 import sys
+import ctypes
 import logging
 import webbrowser
 import errno
 import traceback
 import subprocess
 import time
+import tempfile
 
 from PyQt4 import QtCore, QtGui
 
@@ -41,7 +43,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     displayMessage = QtCore.pyqtSignal(object, object)
 
-    def __init__(self, exceptionMagnet, logger, rootFolder, splashScreen):
+    def __init__(self, exceptionMagnet, logger, rootFolder, tempFolder, settingsFolder, splashScreen):
         QtGui.QMainWindow.__init__(self)
 
         exceptionMagnet.caughtException.connect(self.uncaughtExceptionOccured)
@@ -51,22 +53,36 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.runningFromSource = True
         if getattr(sys, 'frozen', False):
             self.runningFromSource = False
-            self.programRootFolder = sys._MEIPASS
-        else :
-            self.programRootFolder = rootFolder
 
-        # catch stdout
+        self.programRootFolder = rootFolder
+        self.microRayTempFolder = tempFolder
+        self.programSettingsFolder = settingsFolder
+
+        # pipe stdout
         self.myPrinter = MyPrinter(self)
 
-        dialog = QtGui.QMessageBox(self)
-        dialog.setText(u"{}".format(self.programRootFolder))
-
-        userResponse = dialog.exec_()
-
+        # dialog = QtGui.QMessageBox(self)
+        # dialog.setText(u"{}\n"
+        #                u"{}\n"
+        #                u"{}\n".format(
+        #                self.programRootFolder,
+        #                self.microRayTempFolder,
+        #                self.programSettingsFolder))
+        #
+        # userResponse = dialog.exec_()
+        #
+        # print "dududu"
 
         self.lastDutyCycleTimeExceededWarning = u""
         self.lastTransmissionLagWarning = u""
+
+        # some calculations for debugging purpose
         self.loopDurationMin = 1000000
+        self.loopDurationMax = 0
+        self.loopDurationAverage = 0
+        self.loopDurationSum = 0
+        self.loopDurationCounter = 0
+
 
         splashScreen.setProgress(0.4)
         splashScreen.setMessage(u"loading settings")
@@ -78,7 +94,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         icon = QtGui.QIcon(pixmap)
         QtGui.QApplication.setWindowIcon(icon)
 
-        appSettingsPath = os.path.join(self.programRootFolder, RELATIVE_PATH_TO_APPLICATION_SETTINGS)
+        appSettingsPath = os.path.join(self.programSettingsFolder, RELATIVE_PATH_TO_APPLICATION_SETTINGS)
 
         self.appSettingsManager = ApplicationSettingsManager(appSettingsPath)
         if os.path.isfile(appSettingsPath):
@@ -133,9 +149,10 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
 
 
-        self.setInitialValuesTimer = QtCore.QTimer()
-        self.setInitialValuesTimer.setSingleShot(True)
-        self.setInitialValuesTimer.timeout.connect(self.setInitialValues)
+        # self.setInitialValuesTimer = QtCore.QTimer()
+        # self.setInitialValuesTimer.setSingleShot(True)
+        # self.setInitialValuesTimer.timeout.connect(self.setInitialValues)
+
 
         if len(sys.argv) > 1:
             pathToProjectFile = u""
@@ -170,12 +187,6 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.connect(self.loopReportTimer, QtCore.SIGNAL("timeout()"), self.printLoopPerformance)
         self.loopReportTimer.start(5000)
 
-        # some calculations for debugging purpose
-        self.loopDurationMin = 1000000
-        self.loopDurationMax = 0
-        self.loopDurationAverage = 0
-        self.loopDurationSum = 0
-        self.loopDurationCounter = 0
 
 
         # self.displayMessage.emit("Dev version 30", "normal")
@@ -188,6 +199,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         # time.sleep(3)
         splashScreen.finish(self)
         self.logger.info("GUI load complete")
+
+
 
     def updateCheckFinished(self, something):
         if something[0] is None:
@@ -204,15 +217,17 @@ class MicroRayMainWindow(QtGui.QMainWindow):
                 dialog.setText(u"Good morning. A new version of microRay called v{} is available.".format(availableVersion))
                 dialog.setInformativeText(u"Would you like to download it now?")
                 dialog.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
-                dialog.setDefaultButton(QtGui.QMessageBox.Ok)
+
+                # prevents the cancel button to be shown
+                # dialog.setDefaultButton(QtGui.QMessageBox.Ok)
 
                 userResponse = dialog.exec_()
 
                 if userResponse == QtGui.QMessageBox.Ok:
                     if self.runningFromSource is False:
-                        self.displayMessage.emit(u"Update started.", "normal")
+                        self.displayMessage.emit(u"Download of update started to {}.".format(self.microRayTempFolder), "normal")
                         fullUri = MRAY_URI + "/" + pathToArchive
-                        self.downloadUpdateTask.startWork((fullUri, self.programRootFolder))
+                        self.downloadUpdateTask.startWork((fullUri, self.microRayTempFolder))
                 else:
                     pass
             else:
@@ -227,8 +242,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             dialog = QtGui.QMessageBox(self)
             dialog.setWindowTitle(u"Last update")
             dialog.setText(u"Update complete. Restart now?")
-            dialog.setStandardButtons(QtGui.QMessageBox.Ok)
-            dialog.setDefaultButton(QtGui.QMessageBox.Ok)
+            dialog.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+            # dialog.setDefaultButton(QtGui.QMessageBox.Ok)
             userResponse = dialog.exec_()
 
             if userResponse == QtGui.QMessageBox.Ok:
@@ -236,14 +251,30 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     def restartMRayAndApplyUpdate(self):
         if self.runningFromSource is False:
-            exePath = os.path.join(self.programRootFolder, "ucomplete.exe")
+            exePath = u'"{}"'.format(os.path.join(self.programRootFolder, u"ucomplete.exe"))
+
+            pathToExtractedUpdateFolder = os.path.join(self.microRayTempFolder, "extractedUpdate\\microRay")
+            pathToExtractedUpdateFolder = u'"{}"'.format(pathToExtractedUpdateFolder)
+
+            targetDirectory = u'"{}"'.format(self.programRootFolder)
+
+            exeArgs = pathToExtractedUpdateFolder + u" " + targetDirectory
 
             try:
-                subprocess.Popen(exePath)
-                QtGui.QApplication.quit()
+                # subprocess.Popen([exePath, pathToExtractedFolder, targetDirectory])
+
+                # hopefully ask for UAC elevation, because ucomplete needs admin rights
+                returnCode = ctypes.windll.shell32.ShellExecuteW(None, u"runas", exePath, exeArgs, None, 1)
+                if returnCode == 42:
+                    QtGui.QApplication.quit()
+                else:
+                    self.displayMessage.emit("could not restart microRay, errorCode {}".format(returnCode), "softWarning")
+
+                # das nicht nehmen
                 # sys.exit(0)
             except:
                 self.displayMessage.emit(traceback.format_exc(), "warning")
+                self.logger.info(traceback.format_exc())
 
     def setupUi(self):
         self.centralwidget = BackgroundWidget(self)
@@ -500,7 +531,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             self.projectSettings = tempProjectSettings
             self.projectSettings.changed.connect(self.projectSettingsChanged)
 
-            tempPath = os.path.join(self.programRootFolder, "tempNew.mRay")
+            tempPath = os.path.join(self.programSettingsFolder, "tempNewProject.mRay")
 
             self.saveAs(None, tempPath)
             self.loadProject(tempPath)
@@ -514,8 +545,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.projectSettings.changed.connect(self.projectSettingsChanged)
 
         for cmd in self.commands.specialCmdList:
-            cmd.specialCommandValueChanged.connect(self.specialCommandChanged)
-
+            # attention this must also be changed in self.loadProject
+            cmd.specialCommandReceived.connect(self.specialCommandCheck)
 
     def closeCurrentProject(self):
         while self.centralWidgetLayout.count() > 0:
@@ -557,6 +588,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.channels.changed.connect(self.channelSetupChanged)
 
         for cmd in self.commands.specialCmdList:
+            # attention this must also be changed in self.makeEmptyProject
             cmd.specialCommandReceived.connect(self.specialCommandCheck)
 
         self.communicator.setMessageMap(self.messageFormatList)
@@ -830,9 +862,6 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         QtGui.QApplication.quit()
 
     def uncaughtExceptionOccured(self, exceptionString):
-        # print exceptionString
-
-
         if len(exceptionString) > 0 and exceptionString != '' and exceptionString != ' ' and exceptionString != '\n':
             if isinstance(exceptionString, str):
                 try:
@@ -840,7 +869,18 @@ class MicroRayMainWindow(QtGui.QMainWindow):
                 except:
                     return
 
-            self.displayMessage.emit(exceptionString, "warning")
+            # self.displayMessage.emit(exceptionString, "warning")
+
+            slotCount = self.receivers(self.displayMessage.signal)
+            if slotCount > 0:
+                self.displayMessage.emit(u"PRINT: {}".format(exceptionString), "warning")
+                self.logger.error(u"uncaught exception")
+                self.logger.error(u"".format(exceptionString))
+            else:
+                messageBox = QtGui.QErrorMessage(self)
+                messageBox.showMessage(u"PRINT: {}".format(exceptionString))
+                self.logger.error(u"".format(exceptionString))
+
 
     def specialCommandCheck(self, command):
 
@@ -904,5 +944,10 @@ class MyPrinter(object):
         if len(someString) > 0 and someString != '' and someString != ' ' and someString != '\n':
             if isinstance(someString, str):
                 someString = someString.decode('utf-8')
-            self.mainW.displayMessage.emit(u"PRINT: {}".format(someString), "softWarning")
-            # self.mainW.printMessage(someString, "warning")
+
+            slotCount = self.mainW.receivers(self.mainW.displayMessage.signal)
+            if slotCount > 0:
+                self.mainW.displayMessage.emit(u"PRINT: {}".format(someString), "softWarning")
+            else:
+                messageBox = QtGui.QErrorMessage(self.mainW)
+                messageBox.showMessage(u"PRINT: {}".format(someString))

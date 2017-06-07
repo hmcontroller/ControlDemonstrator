@@ -63,6 +63,7 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.singleLineTextEdit.setFontPointSize(12)
         self.singleLineTextEdit.document().setMaximumBlockCount(3)
         self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
+        self.singleLineTextEdit.setWordWrapMode(QtGui.QTextOption.NoWrap)
 
 
         self.commStateBlinkTimer = QtCore.QTimer()

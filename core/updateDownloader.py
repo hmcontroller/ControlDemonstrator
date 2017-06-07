@@ -4,10 +4,6 @@ import traceback
 import urllib2
 import os
 import zipfile
-import distutils.dir_util
-
-
-from gui.constants import *
 
 from PyQt4 import QtCore
 
@@ -19,16 +15,22 @@ class UpdateDownloader(QtCore.QObject):
 
     def __init__(self):
         super(UpdateDownloader, self).__init__()
+
         self.downloadUri = ""
-        self.programRootFolder = ""
-        self.zipOutFileName = "microRayDownload.zip"
+
+        self.zipOutFileName = "microRayDownloadedUpdate.zip"
+        self.zipFileTargetPath = ""
+
+        self.zipExtractionFolderName = "extractedUpdate"
+        self.zipExtractionFolderPath = ""
 
     @QtCore.pyqtSlot(object)
-    def doWork(self, uriAndProgramRootFolder):
+    def doWork(self, uriAndTargetFolder):
         startTime = timeit.default_timer()
 
-        self.downloadUri = uriAndProgramRootFolder[0]
-        self.programRootFolder = uriAndProgramRootFolder[1]
+        self.downloadUri = uriAndTargetFolder[0]
+        self.zipFileTargetPath = os.path.join(uriAndTargetFolder[1], self.zipOutFileName)
+        self.zipExtractionFolderPath = os.path.join(uriAndTargetFolder[1], self.zipExtractionFolderName)
 
         response = self.downloadZipFile(self.downloadUri)
 
@@ -42,9 +44,14 @@ class UpdateDownloader(QtCore.QObject):
         response = tuple()
         CHUNK_SIZE = 16 * 1024
 
+        if os.path.isdir(os.path.dirname(self.zipFileTargetPath)):
+            pass
+        else:
+            os.makedirs(os.path.dirname(self.zipFileTargetPath))
+
         try:
             response = urllib2.urlopen(uri)
-            with open(self.zipOutFileName, 'wb') as outFile:
+            with open(self.zipFileTargetPath, 'wb') as outFile:
                 while True:
                     chunk = response.read(CHUNK_SIZE)
                     if not chunk:
@@ -58,16 +65,8 @@ class UpdateDownloader(QtCore.QObject):
         return response
 
     def extractZipFile(self):
-        targetPath = ""
-        with zipfile.ZipFile(self.zipOutFileName, "r") as zipFile:
-            zipFile.extractall(targetPath)
+        with zipfile.ZipFile(self.zipFileTargetPath, "r") as zipFile:
+            zipFile.extractall(self.zipExtractionFolderPath)
 
-        os.remove(os.path.join(self.programRootFolder, self.zipOutFileName))
+        os.remove(self.zipFileTargetPath)
 
-    def replaceOldVersion(self):
-        pathToExtractedFolder = os.path.join(self.programRootFolder, "microRay")
-
-        try:
-            distutils.dir_util.copy_tree(pathToExtractedFolder, self.programRootFolder)
-        except:
-            pass
