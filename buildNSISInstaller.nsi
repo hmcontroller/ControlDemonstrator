@@ -6,7 +6,7 @@
 
 Name "microRay"
 !define INSTALLATIONNAME "microRay"
-!define VERSION "v3"
+!define VERSION "v5"
 OutFile "officialWebsite\microRayInstaller_${VERSION}_win32.exe"
 InstallDir $PROGRAMFILES\microRay
 

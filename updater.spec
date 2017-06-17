@@ -21,7 +21,7 @@ exe = EXE(pyz,
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='ucomplete',
+          name='ucomplete1',
           debug=False,
           strip=False,
           upx=True,
@@ -32,5 +32,5 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='ucomplete')
+               name='ucomplete1')
 

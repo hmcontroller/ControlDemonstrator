@@ -251,7 +251,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     def restartMRayAndApplyUpdate(self):
         if self.runningFromSource is False:
-            exePath = u'"{}"'.format(os.path.join(self.programRootFolder, u"ucomplete.exe"))
+            exePath = u'"{}"'.format(os.path.join(self.programRootFolder, u"ucomplete1.exe"))
 
             pathToExtractedUpdateFolder = os.path.join(self.microRayTempFolder, "extractedUpdate\\microRay")
             pathToExtractedUpdateFolder = u'"{}"'.format(pathToExtractedUpdateFolder)
@@ -263,7 +263,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             try:
                 # subprocess.Popen([exePath, pathToExtractedFolder, targetDirectory])
 
-                # hopefully ask for UAC elevation, because ucomplete needs admin rights
+                # hopefully this asks for UAC elevation, because ucomplete needs admin rights
                 returnCode = ctypes.windll.shell32.ShellExecuteW(None, u"runas", exePath, exeArgs, None, 1)
                 if returnCode == 42:
                     QtGui.QApplication.quit()
@@ -566,8 +566,23 @@ class MicroRayMainWindow(QtGui.QMainWindow):
                                                               "Open project file",
                                                               folderSuggestion,
                                                               "mRay project (*.mRay *.json *)")
-        projectFilePath = str(projectFilePath)
-        if projectFilePath == "":
+        # projectFilePath = unicode(projectFilePath)
+
+        self.logger.info(type(projectFilePath))
+
+        # das geht nicht
+        # self.logger.info(type(projectFilePath.toUnicode()))
+
+        # das geht auch nicht
+        # projectFilePath = projectFilePath.decode('utf-8')
+
+        projectFilePath = unicode(projectFilePath)
+
+        self.logger.info(type(projectFilePath))
+        self.logger.info(projectFilePath)
+
+
+        if projectFilePath == u"":
             return
         else:
             self.loadProject(projectFilePath)
@@ -625,7 +640,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         newWindowTitle = self.getProjectDisplayPath(self.projectSettings.openedFrom)
         if self.projectSettings.unsavedChanges is True:
             newWindowTitle += u" (unsaved)"
-        self.setWindowTitle(u"microRay - {}".format(newWindowTitle))
+        self.setWindowTitle(u"microRay v{} - {}".format(self.applicationSettings.currentVersion, newWindowTitle))
         # todo rebuild communicator
 
 

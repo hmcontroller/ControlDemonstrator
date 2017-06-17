@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'applicationSettingsDialog.ui'
 #
-# Created: Sat Jun 03 09:19:21 2017
+# Created: Fri Jun 09 08:28:07 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -59,6 +59,14 @@ class Ui_ApplicationSettingsDialog(object):
         self.checkBoxAutosaveAfterCodeGeneration.setText(_fromUtf8(""))
         self.checkBoxAutosaveAfterCodeGeneration.setObjectName(_fromUtf8("checkBoxAutosaveAfterCodeGeneration"))
         self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.checkBoxAutosaveAfterCodeGeneration)
+        self.label_4 = QtGui.QLabel(ApplicationSettingsDialog)
+        self.label_4.setObjectName(_fromUtf8("label_4"))
+        self.formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self.label_4)
+        self.checkBoxAutoUpdate = QtGui.QCheckBox(ApplicationSettingsDialog)
+        self.checkBoxAutoUpdate.setText(_fromUtf8(""))
+        self.checkBoxAutoUpdate.setCheckable(False)
+        self.checkBoxAutoUpdate.setObjectName(_fromUtf8("checkBoxAutoUpdate"))
+        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.checkBoxAutoUpdate)
         self.verticalLayout.addLayout(self.formLayout)
         self.buttonBox = QtGui.QDialogButtonBox(ApplicationSettingsDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -76,4 +84,5 @@ class Ui_ApplicationSettingsDialog(object):
         self.lineEditBufferLength.setText(_translate("ApplicationSettingsDialog", "10000", None))
         self.label.setText(_translate("ApplicationSettingsDialog", "Plot update rate in frames per second", None))
         self.label_2.setText(_translate("ApplicationSettingsDialog", "autosave project after generating c-code", None))
+        self.label_4.setText(_translate("ApplicationSettingsDialog", "automatically check for updates", None))
 

@@ -13,12 +13,16 @@ class AnalyzedClass():
         self.fullTargetPath = ""
         self.rstFileContent = ""
 
+
+
 class AnalyzedFolder():
     def __init__(self):
         self.folderName = ""
         self.relativePath = ""
         self.fullTargetPath = ""
         self.rstFileContent = ""
+
+
 
 class ApiMaker():
     def __init__(self):
@@ -30,23 +34,24 @@ class ApiMaker():
         self.targetFolder = os.path.join(self.thisDir, "sphinx", self.relativeTargetFolder)
 
         self.excludedFolders = [
-            ".\.git",
-            ".\.idea",
+            ".\\.git",
+            ".\\.idea",
             ".\\build",
-            ".\core\includeFileTemplates",
-            ".\dist",
-            ".\documentation",
-            ".\gui\designerfiles",
-            ".\inkScapeLogos",
-            ".\pyqtgraph",
-            ".\sphinx",
+            ".\\core\includeFileTemplates",
+            ".\\officialWebsite",
+            ".\\dist",
+            ".\\documentation",
+            ".\\gui\designerfiles",
+            ".\\inkScapeLogos",
+            ".\\pyqtgraph",
+            ".\\sphinx",
             ".\\testSnippets",
             ".\\tests"
         ]
 
         self.excludedFiles = [
             ".\\autogenerateApi.py",
-            ".\countLines.py"
+            ".\\countLines.py"
         ]
 
         self.fileContentsForClassesCurrentFolder = list()
@@ -62,15 +67,17 @@ class ApiMaker():
 
         self.scanCodeFiles()
 
+
+        for aFolder in self.allFolders:
+            # print aFolder.rstFileContent
+            print aFolder.fullTargetPath
+
+        for aClass in self.allClasses:
+            # print aClass.rstFileContent
+            print aClass.fullTargetPath
+
         self.writeRstFiles()
 
-        # for aFolder in self.allFolders:
-        #     print aFolder.rstFileContent
-        #     print aFolder.fullTargetPath
-
-        # for aClass in self.allClasses:
-        #     print aClass.rstFileContent
-        #     print aClass.fullTargetPath
 
     def removeTargetFolder(self):
         try:
@@ -79,6 +86,60 @@ class ApiMaker():
         except WindowsError as er:
             if er.args[0] == errno.WSAEADDRNOTAVAIL:
                 pass
+
+
+    def scanCodeFiles(self):
+        for root, dirs, files in os.walk("."):
+
+            dirsNotExcluded = list()
+            for aDir in dirs:
+                relativeDirPath = os.path.join(root, aDir)
+                if relativeDirPath not in self.excludedFolders:
+                    dirsNotExcluded.append(aDir)
+            dirs[:] = dirsNotExcluded
+
+            filesNotExcluded = list()
+            for aFile in files:
+                relativeFilePath = os.path.join(root, aFile)
+                if relativeFilePath not in self.excludedFiles:
+                    filesNotExcluded.append(aFile)
+            files[:] = filesNotExcluded
+
+
+
+            for fileName in files:
+                if not fileName.endswith(".py"):
+                    continue
+                # print root, fileName
+                self.generateRstForClasses(root, fileName)
+
+
+            self.generateRstForFolder(root, dirs)
+
+            for generatedFolder in self.fileContentsForCurrentFolder:
+                self.allFolders.append(generatedFolder)
+            self.fileContentsForCurrentFolder = list()
+
+            for generatedClass in self.fileContentsForClassesCurrentFolder:
+                self.allClasses.append(generatedClass)
+            self.fileContentsForClassesCurrentFolder = list()
+
+
+    def writeRstFiles(self):
+        for analyzedClass in self.allClasses:
+            targetFolder = os.path.split(analyzedClass.fullTargetPath)[0]
+            if not os.path.isdir(targetFolder):
+                os.makedirs(targetFolder)
+            with open(analyzedClass.fullTargetPath, "w") as f:
+                f.write(analyzedClass.rstFileContent)
+
+        for analyzedFolder in self.allFolders:
+            targetFolder = os.path.split(analyzedFolder.fullTargetPath)[0]
+            if not os.path.isdir(targetFolder):
+                os.makedirs(targetFolder)
+            with open(analyzedFolder.fullTargetPath, "w") as f:
+                f.write(analyzedFolder.rstFileContent)
+
 
     def generateRstForClasses(self, root, fileName):
         filePath = os.path.join(root, fileName)
@@ -187,62 +248,14 @@ class ApiMaker():
                     foundClasses.append(extract)
         return foundClasses
 
+
     def extractClassName(self, classInitializationLine):
         modLine = classInitializationLine.lstrip("class ")
         modLine = modLine[ : modLine.find("(")]
         return modLine
 
 
-    def scanCodeFiles(self):
-        for root, dirs, files in os.walk("."):
 
-            dirsNotExcluded = list()
-            for aDir in dirs:
-                relativeDirPath = os.path.join(root, aDir)
-                if relativeDirPath not in self.excludedFolders:
-                    dirsNotExcluded.append(aDir)
-            dirs[:] = dirsNotExcluded
-
-            filesNotExcluded = list()
-            for aFile in files:
-                relativeFilePath = os.path.join(root, aFile)
-                if relativeFilePath not in self.excludedFiles:
-                    filesNotExcluded.append(aFile)
-            files[:] = filesNotExcluded
-
-
-
-            for fileName in files:
-                if not fileName.endswith(".py"):
-                    continue
-                self.generateRstForClasses(root, fileName)
-
-
-            self.generateRstForFolder(root, dirs)
-
-            for generatedFolder in self.fileContentsForCurrentFolder:
-                self.allFolders.append(generatedFolder)
-            self.fileContentsForCurrentFolder = list()
-
-            for generatedClass in self.fileContentsForClassesCurrentFolder:
-                self.allClasses.append(generatedClass)
-            self.fileContentsForClassesCurrentFolder = list()
-
-
-    def writeRstFiles(self):
-        for analyzedClass in self.allClasses:
-            targetFolder = os.path.split(analyzedClass.fullTargetPath)[0]
-            if not os.path.isdir(targetFolder):
-                os.makedirs(targetFolder)
-            with open(analyzedClass.fullTargetPath, "w") as f:
-                f.write(analyzedClass.rstFileContent)
-
-        for analyzedFolder in self.allFolders:
-            targetFolder = os.path.split(analyzedFolder.fullTargetPath)[0]
-            if not os.path.isdir(targetFolder):
-                os.makedirs(targetFolder)
-            with open(analyzedFolder.fullTargetPath, "w") as f:
-                f.write(analyzedFolder.rstFileContent)
 
 
 

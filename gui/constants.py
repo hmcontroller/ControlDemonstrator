@@ -2,7 +2,7 @@
 from PyQt4 import QtGui
 
 
-VERSION_NUMBER = 3
+VERSION_NUMBER = 5
 
 MRAY_URI = "http://mRay.org"
 MRAY_VERSION_FILE = MRAY_URI + "/currentVersion.txt"
@@ -13,9 +13,9 @@ GITHUB_SITE = "https://github.com/hmcontroller/microRay"
 
 AVAILABLE_FRAMEWORKS = [
     {"macroName": "MBED_2_UDP", "displayName": u"Mbed 2 UDP", "interface": "UDP"},
-    {"macroName": "MBED_2_SERIAL", "displayName": u"Mbed 2 Serial", "interface": "SERIAL"},
+    # {"macroName": "MBED_2_SERIAL", "displayName": u"Mbed 2 Serial", "interface": "SERIAL"},
     {"macroName": "MBED_OS_UDP", "displayName": u"Mbed OS UDP", "interface": "UDP"},
-    {"macroName": "MBED_OS_SERIAL", "displayName": u"Mbed OS Serial", "interface": "SERIAL"},
+    # {"macroName": "MBED_OS_SERIAL", "displayName": u"Mbed OS Serial", "interface": "SERIAL"},
     {"macroName": "ARDUINO_UDP", "displayName": u"Arduino UDP", "interface": "UDP"},
     {"macroName": "ARDUINO_SERIAL", "displayName": u"Arduino Serial", "interface": "SERIAL"}
 ]

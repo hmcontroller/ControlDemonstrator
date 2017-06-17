@@ -9,5 +9,9 @@ Generate include files
   * microRay.cpp
 
 * Recompile and upload your code to the controller.
-* Dependent on the interface you are using, reestablish communication with the controller by hitting
-  the play button in the upper left area.
+* If you are working with a serial interface, microRay automatically stops the communication and
+  releases the used com port, so that you can upload your new code. You then can restart the
+  communication by clicking the play button in the upper left area of microRay.
+
+.. note:: When working with the Arduino IDE, it might be necessary, to restart the IDE after code generation,
+  because this program does eventually not realize changes to included files made from outside.
