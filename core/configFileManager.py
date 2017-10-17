@@ -261,7 +261,7 @@ class ConfigFileManager(object):
         positionCounter += mData.lengthInBytes
         mData.dataType = int
         # mData.unpackString = "<h"
-        mData.unpackString = "<I"
+        mData.unpackString = "<I"   # unsigned int
         mData.name = "loopStartTime"
         messageInformation.append(mData)
 
@@ -288,8 +288,8 @@ class ConfigFileManager(object):
         # mData2.lengthInBytes = 4
         positionCounter += mData2.lengthInBytes
         mData2.dataType = int
-        # mData2.unpackString = "<I"
-        mData2.unpackString = "<i"
+        # mData2.unpackString = "<I"  # unsigned int
+        mData2.unpackString = "<i" # signed int
         mData2.name = "parameterNumber"
         messageInformation.append(mData2)
 
@@ -309,6 +309,8 @@ class ConfigFileManager(object):
 
         if isinstance(channelDescriptionsOrMeasurementData, MeasurementData):
             for i, channel in enumerate(channelDescriptionsOrMeasurementData.channels):
+                if not channel.isRequested:
+                    continue
                 messageData = MessageData()
                 # messageData.id = i
                 messageData.positionInBytes = positionCounter
@@ -323,6 +325,8 @@ class ConfigFileManager(object):
                 channelCounter += 1
         else:
             for i, channelDescription in enumerate(channelDescriptionsOrMeasurementData):
+                if not channelDescription["isRequested"]:
+                    continue
                 messageData = MessageData()
                 # messageData.id = i
                 messageData.positionInBytes = positionCounter

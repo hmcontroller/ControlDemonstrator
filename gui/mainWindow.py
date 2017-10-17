@@ -588,7 +588,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             self.loadProject(projectFilePath)
 
     def openRecent(self, *args):
-        recentPath = str(self.sender().data().toString())
+        recentPath = unicode(self.sender().data().toString())
         try:
             self.loadProject(recentPath)
         except IOError:

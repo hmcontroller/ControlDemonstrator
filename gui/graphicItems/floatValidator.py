@@ -15,9 +15,9 @@ class FloatValidator(QtGui.QDoubleValidator):
         self.expression = re.compile(expression)
 
     def validate(self, qString, p_int):
-        text = str(qString)
+        text = unicode(qString)
 
-        if text == "":
+        if text == u"":
             return QtGui.QValidator.Acceptable, p_int
 
         if self.expression.search(text):
