@@ -16,6 +16,7 @@ class ProjectSettings(QtCore.QObject):
         self._controllerIP = "192.168.0.15"
         self._udpPort = 10000
         self._comPortDescription = ""
+        self._comPortBaudRate = 115200
         self._controllerFrameworkAndInterface = "ARDUINO_SERIAL"
         self._tabSettingsDescriptions = [TabDescription()]
         self._pathToControllerCodeFolder = u""
@@ -89,6 +90,15 @@ class ProjectSettings(QtCore.QObject):
         self._controllerFrameworkAndInterface = value
         self.somethingChanged()
         self.frameworkAndInterfaceChanged.emit(self)
+
+    @property
+    def comPortBaudRate(self):
+        return self._comPortBaudRate
+
+    @comPortBaudRate.setter
+    def comPortBaudRate(self, value):
+        self._comPortBaudRate = value
+        self.somethingChanged()
 
     @property
     def tabSettingsDescriptions(self):

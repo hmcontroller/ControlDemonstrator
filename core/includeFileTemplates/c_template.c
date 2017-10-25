@@ -16,7 +16,6 @@ EthernetUDP Udp;
 
 #elif defined(ARDUINO_SERIAL)
 #include <arduino.h>
-#define BAUD_RATE 115200
 
 void dumpOldMessages();
 void copyOldMessageToIncomingBuffer();

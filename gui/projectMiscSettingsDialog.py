@@ -7,6 +7,7 @@ from PyQt4 import QtGui, QtCore
 from gui.designerfiles.projectMiscSettingsDialog import Ui_ProjectMiscSettingsDialog
 from core.model.projectSettings import ProjectSettings
 from gui.constants import AVAILABLE_FRAMEWORKS
+from core.hardwareInterfaces import SerialInterface
 
 
 class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
@@ -60,6 +61,12 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
                 indexToSelect = i
         dialog.comboBoxFrameworkAndInterface.setCurrentIndex(indexToSelect)
 
+        baudRateIndexToSelect = 0
+        for i, baudrate in enumerate(SerialInterface.AVAILABLE_BAUD_RATES):
+            dialog.comboBoxBaudRate.addItem(str(baudrate))
+            if baudrate == dialog.settings.comPortBaudRate:
+                baudRateIndexToSelect = i
+        dialog.comboBoxBaudRate.setCurrentIndex(baudRateIndexToSelect)
 
         dialog.lineEditComputerIP.setText(dialog.settings.computerIP)
         dialog.lineEditControllerIP.setText(dialog.settings.controllerIP)
@@ -89,6 +96,10 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
             for description in AVAILABLE_FRAMEWORKS:
                 if description["displayName"] == frameworkAndInterfaceDescriptionSelected:
                     dialog.settings.controllerFrameworkAndInterface = description["macroName"]
+
+            baudRateSelected = int(dialog.comboBoxBaudRate.currentText())
+            dialog.settings.comPortBaudRate = baudRateSelected
+
 
             dialog.settings.computerIP = unicode(dialog.lineEditComputerIP.text())
             dialog.settings.controllerIP = unicode(dialog.lineEditControllerIP.text())

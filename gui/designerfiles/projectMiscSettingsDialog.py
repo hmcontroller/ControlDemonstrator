@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'projectMiscSettingsDialog.ui'
 #
-# Created: Thu Jun 01 20:49:43 2017
+# Created: Wed Oct 25 13:21:06 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_ProjectMiscSettingsDialog(object):
     def setupUi(self, ProjectMiscSettingsDialog):
         ProjectMiscSettingsDialog.setObjectName(_fromUtf8("ProjectMiscSettingsDialog"))
-        ProjectMiscSettingsDialog.resize(802, 385)
+        ProjectMiscSettingsDialog.resize(802, 416)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -112,6 +112,12 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.comboBoxComPort = QtGui.QComboBox(self.groupBoxSerial)
         self.comboBoxComPort.setObjectName(_fromUtf8("comboBoxComPort"))
         self.formLayout_3.setWidget(0, QtGui.QFormLayout.FieldRole, self.comboBoxComPort)
+        self.label = QtGui.QLabel(self.groupBoxSerial)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.formLayout_3.setWidget(1, QtGui.QFormLayout.LabelRole, self.label)
+        self.comboBoxBaudRate = QtGui.QComboBox(self.groupBoxSerial)
+        self.comboBoxBaudRate.setObjectName(_fromUtf8("comboBoxBaudRate"))
+        self.formLayout_3.setWidget(1, QtGui.QFormLayout.FieldRole, self.comboBoxBaudRate)
         self.horizontalLayout.addLayout(self.formLayout_3)
         self.verticalLayout.addWidget(self.groupBoxSerial)
         spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
@@ -138,4 +144,5 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.label_7.setText(_translate("ProjectMiscSettingsDialog", "UDP Port", None))
         self.groupBoxSerial.setTitle(_translate("ProjectMiscSettingsDialog", "Framework and interface settings", None))
         self.label_8.setText(_translate("ProjectMiscSettingsDialog", "Com Port", None))
+        self.label.setText(_translate("ProjectMiscSettingsDialog", "BaudRate", None))
 

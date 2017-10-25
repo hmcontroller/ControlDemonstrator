@@ -106,6 +106,9 @@ class IncludeFileMaker(object):
             "SPECIAL_COMMANDS_COUNT", len(self.commands.specialCmdList),
             nameWidth=self.nameWidth, valueWidth=self.valueWidth)
 
+        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "BAUD_RATE", self.projectSettings.comPortBaudRate,
+            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
 
         self.headerFileString += "\n"
 

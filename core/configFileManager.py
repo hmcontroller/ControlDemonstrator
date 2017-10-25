@@ -54,6 +54,7 @@ class ConfigFileManager(object):
         projectSettingsDescriptions["controllerFrameworkAndInterface"] = projectSettings.controllerFrameworkAndInterface
         projectSettingsDescriptions["pathToControllerCodeFolder"] = projectSettings.pathToControllerCodeFolder
         projectSettingsDescriptions["comPortDescription"] = projectSettings.comPortDescription
+        projectSettingsDescriptions["comPortBaudRate"] = projectSettings.comPortBaudRate
 
         tabSettings = list()
         for aTabSetting in projectSettings.tabSettingsDescriptions:
@@ -219,6 +220,8 @@ class ConfigFileManager(object):
         if "comPortDescription" in settingsDescriptions:
             projectMiscSettings.comPortDescription = settingsDescriptions["comPortDescription"]
 
+        if "comPortBaudRate" in settingsDescriptions:
+            projectMiscSettings.comPortBaudRate = settingsDescriptions["comPortBaudRate"]
 
         tabSettingsDescriptions = settingsDescriptions["tabs"]
 

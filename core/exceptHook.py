@@ -18,3 +18,4 @@ class ExceptHook(QtCore.QObject):
             exc_string += line
         logging.critical("uncaught exception:\n\n" + exc_string)
         self.caughtException.emit(exc_string)
+        print exc_string

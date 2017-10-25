@@ -222,10 +222,36 @@ class UsbHidInterface(HardwareInterface):
 
 
 class SerialInterface(HardwareInterface):
+
+    AVAILABLE_BAUD_RATES = [
+        9600,
+        38400,
+        115200,
+        128000,
+        230400,
+        256000,
+        460800,
+        921600
+    ]
+
     def __init__(self, applicationSettings, projectSettings):
         super(SerialInterface, self).__init__(applicationSettings, projectSettings)
 
+
+
         projectSettings.changed.connect(self.projectSettingsChanged)
+        self.projectSettings = projectSettings
+
+
+        # self.availableBaudRates = list()
+        # self.availableBaudRates.append(9600)
+        # self.availableBaudRates.append(38400)
+        # self.availableBaudRates.append(115200)
+        # self.availableBaudRates.append(128000)
+        # self.availableBaudRates.append(230400)
+        # self.availableBaudRates.append(256000)
+        # self.availableBaudRates.append(460800)
+        # self.availableBaudRates.append(921600)
 
         self.messageLength = 42
 
@@ -295,7 +321,7 @@ class SerialInterface(HardwareInterface):
 
 
 
-        self.ser.baudrate = 115200
+        self.ser.baudrate = self.projectSettings.comPortBaudRate # 921600 # 115200
         self.ser.port = portToConnectTo.device
         self.ser.timeout = 0.1
 
