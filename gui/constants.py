@@ -12,12 +12,12 @@ GITHUB_SITE = "https://github.com/hmcontroller/microRay"
 
 
 AVAILABLE_FRAMEWORKS = [
-    {"macroName": "MBED_2_UDP", "displayName": u"Mbed 2 UDP", "interface": "UDP"},
-    # {"macroName": "MBED_2_SERIAL", "displayName": u"Mbed 2 Serial", "interface": "SERIAL"},
-    {"macroName": "MBED_OS_UDP", "displayName": u"Mbed OS UDP", "interface": "UDP"},
-    # {"macroName": "MBED_OS_SERIAL", "displayName": u"Mbed OS Serial", "interface": "SERIAL"},
-    {"macroName": "ARDUINO_UDP", "displayName": u"Arduino UDP", "interface": "UDP"},
-    {"macroName": "ARDUINO_SERIAL", "displayName": u"Arduino Serial", "interface": "SERIAL"}
+    # {"macroName": "MBED_2_UDP", "displayName": u"Mbed 2 UDP", "interface": "UDP", "template": "mbed_2_udp.c"},
+    # {"macroName": "MBED_2_SERIAL", "displayName": u"Mbed 2 Serial", "interface": "SERIAL", "template": "mbed_2_serial.c"},
+    {"macroName": "MBED_OS_UDP", "displayName": u"Mbed OS UDP", "interface": "UDP", "template": "mbed_os_udp.c"},
+    {"macroName": "MBED_OS_SERIAL", "displayName": u"Mbed OS Serial", "interface": "SERIAL", "template": "mbed_os_serial.c"},
+    {"macroName": "ARDUINO_UDP", "displayName": u"Arduino UDP", "interface": "UDP", "template": "arduino_udp.c"},
+    {"macroName": "ARDUINO_SERIAL", "displayName": u"Arduino Serial", "interface": "SERIAL", "template": "arduino_serial.c"}
 ]
 
 RELATIVE_PATH_TO_APPLICATION_SETTINGS = "applicationSettings.json"

@@ -53,7 +53,8 @@ class IncludeFileMaker(object):
         self.addIncludeGuardEnd()
 
     def makeCFileString(self):
-        self.addIncludeToCFile()
+        # self.addIncludeToCFile()
+        self.addIndependentFunctions()
         self.addSetInitialValuesFunctionToCFile()
         self.addCTemplate()
 
@@ -159,6 +160,14 @@ class IncludeFileMaker(object):
     def addIncludeToCFile(self):
         self.cFileString += '#include "{}"\n\n'.format(self.headerFileName)
 
+    def addIndependentFunctions(self):
+        with open(cIndependentFunctionsPath, "r") as cTemplate:
+            lines = cTemplate.readlines()
+        templateText = "".join(lines)
+
+        self.cFileString += templateText
+
+
     def addSetInitialValuesFunctionToCFile(self):
         self.cFileString += "void setInitialValues() {\n"
 
@@ -172,8 +181,12 @@ class IncludeFileMaker(object):
 
 
     def addCTemplate(self):
-        with open(cTemplatePath, "r") as cTemplate:
-            lines = cTemplate.readlines()
-        templateText = "".join(lines)
+        for aDict in AVAILABLE_FRAMEWORKS:
+            if aDict["macroName"] == self.projectSettings.controllerFrameworkAndInterface:
+                templateFileName = aDict["template"]
+                templatePath = os.path.join(templateDir, templateFileName)
+                with open(templatePath, "r") as cTemplate:
+                    lines = cTemplate.readlines()
+                templateText = "".join(lines)
 
-        self.cFileString += templateText
+                self.cFileString += templateText

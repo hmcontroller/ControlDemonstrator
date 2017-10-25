@@ -2,8 +2,8 @@
 import os
 
 
-_thisDir = os.path.dirname(os.path.realpath(__file__))
+templateDir = os.path.dirname(os.path.realpath(__file__))
 
-
-cTemplatePath = os.path.join(_thisDir, "c_template.c")
-headerTemplatePath = os.path.join(_thisDir, "c_template.h")
+cIndependentFunctionsPath = os.path.join(templateDir, "independent.c")
+cTemplatePath = os.path.join(templateDir, "c_template.c")
+headerTemplatePath = os.path.join(templateDir, "c_template.h")
