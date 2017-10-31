@@ -37,7 +37,7 @@ void loop()
         debugCounter = 0;
         blueLed = !blueLed;
     }
-    mR_testChannel = mR_testParam;
+    //mR_testChannel = mR_testParam;
     mR_incChannel += 1;
     if (mR_incChannel > 1000) {
         mR_incChannel = 0;

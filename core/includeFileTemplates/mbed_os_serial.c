@@ -1,15 +1,18 @@
 
 #include <mbed.h>
 
-void dumpOldMessages();
-void copyOldMessageToIncomingBuffer();
+void serialSendComplete(int events);
+
+void receiveMessage();
 void readIncomingBytesIntoBuffer();
-void processMessage(int);
-int findMessageAndProcess();
-void storeForNextLoop(int);
+void appendByteToBuffer(uint8_t inByte);
+void shiftGivenPositionToBufferStart(int position);
+int seekForFullMessage();
+void extractMessage(int messageStartPosition);
+void applyExtractedInMessage();
+
 
 Serial mRserial(USBTX, USBRX, BAUD_RATE); // tx, rx
-Serial mRserialExtern(PB_10, PB_11, BAUD_RATE); // tx, rx
 
 Timer dutyCycleTimer;
 Timer debugTimer;
@@ -19,30 +22,26 @@ unsigned long timeOfLastCompletedMessage = 0;
 DigitalOut redLed(LED3);
 DigitalOut greenLed(LED1);
 
-#define START_BYTE (char)7
-#define STOP_BYTE (char)8
+#define OUT_START_BYTE (char)7
+#define OUT_STOP_BYTE (char)8
+
 #define IN_MESSAGE_SIZE 8
-#define BUFFER_SIZE ((IN_MESSAGE_SIZE+2)*2)
+#define IN_BUFFER_SIZE ((IN_MESSAGE_SIZE+2)*2)
+
+#define IN_START_BYTE (char)7
+#define IN_STOP_BYTE (char)57
 
 event_callback_t serialEventWriteComplete;
 int debugCounterSend = 0;
 void serialSendComplete(int events) {
-    mRserial.putc(STOP_BYTE);
+    mRserial.putc(OUT_STOP_BYTE);
     timeOfLastCompletedMessage = timeOfLastSend;
-    // mRserialExtern.putc(STOP_BYTE);
-    // debugCounterSend += 1;
-    // if (debugCounterSend > 10) {
-    //     debugCounterSend = 0;
-    //     redLed = !redLed;
-    // }
 }
 
 
 void microRayInit() {
     setInitialValues();
     dutyCycleTimer.start();
-//    messageOutBuffer.startByte = 7;
-//    messageOutBuffer.stopByte = 8;
     serialEventWriteComplete.attach(serialSendComplete);
 
     //mRserial.set_dma_usage_tx(1);
@@ -56,124 +55,79 @@ void sendMessage() {
 
     if(timeOfLastCompletedMessage == timeOfLastSend) {
         timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
-        mRserial.putc(START_BYTE);
+        mRserial.putc(OUT_START_BYTE);
         mRserial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), serialEventWriteComplete, SERIAL_EVENT_TX_COMPLETE);
-        //mRserial.putc(STOP_BYTE);
     }
     else {
         serialTransmissionLagCounter++;
         serialTransmissionLag = (float)serialTransmissionLagCounter;
         timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
     }
-
-    // mRserialExtern.putc(START_BYTE);
-    // mRserialExtern.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), serialEventWriteComplete, SERIAL_EVENT_TX_COMPLETE);
-    //mRserial.putc(STOP_BYTE);
-
-
-
-//     // autsch (geht aber):
-//     mRserial.putc(START_BYTE);
-//     uint8_t sendCounter = 0;
-//     uint8_t * pointerToOutMessage  = (uint8_t *)&messageOutBuffer;
-//     for(sendCounter=0; sendCounter < sizeof(messageOutBuffer); sendCounter++) {
-//         mRserial.putc(*pointerToOutMessage);
-//         pointerToOutMessage++;
-//     }
-//     mRserial.putc(STOP_BYTE);
 }
 
-int16_t availableBytes = 0;
-
-uint8_t remainderBuffer[BUFFER_SIZE];
-int16_t bytesInRemainderBuffer = 0;
-
-uint8_t dataToProcess[BUFFER_SIZE];
-int16_t bytesInDataToProcess = 0;
-int16_t dataToProcessPosition = 0;
-int16_t searchPosition = 0;
-int16_t lastPositionProcessed = -1;
-
+uint8_t rawMessageInBuffer[IN_BUFFER_SIZE];
+uint8_t rawMessageInBufferTemp[IN_BUFFER_SIZE];
+int16_t bufferPosition = 0;
 
 void receiveMessage() {
-    lastTime = debugTimer.read_us();
-    //dumpOldMessages();
-    copyOldMessageToIncomingBuffer();
     readIncomingBytesIntoBuffer();
-    lastPositionProcessed = findMessageAndProcess();
-    storeForNextLoop(lastPositionProcessed);
-    // receiveTimer = (float)(micros() - lastTime);
-}
-
-
-void dumpOldMessages() {
-    // funktioniert bei mbed so iwi nicht, weil man die Länge des Buffers nicht abfragen kann
-    //while(mRserial.readable() > BUFFER_SIZE) {
-    //    mRserial.read();
-    //}
-}
-
-void copyOldMessageToIncomingBuffer() {
-    for (dataToProcessPosition = 0; dataToProcessPosition < bytesInRemainderBuffer; dataToProcessPosition++) {
-        dataToProcess[dataToProcessPosition] = remainderBuffer[dataToProcessPosition];
-        bytesInDataToProcess++;
+    int foundMessageStartPosition = seekForFullMessage();
+    if(foundMessageStartPosition > -1) {
+        extractMessage(foundMessageStartPosition);
     }
-    bytesInRemainderBuffer = 0;
 }
 
 void readIncomingBytesIntoBuffer() {
-//    dataToProcessPosition = bytesInDataToProcess;
-//    if (Serial.available() < (IN_MESSAGE_SIZE + 2)) {
-//        return;
-//    }
-
-    while (mRserial.readable() && (dataToProcessPosition < BUFFER_SIZE)) {
-        dataToProcess[dataToProcessPosition] = mRserial.getc();
-        dataToProcessPosition++;
-        bytesInDataToProcess++;
+    while (mRserial.readable()) {
+        appendByteToBuffer(mRserial.getc());
     }
 }
 
-int findMessageAndProcess() {
-    for (searchPosition = 0; searchPosition < bytesInDataToProcess; searchPosition++) {
-        if (dataToProcess[searchPosition] == START_BYTE) {
-            int expectedStopBytePosition = searchPosition + IN_MESSAGE_SIZE + 1;
-            if (expectedStopBytePosition < BUFFER_SIZE) {
-                if (dataToProcess[expectedStopBytePosition] == STOP_BYTE) {
-                    processMessage(searchPosition + 1);
-                    return expectedStopBytePosition;
-                }
-            }
-            else {
-                // do something meaningful
+void appendByteToBuffer(uint8_t inByte) {
+    // prevent buffer from overfilling
+    // shift whole buffer one to the left to free last position
+    if(bufferPosition >= IN_BUFFER_SIZE) {
+        shiftGivenPositionToBufferStart(1);
+    }
+    rawMessageInBuffer[bufferPosition] = inByte;
+    bufferPosition += 1;
+}
+
+void shiftGivenPositionToBufferStart(int position) {
+    int i;
+    for(i = position; i < IN_BUFFER_SIZE; i++) {
+        rawMessageInBufferTemp[i - position] = rawMessageInBuffer[i];
+    }
+    for(i = 0; i < (IN_BUFFER_SIZE - position); i++) {
+        rawMessageInBuffer[i] = rawMessageInBufferTemp[i];
+    }
+    bufferPosition = IN_BUFFER_SIZE - position;
+}
+
+int seekForFullMessage() {
+    int i;
+    for (i = 0; i < bufferPosition - IN_MESSAGE_SIZE; i++) {
+        if (rawMessageInBuffer[i] == IN_START_BYTE) {
+            int expectedStopBytePosition = i + IN_MESSAGE_SIZE + 1;
+            if (rawMessageInBuffer[expectedStopBytePosition] == IN_STOP_BYTE) {
+                return i;
             }
         }
     }
     return -1;
 }
 
-void processMessage(int messageStartPosition) {
-    memcpy(&messageInBuffer.parameterNumber, &dataToProcess[messageStartPosition], 4);
-    memcpy(&messageInBuffer.value, &dataToProcess[messageStartPosition + 4], 4);
+void extractMessage(int messageStartPosition) {
+    memcpy(&messageInBuffer.parameterNumber, &rawMessageInBuffer[messageStartPosition + 1], 4);
+    memcpy(&messageInBuffer.value, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
+    shiftGivenPositionToBufferStart(messageStartPosition + IN_MESSAGE_SIZE + 2);
+}
+
+void applyExtractedInMessage() {
     if (messageInBuffer.parameterNumber >= 0) {
         parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
     }
     else {
         specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
     }
-
-}
-
-
-
-void storeForNextLoop(int lastPositionProcessed) {
-    int positionResidueBuffer = 0;
-    int positionInBuffer = lastPositionProcessed + 1;
-    while (positionInBuffer < bytesInDataToProcess) {
-        remainderBuffer[positionResidueBuffer] = dataToProcess[positionInBuffer];
-        bytesInRemainderBuffer++;
-        positionResidueBuffer++;
-        positionInBuffer++;
-    }
-    bytesInDataToProcess = 0;
 }

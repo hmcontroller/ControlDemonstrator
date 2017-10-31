@@ -242,17 +242,6 @@ class SerialInterface(HardwareInterface):
         projectSettings.changed.connect(self.projectSettingsChanged)
         self.projectSettings = projectSettings
 
-
-        # self.availableBaudRates = list()
-        # self.availableBaudRates.append(9600)
-        # self.availableBaudRates.append(38400)
-        # self.availableBaudRates.append(115200)
-        # self.availableBaudRates.append(128000)
-        # self.availableBaudRates.append(230400)
-        # self.availableBaudRates.append(256000)
-        # self.availableBaudRates.append(460800)
-        # self.availableBaudRates.append(921600)
-
         self.messageLength = 42
 
         self.lastMessageRemainder = b""
