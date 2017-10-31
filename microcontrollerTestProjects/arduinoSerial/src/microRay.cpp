@@ -20,8 +20,6 @@ int sendBytesCount = 0;
 MessageOut messageOutBuffer;
 MessageIn messageInBuffer;
 
-//MessageOutSerial messageOutBuffer;
-
 
 
 
@@ -54,8 +52,6 @@ void prepareOutMessage(unsigned long loopStartTime)
 }
 
 
-
-
 void microRayCommunicate()
 {
     sendMessage();
@@ -67,8 +63,7 @@ void setInitialValues() {
     serialTransmissionLag = 0.0f;
 }
 
-
-#include <mbed.h>
+#include <arduino.h>
 
 void dumpOldMessages();
 void copyOldMessageToIncomingBuffer();
@@ -77,92 +72,48 @@ void processMessage(int);
 int findMessageAndProcess();
 void storeForNextLoop(int);
 
-Serial mRserial(USBTX, USBRX, BAUD_RATE); // tx, rx
-Serial mRserialExtern(PB_10, PB_11, BAUD_RATE); // tx, rx
 
-Timer dutyCycleTimer;
-Timer debugTimer;
-
-DigitalOut redLed(LED3);
-DigitalOut greenLed(LED1);
-
-#define START_BYTE (uint8_t)7
-#define STOP_BYTE (uint8_t)8
-#define IN_MESSAGE_SIZE 8
-#define BUFFER_SIZE ((IN_MESSAGE_SIZE+2)*2)
-
-
-event_callback_t serialEventWriteComplete;
-void serialSendComplete(int events) {
-    mRserial.putc(STOP_BYTE);
-    redLed = !redLed;
-}
-
-void serialSendCompleteOne() {
-    mRserial.putc(STOP_BYTE);
-    redLed = !redLed;
-}
-
-
-
-FunctionPointer serialCompletePointer;
 void microRayInit() {
     setInitialValues();
-    dutyCycleTimer.start();
-    //messageOutBuffer.startByte = START_BYTE;
-    //messageOutBuffer.stopByte = STOP_BYTE;
-    //serialEventWriteComplete.attach(serialSendComplete);
-    //serialCompletePointer.attach(serialSendCompleteOne);
-    //mRserial.attach(serialCompletePointer, SerialBase::RxIrq);
-
-    //mRserial.set_dma_usage_tx(1);
-    //mRserial.set_dma_usage_rx(1);
+    Serial.begin(BAUD_RATE);
 }
-
-
 
 
 void sendMessage() {
-    prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
+    prepareOutMessage(micros());
+    //lastTime = micros();
 
-    //mRserial.putc(START_BYTE);
+    // Serial.write(messageOutBuffer.loopStartTime);
+    // Serial.write(messageOutBuffer.lastLoopDuration);
+    // Serial.write(messageOutBuffer.parameterNumber);
+    // Serial.write(messageOutBuffer.parameterValue);
+    //
     // int i = 0;
-    // for (i; i < CHANNELS_REQUESTED_COUNT) {
-    //     mRserial.putc(messageOutBuffer[i]);
-    // }
-///    mRserial.write((uint8_t *)&messageOutBufferSerial, sizeof(messageOutBufferSerial), serialEventWriteComplete, SERIAL_EVENT_TX_COMPLETE);
-    //mRserial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), 0, 0);
-    //mRserial.putc(STOP_BYTE);
-
-    // // autsch:
-    // uint8_t sendCounter = 0;
-    // uint8_t * pointerToOutMessage  = (uint8_t *)&messageOutBuffer;
-    // for(sendCounter=0; sendCounter < sizeof(messageOutBuffer); sendCounter++) {
-    //     mRserial.puts(*pointerToOutMessage);
-    //     mRserialExtern.putc(*pointerToOutMessage);
-    //     pointerToOutMessage++;
+    // for (i; i < CHANNELS_REQUESTED_COUNT; i++) {
+    //     Serial.write(messageOutBuffer.channels[i]);
     // }
 
-    // autsch:
-    mRserial.putc(START_BYTE);
-    uint8_t sendCounter = 0;
-    uint8_t * pointerToOutMessage  = (uint8_t *)&messageOutBuffer;
-    for(sendCounter=0; sendCounter < sizeof(messageOutBuffer); sendCounter++) {
-//        mRserial.printf("%u %p", *pointerToOutMessage, pointerToOutMessage);
-        //mRserial.printf("%u ", *pointerToOutMessage);
-        mRserial.putc(*pointerToOutMessage);
-        pointerToOutMessage++;
-    }
-//    mRserial.printf("\n");
-    mRserial.putc(STOP_BYTE);
+    // check, if there is still data not send from the previous loop
 
+    #ifdef SERIAL_TX_BUFFER_SIZE
+        int bytesStillInBuffer = SERIAL_TX_BUFFER_SIZE - Serial.availableForWrite();
+        if (bytesStillInBuffer > 1) {
+            serialTransmissionLag = bytesStillInBuffer;
+        }
+    #endif
+    Serial.write(7);
+    Serial.write((byte *)&messageOutBuffer, sizeof(messageOutBuffer));
+    Serial.write(8);
 
-
-
+    // sendTimer = (float)(micros() - lastTime);
 }
 
 
 
+#define START_BYTE (char)7
+#define STOP_BYTE (char)57
+#define IN_MESSAGE_SIZE 8
+#define BUFFER_SIZE ((IN_MESSAGE_SIZE+2)*2)
 
 int16_t availableBytes = 0;
 
@@ -177,7 +128,7 @@ int16_t lastPositionProcessed = -1;
 
 
 void receiveMessage() {
-    lastTime = debugTimer.read_us();
+    //lastTime = micros();
     //dumpOldMessages();
     copyOldMessageToIncomingBuffer();
     readIncomingBytesIntoBuffer();
@@ -188,10 +139,9 @@ void receiveMessage() {
 
 
 void dumpOldMessages() {
-    // funktioniert bei mbed so iwi nicht, weil man die Länge des Buffers nicht abfragen kann
-    //while(mRserial.readable() > BUFFER_SIZE) {
-    //    mRserial.read();
-    //}
+    while(Serial.available() > BUFFER_SIZE) {
+        Serial.read();
+    }
 }
 
 void copyOldMessageToIncomingBuffer() {
@@ -204,12 +154,11 @@ void copyOldMessageToIncomingBuffer() {
 
 void readIncomingBytesIntoBuffer() {
 //    dataToProcessPosition = bytesInDataToProcess;
-//    if (Serial.available() < (IN_MESSAGE_SIZE + 2)) {
-//        return;
-//    }
-
-    while (mRserial.readable() && (dataToProcessPosition < BUFFER_SIZE)) {
-        dataToProcess[dataToProcessPosition] = mRserial.getc();
+    if (Serial.available() < (IN_MESSAGE_SIZE + 2)) {
+        return;
+    }
+    while ((Serial.available() > 0) && (dataToProcessPosition < BUFFER_SIZE)) {
+        dataToProcess[dataToProcessPosition] = Serial.read();
         dataToProcessPosition++;
         bytesInDataToProcess++;
     }

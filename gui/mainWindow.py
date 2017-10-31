@@ -109,7 +109,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.applicationSettings.bufferLengthChanged.connect(self.bufferLengthChanged)
 
 
-        self.setWindowTitle("microRay v{}".format(self.applicationSettings.currentVersion))
+        self.setWindowTitle("microRay {}".format(self.applicationSettings.currentVersion))
 
 
         # setup a timer, that triggers to read from the controller
@@ -617,7 +617,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         displayPath = self.getProjectDisplayPath(pathToProjectFile)
 
         # self.setWindowTitle(u"microRay - {}".format(displayPath))
-        self.setWindowTitle(u"microRay v{} - {}".format(self.applicationSettings.currentVersion, displayPath))
+        self.setWindowTitle(u"microRay {}    -    {}".format(self.applicationSettings.currentVersion, displayPath))
 
         self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
 
@@ -625,8 +625,9 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     def getProjectDisplayPath(self, fullProjectFilePath):
         displayPath = unicode(fullProjectFilePath)
-        displayPath = os.path.split(displayPath)[1]
-        return displayPath.replace(".mRay", "")
+        # displayPath = os.path.split(displayPath)[1]
+        # displayPath = displayPath.replace(".mRay", "")
+        return displayPath
 
 
     def setInitialValues(self):
@@ -640,7 +641,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         newWindowTitle = self.getProjectDisplayPath(self.projectSettings.openedFrom)
         if self.projectSettings.unsavedChanges is True:
             newWindowTitle += u" (unsaved)"
-        self.setWindowTitle(u"microRay v{} - {}".format(self.applicationSettings.currentVersion, newWindowTitle))
+        self.setWindowTitle(u"microRay {} - {}".format(self.applicationSettings.currentVersion, newWindowTitle))
         # todo rebuild communicator
 
 
@@ -877,6 +878,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         QtGui.QApplication.quit()
 
     def uncaughtExceptionOccured(self, exceptionString):
+        print exceptionString
         if len(exceptionString) > 0 and exceptionString != '' and exceptionString != ' ' and exceptionString != '\n':
             if isinstance(exceptionString, str):
                 try:
@@ -911,7 +913,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         if command.id == -2:
             # print command.valueOfLastResponse
             if command.valueOfLastResponse > 0.2:
-                warning = "Transmission lag. {} bytes from last loop. Deactivate some channels.".format(int(command.valueOfLastResponse))
+                warning = "Transmission lag. {} bytes from last loop. Deactivate some channels or increase your loop time.".format(int(command.valueOfLastResponse))
                 if warning != self.lastTransmissionLagWarning:
                     self.displayMessage.emit(warning, "warning")
                     self.lastTransmissionLagWarning = warning

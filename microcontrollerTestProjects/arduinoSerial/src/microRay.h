@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define MBED_OS_SERIAL
+#define ARDUINO_SERIAL
 
 // must have parameters
 #define loopCycleTimeUs                            1000
@@ -10,7 +10,7 @@
 #define CHANNELS_UNREQUESTED_COUNT                    0
 #define PARAMETER_COUNT                               1
 #define SPECIAL_COMMANDS_COUNT                        2
-#define BAUD_RATE                                 38400
+#define BAUD_RATE                                115200
 
 // All requested channels
 #define mR_testChannel                           (messageOutBuffer.channels[0])
@@ -25,7 +25,6 @@
 #define loopCycleTimeExceededByUs                (specialCommands[0])
 #define serialTransmissionLag                    (specialCommands[1])
 
-
 void microRayInit();
 void microRayCommunicate();
 
@@ -38,16 +37,6 @@ typedef struct MessageOut
     float parameterValue;
     float channels[CHANNELS_REQUESTED_COUNT];
 } MessageOut;
-
-typedef struct MessageOutSerial
-{
-    uint8_t startByte;
-    uint32_t loopStartTime;
-    uint32_t parameterNumber;
-    float parameterValue;
-    float channels[CHANNELS_REQUESTED_COUNT];
-    uint8_t stopByte;
-} MessageOutSerial;
 
 
 typedef struct MessageIn
@@ -63,6 +52,7 @@ extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
 extern float parameters[PARAMETER_COUNT];
 extern float specialCommands[SPECIAL_COMMANDS_COUNT];
 
-//extern MessageOutSerial messageOutBuffer;
 extern MessageOut messageOutBuffer;
+
+
 #endif

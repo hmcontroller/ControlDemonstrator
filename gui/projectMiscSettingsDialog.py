@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 
+import os
 import serial.tools.list_ports
 
 from PyQt4 import QtGui, QtCore
@@ -156,7 +157,15 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
 
 
     def getFolderPath(self):
-        selectedFolder = QtGui.QFileDialog.getExistingDirectory(self)
+        folderSuggestion = u""
+        if os.path.isdir(self.settings._pathToControllerCodeFolder):
+            folderSuggestion = self.settings._pathToControllerCodeFolder
+        elif os.path.isdir(self.settings._openedFrom):
+            folderSuggestion = self.settings._openedFrom
+        else:
+            folderSuggestion = os.path.expanduser("~")
+
+        selectedFolder = QtGui.QFileDialog.getExistingDirectory(self, "Select source code folder", folderSuggestion)
         if len(selectedFolder) == 0:
             return
 

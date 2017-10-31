@@ -20,7 +20,7 @@ class ProjectSettings(QtCore.QObject):
         self._controllerFrameworkAndInterface = "ARDUINO_SERIAL"
         self._tabSettingsDescriptions = [TabDescription()]
         self._pathToControllerCodeFolder = u""
-        self._openedFrom = ""
+        self._openedFrom = u""
         self._unsavedChanges = False
 
     def somethingChanged(self):
@@ -99,6 +99,7 @@ class ProjectSettings(QtCore.QObject):
     def comPortBaudRate(self, value):
         self._comPortBaudRate = value
         self.somethingChanged()
+        self.frameworkAndInterfaceChanged.emit(self)
 
     @property
     def tabSettingsDescriptions(self):

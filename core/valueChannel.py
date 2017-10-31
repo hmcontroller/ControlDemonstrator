@@ -14,6 +14,7 @@ class ValueChannel(QtCore.QObject):
 
     def __init__(self, bufferLength):
         super(ValueChannel, self).__init__()
+        self.debugCounter = 0
         self._id = 0
         self._name = "new"
         self._displayName = u""
@@ -29,6 +30,9 @@ class ValueChannel(QtCore.QObject):
     def append(self, value):
         self.appendSilently(value)
         self.newValueArrived.emit(self)
+        self.debugCounter += 1
+        if self.debugCounter > 1000:
+            self.debugCounter = 0
 
     def appendSilently(self, value):
         self._values.append(value)

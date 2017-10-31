@@ -61,7 +61,7 @@ class ApplicationSettingsManager():
 
 
         if "recentProjects" in jsonMiscSettings:
-            recentPathes = deque(maxlen=5)
+            recentPathes = deque(maxlen=self.settings.maxRecentPathesCount)
             for recentPath in jsonMiscSettings["recentProjects"]:
                 if os.path.isfile(recentPath):
                     recentPathes.append(recentPath)

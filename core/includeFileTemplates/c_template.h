@@ -1,3 +1,4 @@
+
 void microRayInit();
 void microRayCommunicate();
 
@@ -10,6 +11,16 @@ typedef struct MessageOut
     float parameterValue;
     float channels[CHANNELS_REQUESTED_COUNT];
 } MessageOut;
+
+typedef struct MessageOutSerial
+{
+    uint8_t startByte;
+    uint32_t loopStartTime;
+    uint32_t parameterNumber;
+    float parameterValue;
+    float channels[CHANNELS_REQUESTED_COUNT];
+    uint8_t stopByte;
+} MessageOutSerial;
 
 
 typedef struct MessageIn
@@ -25,6 +36,5 @@ extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
 extern float parameters[PARAMETER_COUNT];
 extern float specialCommands[SPECIAL_COMMANDS_COUNT];
 
+//extern MessageOutSerial messageOutBuffer;
 extern MessageOut messageOutBuffer;
-
-

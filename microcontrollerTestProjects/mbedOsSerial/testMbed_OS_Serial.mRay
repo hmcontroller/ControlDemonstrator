@@ -1,0 +1,57 @@
+{
+    "channels": [
+        {
+            "displayName": "", 
+            "name": "mR_testChannel", 
+            "show": true, 
+            "color": [
+                0, 
+                170, 
+                0
+            ], 
+            "isRequested": true, 
+            "id": 0
+        }, 
+        {
+            "displayName": "", 
+            "name": "mR_incChannel", 
+            "show": true, 
+            "color": [
+                0, 
+                0, 
+                255
+            ], 
+            "isRequested": true, 
+            "id": 1
+        }
+    ], 
+    "commands": [
+        {
+            "initialValue": 3.0, 
+            "displayName": "", 
+            "name": "mR_testParam", 
+            "min": -100000.0, 
+            "max": 100000.0, 
+            "pendingMode": false, 
+            "inputMethod": 1, 
+            "id": 0
+        }
+    ], 
+    "miscSettings": {
+        "controllerFrameworkAndInterface": "MBED_OS_SERIAL", 
+        "tabs": [
+            {
+                "className": "TabSmallGenericView", 
+                "pathToClassFile": "gui.tabSmallGenericView", 
+                "displayName": "Generische Ansicht"
+            }
+        ], 
+        "comPortBaudRate": 38400, 
+        "comPortDescription": "STMicroelectronics STLink Virtual COM Port (COM3)", 
+        "computerIP": "192.168.0.133", 
+        "udpPort": 10000, 
+        "pathToControllerCodeFolder": "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\microRay\\microcontrollerTestProjects\\mbedOsSerial\\src", 
+        "controllerLoopCycleTimeInUs": 1000, 
+        "controllerIP": "192.168.0.15"
+    }
+}

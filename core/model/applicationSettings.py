@@ -17,7 +17,8 @@ class ApplicationSettings(QtCore.QObject):
         self.receiveMessageIntervalLengthInMs = 15
         self.sendMessageIntervalLengthInMs = 10
         self._bufferLength = 5000
-        self.recentProjectFilePathes = deque(maxlen=10)
+        self.maxRecentPathesCount = 10
+        self.recentProjectFilePathes = deque(maxlen=self.maxRecentPathesCount)
         self.autoSaveAfterCodeGeneration = True
 
     @property

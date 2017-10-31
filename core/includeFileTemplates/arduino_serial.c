@@ -1,3 +1,4 @@
+
 #include <arduino.h>
 
 void dumpOldMessages();
@@ -16,7 +17,7 @@ void microRayInit() {
 
 void sendMessage() {
     prepareOutMessage(micros());
-    lastTime = micros();
+    //lastTime = micros();
 
     // Serial.write(messageOutBuffer.loopStartTime);
     // Serial.write(messageOutBuffer.lastLoopDuration);
@@ -63,7 +64,7 @@ int16_t lastPositionProcessed = -1;
 
 
 void receiveMessage() {
-    lastTime = micros();
+    //lastTime = micros();
     //dumpOldMessages();
     copyOldMessageToIncomingBuffer();
     readIncomingBytesIntoBuffer();

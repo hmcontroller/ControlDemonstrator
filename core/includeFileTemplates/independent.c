@@ -20,15 +20,19 @@ int sendBytesCount = 0;
 MessageOut messageOutBuffer;
 MessageIn messageInBuffer;
 
+//MessageOutSerial messageOutBuffer;
 
 
 
 
 
-void prepareOutMessage(int loopStartTime)
+
+void prepareOutMessage(unsigned long loopStartTime)
 {
     // map rotating parameters
     // on each cycle, only one of the "controlled parameters" is send to the pc
+
+    messageOutBuffer.loopStartTime = loopStartTime;
 
     if (parameterSendCounter < 0) {
         messageOutBuffer.parameterNumber = parameterSendCounter;
@@ -48,6 +52,8 @@ void prepareOutMessage(int loopStartTime)
         parameterSendCounter = SPECIAL_COMMANDS_COUNT * -1;
     }
 }
+
+
 
 
 void microRayCommunicate()

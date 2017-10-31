@@ -15,6 +15,12 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         QtGui.QWidget.__init__(self, parent)
         self.setupUi(self)
 
+        self.commStateBlinkTimer = QtCore.QTimer()
+        self.commStateBlinkTimer.setSingleShot(True)
+        self.commStateBlinkTimer.setInterval(100)
+        self.commStateBlinkTimer.timeout.connect(self.clearCommStateBlink)
+
+
         self.commandList = commandList
         self.communicator = communicator
         self.communicator.commStateChanged.connect(self.commStateChanged)
@@ -63,13 +69,10 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.singleLineTextEdit.setFontPointSize(12)
         self.singleLineTextEdit.document().setMaximumBlockCount(3)
         self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
-        self.singleLineTextEdit.setWordWrapMode(QtGui.QTextOption.NoWrap)
+        # self.singleLineTextEdit.setWordWrapMode(QtGui.QTextOption.NoWrap)
+        self.singleLineTextEdit.setLineWrapMode(QtGui.QTextEdit.WidgetWidth)
 
 
-        self.commStateBlinkTimer = QtCore.QTimer()
-        self.commStateBlinkTimer.setSingleShot(True)
-        self.commStateBlinkTimer.setInterval(100)
-        self.commStateBlinkTimer.timeout.connect(self.clearCommStateBlink)
 
         self.commStateChanged(self.communicator.commState)
 
@@ -118,7 +121,7 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
 
         # if commState.specialFailures
 
-        self.singleLineTextEdit.verticalScrollBar().setValue(self.singleLineTextEdit.verticalScrollBar().maximum())
+        self.singleLineTextEdit.verticalScrollBar().setValue(self.singleLineTextEdit.verticalScrollBar().minimum())
 
     def commStateBoxBlink(self):
         pal = QtGui.QPalette()
