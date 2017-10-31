@@ -31,7 +31,7 @@
             "displayName": "", 
             "name": "mR_testParam", 
             "min": -100000.0, 
-            "max": 100000.0, 
+            "max": 678704.0, 
             "pendingMode": false, 
             "inputMethod": 1, 
             "id": 0
@@ -46,12 +46,12 @@
                 "displayName": "Generische Ansicht"
             }
         ], 
-        "comPortBaudRate": 38400, 
+        "comPortBaudRate": 115200, 
         "comPortDescription": "STMicroelectronics STLink Virtual COM Port (COM3)", 
         "computerIP": "192.168.0.133", 
         "udpPort": 10000, 
         "pathToControllerCodeFolder": "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\microRay\\microcontrollerTestProjects\\mbedOsSerial\\src", 
-        "controllerLoopCycleTimeInUs": 1000, 
+        "controllerLoopCycleTimeInUs": 3000, 
         "controllerIP": "192.168.0.15"
     }
 }

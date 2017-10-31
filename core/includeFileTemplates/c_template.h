@@ -4,24 +4,27 @@ void microRayCommunicate();
 
 
 #include <stdint.h>
-typedef struct MessageOut
-{
-    uint32_t loopStartTime;
-    uint32_t parameterNumber;
-    float parameterValue;
-    float channels[CHANNELS_REQUESTED_COUNT];
-} MessageOut;
 
-typedef struct MessageOutSerial
-{
-    uint8_t startByte;
-    uint32_t loopStartTime;
-    uint32_t parameterNumber;
-    float parameterValue;
-    float channels[CHANNELS_REQUESTED_COUNT];
-    uint8_t stopByte;
-} MessageOutSerial;
 
+#if defined(MBED_OS_SERIAL) || defined(ARDUINO_SERIAL)
+    typedef struct MessageOut
+    {
+//        char startByte;
+        uint32_t loopStartTime;
+        uint32_t parameterNumber;
+        float parameterValue;
+        float channels[CHANNELS_REQUESTED_COUNT];
+//        char stopByte;
+    } MessageOut;
+#else
+    typedef struct MessageOut
+    {
+        uint32_t loopStartTime;
+        uint32_t parameterNumber;
+        float parameterValue;
+        float channels[CHANNELS_REQUESTED_COUNT];
+    } MessageOut;
+#endif
 
 typedef struct MessageIn
 {

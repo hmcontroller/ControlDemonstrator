@@ -33,7 +33,7 @@ void init() {
 void loop()
 {
     debugCounter += 1;
-    if (debugCounter > 1000) {
+    if (debugCounter > 10) {
         debugCounter = 0;
         blueLed = !blueLed;
     }

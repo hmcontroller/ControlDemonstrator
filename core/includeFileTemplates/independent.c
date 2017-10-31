@@ -20,13 +20,6 @@ int sendBytesCount = 0;
 MessageOut messageOutBuffer;
 MessageIn messageInBuffer;
 
-//MessageOutSerial messageOutBuffer;
-
-
-
-
-
-
 void prepareOutMessage(unsigned long loopStartTime)
 {
     // map rotating parameters
@@ -52,9 +45,6 @@ void prepareOutMessage(unsigned long loopStartTime)
         parameterSendCounter = SPECIAL_COMMANDS_COUNT * -1;
     }
 }
-
-
-
 
 void microRayCommunicate()
 {

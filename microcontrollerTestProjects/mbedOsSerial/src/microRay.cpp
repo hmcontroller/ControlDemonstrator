@@ -20,13 +20,6 @@ int sendBytesCount = 0;
 MessageOut messageOutBuffer;
 MessageIn messageInBuffer;
 
-//MessageOutSerial messageOutBuffer;
-
-
-
-
-
-
 void prepareOutMessage(unsigned long loopStartTime)
 {
     // map rotating parameters
@@ -52,9 +45,6 @@ void prepareOutMessage(unsigned long loopStartTime)
         parameterSendCounter = SPECIAL_COMMANDS_COUNT * -1;
     }
 }
-
-
-
 
 void microRayCommunicate()
 {
@@ -82,87 +72,75 @@ Serial mRserialExtern(PB_10, PB_11, BAUD_RATE); // tx, rx
 
 Timer dutyCycleTimer;
 Timer debugTimer;
+unsigned long timeOfLastSend = 0;
+unsigned long timeOfLastCompletedMessage = 0;
 
 DigitalOut redLed(LED3);
 DigitalOut greenLed(LED1);
 
-#define START_BYTE (uint8_t)7
-#define STOP_BYTE (uint8_t)8
+#define START_BYTE (char)7
+#define STOP_BYTE (char)8
 #define IN_MESSAGE_SIZE 8
 #define BUFFER_SIZE ((IN_MESSAGE_SIZE+2)*2)
 
-
 event_callback_t serialEventWriteComplete;
+int debugCounterSend = 0;
 void serialSendComplete(int events) {
     mRserial.putc(STOP_BYTE);
-    redLed = !redLed;
+    timeOfLastCompletedMessage = timeOfLastSend;
+    // mRserialExtern.putc(STOP_BYTE);
+    // debugCounterSend += 1;
+    // if (debugCounterSend > 10) {
+    //     debugCounterSend = 0;
+    //     redLed = !redLed;
+    // }
 }
 
-void serialSendCompleteOne() {
-    mRserial.putc(STOP_BYTE);
-    redLed = !redLed;
-}
 
-
-
-FunctionPointer serialCompletePointer;
 void microRayInit() {
     setInitialValues();
     dutyCycleTimer.start();
-    //messageOutBuffer.startByte = START_BYTE;
-    //messageOutBuffer.stopByte = STOP_BYTE;
-    //serialEventWriteComplete.attach(serialSendComplete);
-    //serialCompletePointer.attach(serialSendCompleteOne);
-    //mRserial.attach(serialCompletePointer, SerialBase::RxIrq);
+//    messageOutBuffer.startByte = 7;
+//    messageOutBuffer.stopByte = 8;
+    serialEventWriteComplete.attach(serialSendComplete);
 
     //mRserial.set_dma_usage_tx(1);
     //mRserial.set_dma_usage_rx(1);
 }
 
-
-
-
+int serialTransmissionLagCounter = 0;
 void sendMessage() {
+
     prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
 
-    //mRserial.putc(START_BYTE);
-    // int i = 0;
-    // for (i; i < CHANNELS_REQUESTED_COUNT) {
-    //     mRserial.putc(messageOutBuffer[i]);
-    // }
-///    mRserial.write((uint8_t *)&messageOutBufferSerial, sizeof(messageOutBufferSerial), serialEventWriteComplete, SERIAL_EVENT_TX_COMPLETE);
-    //mRserial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), 0, 0);
+    if(timeOfLastCompletedMessage == timeOfLastSend) {
+        timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
+        mRserial.putc(START_BYTE);
+        mRserial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), serialEventWriteComplete, SERIAL_EVENT_TX_COMPLETE);
+        //mRserial.putc(STOP_BYTE);
+    }
+    else {
+        serialTransmissionLagCounter++;
+        serialTransmissionLag = (float)serialTransmissionLagCounter;
+        timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
+    }
+
+    // mRserialExtern.putc(START_BYTE);
+    // mRserialExtern.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), serialEventWriteComplete, SERIAL_EVENT_TX_COMPLETE);
     //mRserial.putc(STOP_BYTE);
 
-    // // autsch:
-    // uint8_t sendCounter = 0;
-    // uint8_t * pointerToOutMessage  = (uint8_t *)&messageOutBuffer;
-    // for(sendCounter=0; sendCounter < sizeof(messageOutBuffer); sendCounter++) {
-    //     mRserial.puts(*pointerToOutMessage);
-    //     mRserialExtern.putc(*pointerToOutMessage);
-    //     pointerToOutMessage++;
-    // }
-
-    // autsch:
-    mRserial.putc(START_BYTE);
-    uint8_t sendCounter = 0;
-    uint8_t * pointerToOutMessage  = (uint8_t *)&messageOutBuffer;
-    for(sendCounter=0; sendCounter < sizeof(messageOutBuffer); sendCounter++) {
-//        mRserial.printf("%u %p", *pointerToOutMessage, pointerToOutMessage);
-        //mRserial.printf("%u ", *pointerToOutMessage);
-        mRserial.putc(*pointerToOutMessage);
-        pointerToOutMessage++;
-    }
-//    mRserial.printf("\n");
-    mRserial.putc(STOP_BYTE);
 
 
-
-
+//     // autsch (geht aber):
+//     mRserial.putc(START_BYTE);
+//     uint8_t sendCounter = 0;
+//     uint8_t * pointerToOutMessage  = (uint8_t *)&messageOutBuffer;
+//     for(sendCounter=0; sendCounter < sizeof(messageOutBuffer); sendCounter++) {
+//         mRserial.putc(*pointerToOutMessage);
+//         pointerToOutMessage++;
+//     }
+//     mRserial.putc(STOP_BYTE);
 }
-
-
-
 
 int16_t availableBytes = 0;
 
