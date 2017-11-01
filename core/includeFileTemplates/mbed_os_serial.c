@@ -19,9 +19,6 @@ Timer debugTimer;
 unsigned long timeOfLastSend = 0;
 unsigned long timeOfLastCompletedMessage = 0;
 
-DigitalOut redLed(LED3);
-DigitalOut greenLed(LED1);
-
 #define OUT_START_BYTE (char)7
 #define OUT_STOP_BYTE (char)8
 
