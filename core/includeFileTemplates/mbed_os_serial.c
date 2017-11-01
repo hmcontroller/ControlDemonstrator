@@ -29,7 +29,7 @@ DigitalOut greenLed(LED1);
 #define IN_BUFFER_SIZE ((IN_MESSAGE_SIZE+2)*2)
 
 #define IN_START_BYTE (char)7
-#define IN_STOP_BYTE (char)57
+#define IN_STOP_BYTE (char)8
 
 event_callback_t serialEventWriteComplete;
 int debugCounterSend = 0;
@@ -101,7 +101,7 @@ void shiftGivenPositionToBufferStart(int position) {
     for(i = 0; i < (IN_BUFFER_SIZE - position); i++) {
         rawMessageInBuffer[i] = rawMessageInBufferTemp[i];
     }
-    bufferPosition = IN_BUFFER_SIZE - position;
+    bufferPosition = bufferPosition - position;
 }
 
 int seekForFullMessage() {

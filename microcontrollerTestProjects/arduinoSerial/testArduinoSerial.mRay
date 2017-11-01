@@ -51,7 +51,7 @@
         "computerIP": "192.168.0.133", 
         "udpPort": 10000, 
         "pathToControllerCodeFolder": "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\microRay\\microcontrollerTestProjects\\arduinoSerial\\src", 
-        "controllerLoopCycleTimeInUs": 1000, 
+        "controllerLoopCycleTimeInUs": 1000000, 
         "controllerIP": "192.168.0.15"
     }
 }

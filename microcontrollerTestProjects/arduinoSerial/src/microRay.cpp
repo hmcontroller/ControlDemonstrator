@@ -20,11 +20,6 @@ int sendBytesCount = 0;
 MessageOut messageOutBuffer;
 MessageIn messageInBuffer;
 
-
-
-
-
-
 void prepareOutMessage(unsigned long loopStartTime)
 {
     // map rotating parameters
@@ -51,7 +46,6 @@ void prepareOutMessage(unsigned long loopStartTime)
     }
 }
 
-
 void microRayCommunicate()
 {
     sendMessage();
@@ -63,15 +57,25 @@ void setInitialValues() {
     serialTransmissionLag = 0.0f;
 }
 
+
 #include <arduino.h>
 
-void dumpOldMessages();
-void copyOldMessageToIncomingBuffer();
+void receiveMessage();
 void readIncomingBytesIntoBuffer();
-void processMessage(int);
-int findMessageAndProcess();
-void storeForNextLoop(int);
+void appendByteToBuffer(uint8_t inByte);
+void shiftGivenPositionToBufferStart(int position);
+int seekForFullMessage();
+void extractMessage(int messageStartPosition);
+void applyExtractedInMessage();
 
+#define OUT_START_BYTE (char)7
+#define OUT_STOP_BYTE (char)8
+
+#define IN_MESSAGE_SIZE 8
+#define IN_BUFFER_SIZE ((IN_MESSAGE_SIZE+2)*2)
+
+#define IN_START_BYTE (char)7
+#define IN_STOP_BYTE (char)8
 
 void microRayInit() {
     setInitialValues();
@@ -81,20 +85,7 @@ void microRayInit() {
 
 void sendMessage() {
     prepareOutMessage(micros());
-    //lastTime = micros();
-
-    // Serial.write(messageOutBuffer.loopStartTime);
-    // Serial.write(messageOutBuffer.lastLoopDuration);
-    // Serial.write(messageOutBuffer.parameterNumber);
-    // Serial.write(messageOutBuffer.parameterValue);
-    //
-    // int i = 0;
-    // for (i; i < CHANNELS_REQUESTED_COUNT; i++) {
-    //     Serial.write(messageOutBuffer.channels[i]);
-    // }
-
     // check, if there is still data not send from the previous loop
-
     #ifdef SERIAL_TX_BUFFER_SIZE
         int bytesStillInBuffer = SERIAL_TX_BUFFER_SIZE - Serial.availableForWrite();
         if (bytesStillInBuffer > 1) {
@@ -104,87 +95,110 @@ void sendMessage() {
     Serial.write(7);
     Serial.write((byte *)&messageOutBuffer, sizeof(messageOutBuffer));
     Serial.write(8);
-
-    // sendTimer = (float)(micros() - lastTime);
 }
 
 
 
-#define START_BYTE (char)7
-#define STOP_BYTE (char)57
-#define IN_MESSAGE_SIZE 8
-#define BUFFER_SIZE ((IN_MESSAGE_SIZE+2)*2)
 
-int16_t availableBytes = 0;
 
-uint8_t remainderBuffer[BUFFER_SIZE];
-int16_t bytesInRemainderBuffer = 0;
 
-uint8_t dataToProcess[BUFFER_SIZE];
-int16_t bytesInDataToProcess = 0;
-int16_t dataToProcessPosition = 0;
-int16_t searchPosition = 0;
-int16_t lastPositionProcessed = -1;
 
+
+uint8_t rawMessageInBuffer[IN_BUFFER_SIZE];
+uint8_t rawMessageInBufferTemp[IN_BUFFER_SIZE];
+int16_t bufferPosition = 0;
 
 void receiveMessage() {
-    //lastTime = micros();
-    //dumpOldMessages();
-    copyOldMessageToIncomingBuffer();
     readIncomingBytesIntoBuffer();
-    lastPositionProcessed = findMessageAndProcess();
-    storeForNextLoop(lastPositionProcessed);
-    // receiveTimer = (float)(micros() - lastTime);
-}
+    int foundMessageStartPosition = seekForFullMessage();
 
+    // Serial.print("found message at ");
+    // Serial.print(foundMessageStartPosition);
+    // Serial.println();
 
-void dumpOldMessages() {
-    while(Serial.available() > BUFFER_SIZE) {
-        Serial.read();
+    if(foundMessageStartPosition > -1) {
+        extractMessage(foundMessageStartPosition);
+        applyExtractedInMessage();
     }
 }
 
-void copyOldMessageToIncomingBuffer() {
-    for (dataToProcessPosition = 0; dataToProcessPosition < bytesInRemainderBuffer; dataToProcessPosition++) {
-        dataToProcess[dataToProcessPosition] = remainderBuffer[dataToProcessPosition];
-        bytesInDataToProcess++;
-    }
-    bytesInRemainderBuffer = 0;
-}
 
 void readIncomingBytesIntoBuffer() {
-//    dataToProcessPosition = bytesInDataToProcess;
-    if (Serial.available() < (IN_MESSAGE_SIZE + 2)) {
-        return;
+    while (Serial.available()) {
+        char inChar = Serial.read();
+        appendByteToBuffer(inChar);
+
+        // mR_testChannel = (float)inChar;
+        // mR_incChannel = bufferPosition;
     }
-    while ((Serial.available() > 0) && (dataToProcessPosition < BUFFER_SIZE)) {
-        dataToProcess[dataToProcessPosition] = Serial.read();
-        dataToProcessPosition++;
-        bytesInDataToProcess++;
+
+    // Serial.print("[");
+    // int i = 0;
+    // for(i=0; i< IN_BUFFER_SIZE; i++) {
+    //     Serial.print(rawMessageInBuffer[i]);
+    //     Serial.print(", ");
+    // }
+    // Serial.print("] ");
+    // Serial.println(bufferPosition);
+}
+
+// void readIncomingBytesIntoBuffer() {
+//     while (Serial.available()) {
+//         appendByteToBuffer(Serial.read());
+//     }
+// }
+
+void appendByteToBuffer(uint8_t inByte) {
+    // prevent buffer from overfilling
+    // shift whole buffer one to the left to free last position
+    if(bufferPosition >= IN_BUFFER_SIZE) {
+        shiftGivenPositionToBufferStart(1);
+    }
+    rawMessageInBuffer[bufferPosition] = inByte;
+    bufferPosition += 1;
+}
+
+void shiftGivenPositionToBufferStart(int position) {
+    // copy and shift
+    int i;
+    for(i = position; i < bufferPosition; i++) {
+        rawMessageInBufferTemp[i - position] = rawMessageInBuffer[i];
+    }
+
+    // actualize bufferPosition
+    bufferPosition = bufferPosition - position;
+
+    // copy back
+    for(i = 0; i < bufferPosition; i++) {
+        rawMessageInBuffer[i] = rawMessageInBufferTemp[i];
     }
 }
 
-int findMessageAndProcess() {
-    for (searchPosition = 0; searchPosition < bytesInDataToProcess; searchPosition++) {
-        if (dataToProcess[searchPosition] == START_BYTE) {
-            int expectedStopBytePosition = searchPosition + IN_MESSAGE_SIZE + 1;
-            if (expectedStopBytePosition < BUFFER_SIZE) {
-                if (dataToProcess[expectedStopBytePosition] == STOP_BYTE) {
-                    processMessage(searchPosition + 1);
-                    return expectedStopBytePosition;
-                }
-            }
-            else {
-                // do something meaningful
+int seekForFullMessage() {
+    int i;
+    for (i = 0; i < bufferPosition - IN_MESSAGE_SIZE; i++) {
+        if (rawMessageInBuffer[i] == IN_START_BYTE) {
+            int expectedStopBytePosition = i + IN_MESSAGE_SIZE + 1;
+            if (rawMessageInBuffer[expectedStopBytePosition] == IN_STOP_BYTE) {
+                return i;
             }
         }
     }
     return -1;
 }
 
-void processMessage(int messageStartPosition) {
-    memcpy(&messageInBuffer.parameterNumber, &dataToProcess[messageStartPosition], 4);
-    memcpy(&messageInBuffer.value, &dataToProcess[messageStartPosition + 4], 4);
+void extractMessage(int messageStartPosition) {
+    memcpy(&messageInBuffer.parameterNumber, &rawMessageInBuffer[messageStartPosition + 1], 4);
+    memcpy(&messageInBuffer.value, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
+    shiftGivenPositionToBufferStart(messageStartPosition + IN_MESSAGE_SIZE + 2);
+
+    // Serial.print("P_num ");
+    // Serial.print(messageInBuffer.parameterNumber);
+    // Serial.print(" P_val ");
+    // Serial.println(messageInBuffer.value);
+}
+
+void applyExtractedInMessage() {
     if (messageInBuffer.parameterNumber >= 0) {
         parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
     }
@@ -192,18 +206,6 @@ void processMessage(int messageStartPosition) {
         specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
     }
 
-}
-
-
-
-void storeForNextLoop(int lastPositionProcessed) {
-    int positionResidueBuffer = 0;
-    int positionInBuffer = lastPositionProcessed + 1;
-    while (positionInBuffer < bytesInDataToProcess) {
-        remainderBuffer[positionResidueBuffer] = dataToProcess[positionInBuffer];
-        bytesInRemainderBuffer++;
-        positionResidueBuffer++;
-        positionInBuffer++;
-    }
-    bytesInDataToProcess = 0;
+    // Serial.print("P_val_saved ");
+    // Serial.println(parameters[messageInBuffer.parameterNumber]);
 }

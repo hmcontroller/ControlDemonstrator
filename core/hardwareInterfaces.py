@@ -242,11 +242,15 @@ class SerialInterface(HardwareInterface):
         projectSettings.changed.connect(self.projectSettingsChanged)
         self.projectSettings = projectSettings
 
-        self.messageLength = 42
+        # self.messageLength = 42
 
         self.lastMessageRemainder = b""
-        self.startByte = 7
-        self.stopByte = 8
+
+        self.inStartByte = 7
+        self.inStopByte = 8
+
+        self.outStartByte = struct.pack("<1B", 7)
+        self.outStopByte = struct.pack("<1B", 8)
 
         self.noMessageInsideCounter = 0
 
@@ -342,17 +346,17 @@ class SerialInterface(HardwareInterface):
         if len(commandList.changedCommands) > 0 and self._commState.play is True:
             commandToSend = commandList.changedCommands.popleft()
 
-            startByte = struct.pack("<1B", 7)
+            # startByte = struct.pack("<1B", 7)
             packedData = self._packCommand(commandToSend)
-            stopByte = struct.pack("<1B", 57)
+            # stopByte = struct.pack("<1B", 57)
 
-            self.ser.write(startByte)
+            self.ser.write(self.outStartByte)
             # time.sleep(0.0005)
             for aChar in packedData:
                 self.ser.write(aChar)
                 # print aChar
                 # time.sleep(0.0005)
-            self.ser.write(stopByte)
+            self.ser.write(self.outStopByte)
             # self.ser.write(packedData)
 
             # print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue(), packedData, len(packedData)
@@ -374,6 +378,8 @@ class SerialInterface(HardwareInterface):
 
                 unpackedBytes = self.unpackAsBytes(messageToProcess)
                 backupedUnpackedBytes = self.unpackAsBytes(messageToProcess)
+
+                # print incomingMessage
 
                 messagePositions.append(self.findNextFullMessagePosition(0, unpackedBytes))
 
@@ -426,21 +432,21 @@ class SerialInterface(HardwareInterface):
         for i, unpackedByte in enumerate(bytes):
             if i < startPosition:
                 continue
-            if unpackedByte == self.startByte:
+            if unpackedByte == self.inStartByte:
                 return i
         return -1
 
     def findFirstPossibleStopByte(self, bytes):
         for i, unpackedByte in enumerate(bytes):
-            if unpackedByte == self.stopByte:
+            if unpackedByte == self.inStopByte:
                 return i
         return -1
 
     def findFirstMessageBorderPosition(self, bytes):
         for i, unpackedByte in enumerate(bytes):
-            if unpackedByte == self.stopByte:
+            if unpackedByte == self.inStopByte:
                 if i + 1 < len(bytes):
-                    if bytes[i + 1] == self.startByte:
+                    if bytes[i + 1] == self.inStartByte:
                         return i
         return -1
 
@@ -452,7 +458,7 @@ class SerialInterface(HardwareInterface):
             remainingBytes = bytes[startBytePos:]
             if len(remainingBytes) > (self._messageSize + 1):
                 expectedStopBytePos = startBytePos + self._messageSize + 1
-                if bytes[expectedStopBytePos] == self.stopByte:
+                if bytes[expectedStopBytePos] == self.inStopByte:
                     start = startBytePos + 1
                     stop = expectedStopBytePos
         return start, stop

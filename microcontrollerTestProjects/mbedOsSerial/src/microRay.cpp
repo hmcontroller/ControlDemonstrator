@@ -88,7 +88,7 @@ DigitalOut greenLed(LED1);
 #define IN_BUFFER_SIZE ((IN_MESSAGE_SIZE+2)*2)
 
 #define IN_START_BYTE (char)7
-#define IN_STOP_BYTE (char)57
+#define IN_STOP_BYTE (char)8
 
 event_callback_t serialEventWriteComplete;
 int debugCounterSend = 0;
@@ -138,8 +138,10 @@ void receiveMessage() {
 
 void readIncomingBytesIntoBuffer() {
     while (mRserial.readable()) {
-        appendByteToBuffer(mRserial.getc());
-        mR_testChannel += 1;
+        char inChar = mRserial.getc();
+        appendByteToBuffer(inChar);
+        mR_testChannel = (float)inChar;
+        mR_incChannel = bufferPosition;
     }
 }
 

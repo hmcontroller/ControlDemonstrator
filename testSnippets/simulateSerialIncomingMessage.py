@@ -17,6 +17,7 @@ class SerialMessageReader(object):
         self.bufferPosition = 0
 
     def eatTheSerialData(self, theData):
+        print "appending", theData
         for i in range(0, len(theData)):
             self.appendToBuffer(theData[i])
         print "after append", self.messageInBuffer, self.bufferPosition
@@ -33,16 +34,21 @@ class SerialMessageReader(object):
     def appendToBuffer(self, aByte):
         if self.bufferPosition >= self.bufferLength:
             self.shiftGivenPositionToBufferStart(1)
-        if self.bufferPosition < self.bufferLength:
-            self.messageInBuffer[self.bufferPosition] = aByte
-            self.bufferPosition += 1
+        # if self.bufferPosition < self.bufferLength:
+        self.messageInBuffer[self.bufferPosition] = aByte
+        self.bufferPosition += 1
 
     def shiftGivenPositionToBufferStart(self, position):
-        for i in range(position, self.bufferLength):
+        # copy and shift
+        for i in range(position, self.bufferPosition):
             self.messageInBufferTemp[i - position] = self.messageInBuffer[i]
-        for i in range(0, self.bufferLength - position):
+
+        # adjust bufferPosition
+        self.bufferPosition = self.bufferPosition - position
+
+        # copy back
+        for i in range(0, self.bufferPosition):
             self.messageInBuffer[i] = self.messageInBufferTemp[i]
-        self.bufferPosition = self.bufferLength - position
 
     def seekForFullMessage(self):
         for i in range(0, self.bufferPosition - self.messageLength - 1):
@@ -61,6 +67,7 @@ class SerialMessageReader(object):
 
 if __name__ == "__main__":
     reader = SerialMessageReader()
+    reader.eatTheSerialData([7, 4, 3, 8])
     reader.eatTheSerialData([3, 4])
     reader.eatTheSerialData([0, 1, 2, 3, 4, 5, 3, 4, 6, 2, 7, 9, 8, 7, 4, 3, 4, 2, 0])
     reader.eatTheSerialData([3, 4])
