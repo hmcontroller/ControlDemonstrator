@@ -97,11 +97,22 @@ void serialSendComplete(int events) {
     timeOfLastCompletedMessage = timeOfLastSend;
 }
 
+event_callback_t serialEventReceiveComplete;
+uint8_t singleInBuffer = 0;
+void serialReadComplete(int events) {
+    appendByteToBuffer(singleInBuffer);
+
+    // retrigger async receive of serial data
+    mRserial.read(&singleInBuffer, 1, serialEventReceiveComplete);
+}
+
 
 void microRayInit() {
     setInitialValues();
     dutyCycleTimer.start();
     serialEventWriteComplete.attach(serialSendComplete);
+    serialEventReceiveComplete.attach(serialReadComplete);
+    mRserial.read(&singleInBuffer, 1, serialEventReceiveComplete);
 
     //mRserial.set_dma_usage_tx(1);
     //mRserial.set_dma_usage_rx(1);
@@ -129,20 +140,17 @@ uint8_t rawMessageInBufferTemp[IN_BUFFER_SIZE];
 int16_t bufferPosition = 0;
 
 void receiveMessage() {
-    readIncomingBytesIntoBuffer();
+    //readIncomingBytesIntoBuffer();
     int foundMessageStartPosition = seekForFullMessage();
+
     if(foundMessageStartPosition > -1) {
         extractMessage(foundMessageStartPosition);
+        applyExtractedInMessage();
     }
 }
 
 void readIncomingBytesIntoBuffer() {
-    while (mRserial.readable()) {
-        char inChar = mRserial.getc();
-        appendByteToBuffer(inChar);
-        mR_testChannel = (float)inChar;
-        mR_incChannel = bufferPosition;
-    }
+    appendByteToBuffer(singleInBuffer);
 }
 
 void appendByteToBuffer(uint8_t inByte) {
@@ -156,14 +164,19 @@ void appendByteToBuffer(uint8_t inByte) {
 }
 
 void shiftGivenPositionToBufferStart(int position) {
+    // copy and shift
     int i;
-    for(i = position; i < IN_BUFFER_SIZE; i++) {
+    for(i = position; i < bufferPosition; i++) {
         rawMessageInBufferTemp[i - position] = rawMessageInBuffer[i];
     }
-    for(i = 0; i < (IN_BUFFER_SIZE - position); i++) {
+
+    // actualize bufferPosition
+    bufferPosition = bufferPosition - position;
+
+    // copy back
+    for(i = 0; i < bufferPosition; i++) {
         rawMessageInBuffer[i] = rawMessageInBufferTemp[i];
     }
-    bufferPosition = IN_BUFFER_SIZE - position;
 }
 
 int seekForFullMessage() {

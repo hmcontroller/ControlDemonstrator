@@ -53,41 +53,17 @@ void receiveMessage() {
     readIncomingBytesIntoBuffer();
     int foundMessageStartPosition = seekForFullMessage();
 
-    // Serial.print("found message at ");
-    // Serial.print(foundMessageStartPosition);
-    // Serial.println();
-
     if(foundMessageStartPosition > -1) {
         extractMessage(foundMessageStartPosition);
         applyExtractedInMessage();
     }
 }
 
-
 void readIncomingBytesIntoBuffer() {
     while (Serial.available()) {
-        char inChar = Serial.read();
-        appendByteToBuffer(inChar);
-
-        // mR_testChannel = (float)inChar;
-        // mR_incChannel = bufferPosition;
+        appendByteToBuffer(Serial.read());
     }
-
-    // Serial.print("[");
-    // int i = 0;
-    // for(i=0; i< IN_BUFFER_SIZE; i++) {
-    //     Serial.print(rawMessageInBuffer[i]);
-    //     Serial.print(", ");
-    // }
-    // Serial.print("] ");
-    // Serial.println(bufferPosition);
 }
-
-// void readIncomingBytesIntoBuffer() {
-//     while (Serial.available()) {
-//         appendByteToBuffer(Serial.read());
-//     }
-// }
 
 void appendByteToBuffer(uint8_t inByte) {
     // prevent buffer from overfilling
@@ -132,11 +108,6 @@ void extractMessage(int messageStartPosition) {
     memcpy(&messageInBuffer.parameterNumber, &rawMessageInBuffer[messageStartPosition + 1], 4);
     memcpy(&messageInBuffer.value, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
     shiftGivenPositionToBufferStart(messageStartPosition + IN_MESSAGE_SIZE + 2);
-
-    // Serial.print("P_num ");
-    // Serial.print(messageInBuffer.parameterNumber);
-    // Serial.print(" P_val ");
-    // Serial.println(messageInBuffer.value);
 }
 
 void applyExtractedInMessage() {
@@ -146,7 +117,4 @@ void applyExtractedInMessage() {
     else {
         specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
     }
-
-    // Serial.print("P_val_saved ");
-    // Serial.println(parameters[messageInBuffer.parameterNumber]);
 }
