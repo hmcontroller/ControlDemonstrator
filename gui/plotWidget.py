@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-from PyQt4 import QtCore, QtGui, QtSql
+from PyQt4 import QtCore
 import pyqtgraph
 
 from gui.idCheckBox import IdColorLabelCheckbox
