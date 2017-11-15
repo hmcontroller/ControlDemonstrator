@@ -9,7 +9,6 @@ void appendByteToBuffer(uint8_t inByte);
 void shiftGivenPositionToBufferStart(int position);
 int seekForFullMessage();
 void extractMessage(int messageStartPosition);
-void applyExtractedInMessage();
 
 
 Serial mRserial(USBTX, USBRX, BAUD_RATE); // tx, rx
@@ -46,7 +45,6 @@ void serialReadComplete(int events) {
 
 
 void microRayInit() {
-    setInitialValues();
     dutyCycleTimer.start();
     serialEventWriteComplete.attach(serialSendComplete);
     serialEventReceiveComplete.attach(serialReadComplete);
@@ -83,7 +81,7 @@ void receiveMessage() {
 
     if(foundMessageStartPosition > -1) {
         extractMessage(foundMessageStartPosition);
-        applyExtractedInMessage();
+        prepareInMessage();
     }
 }
 
@@ -132,15 +130,8 @@ int seekForFullMessage() {
 
 void extractMessage(int messageStartPosition) {
     memcpy(&messageInBuffer.parameterNumber, &rawMessageInBuffer[messageStartPosition + 1], 4);
-    memcpy(&messageInBuffer.value, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
+    memcpy(&messageInBuffer.parameterValueInt, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
     shiftGivenPositionToBufferStart(messageStartPosition + IN_MESSAGE_SIZE + 2);
 }
 
-void applyExtractedInMessage() {
-    if (messageInBuffer.parameterNumber >= 0) {
-        parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
-    }
-    else {
-        specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
-    }
-}
+

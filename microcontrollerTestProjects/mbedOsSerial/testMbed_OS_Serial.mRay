@@ -29,12 +29,24 @@
         {
             "initialValue": 3.0, 
             "displayName": "", 
-            "name": "mR_testParam", 
+            "name": "mR_testParamInt", 
             "min": -100000.0, 
             "max": 678704.0, 
+            "valueType": 1, 
             "pendingMode": false, 
             "inputMethod": 1, 
             "id": 0
+        }, 
+        {
+            "initialValue": 2.0, 
+            "displayName": "", 
+            "name": "mR_testParamFloat", 
+            "min": -100000.0, 
+            "max": 100000.0, 
+            "valueType": 2, 
+            "pendingMode": false, 
+            "inputMethod": 1, 
+            "id": 1
         }
     ], 
     "miscSettings": {

@@ -25,8 +25,6 @@ DigitalOut redLed(LED3);
 
 
 void microRayInit() {
-    setInitialValues();
-
     // Bring up the network interface
 
     // laut Dokumentation Initialisierung mit static IP eigentlich möglich bei mbed OS, geht aber nicht

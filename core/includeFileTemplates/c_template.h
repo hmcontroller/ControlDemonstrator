@@ -6,38 +6,42 @@ void microRayCommunicate();
 #include <stdint.h>
 
 
-#if defined(MBED_OS_SERIAL) || defined(ARDUINO_SERIAL)
-    typedef struct MessageOut
-    {
-//        char startByte;
-        uint32_t loopStartTime;
-        uint32_t parameterNumber;
-        float parameterValue;
-        float channels[CHANNELS_REQUESTED_COUNT];
-//        char stopByte;
-    } MessageOut;
-#else
-    typedef struct MessageOut
-    {
-        uint32_t loopStartTime;
-        uint32_t parameterNumber;
-        float parameterValue;
-        float channels[CHANNELS_REQUESTED_COUNT];
-    } MessageOut;
-#endif
-
 typedef struct MessageIn
 {
     int32_t parameterNumber;
-    float value;
+    union {
+        int32_t parameterValueInt;
+        float parameterValueFloat;
+    };
 } MessageIn;
 
-// storage for channels
-extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
+typedef struct MessageOut
+{
+    uint32_t loopStartTime;
+    uint32_t parameterNumber;
+    union {
+        int32_t parameterValueInt;
+        float parameterValueFloat;
+    };
+    float channels[CHANNELS_REQUESTED_COUNT];
+} MessageOut;
 
-// storage for parameters, that could be set from the pc
-extern float parameters[PARAMETER_COUNT];
+extern MessageOut messageOutBuffer;
+
+
+
+typedef struct Parameter {
+    uint8_t dataType;
+    union {
+        int32_t valueInt;
+        float valueFloat;
+    };
+} Parameter;
+
+extern Parameter parameters[PARAMETER_COUNT];
 extern float specialCommands[SPECIAL_COMMANDS_COUNT];
 
-//extern MessageOutSerial messageOutBuffer;
-extern MessageOut messageOutBuffer;
+
+// storage for unrequested channels
+// requested channels are stored in messageOutBuffer
+extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];

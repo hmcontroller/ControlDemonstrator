@@ -158,6 +158,7 @@ class Command(QtCore.QObject):
     pendingModeChanged = QtCore.pyqtSignal(object)
     pendingValueCanceled = QtCore.pyqtSignal(object)
     inputMethodChanged = QtCore.pyqtSignal(object)
+    valueTypeChanged = QtCore.pyqtSignal(object)
 
     commTimeOut = QtCore.pyqtSignal(object)
     """
@@ -170,6 +171,15 @@ class Command(QtCore.QObject):
     SWITCH_INPUT = 2
     TOGGLE_INPUT = 3
 
+    BOOL_TYPE = 0
+    INT_TYPE = 1
+    FLOAT_TYPE = 2
+
+    AVAILABLE_DATATYPES = [
+        {"type": INT_TYPE, "displayName": u"int32_t"},
+        {"type": FLOAT_TYPE, "displayName": u"float"}
+    ]
+
     def __init__(self):
         super(Command, self).__init__()
         self.id = None
@@ -181,9 +191,10 @@ class Command(QtCore.QObject):
         self._isSelectedAsActive = True
         self.timeOutDuration = 1000
 
-        self._lowerLimit = 0
-        self._upperLimit = 1
+        self._lowerLimit = -100000
+        self._upperLimit = 100000
         self._value = 0.0
+        self._valueType = self.FLOAT_TYPE
         self.initialValue = 0.0
         self.rawArgumentString = None
 
@@ -295,6 +306,13 @@ class Command(QtCore.QObject):
         self._inputMethod = inputMethod
         self.inputMethodChanged.emit(self)
 
+    def getValueType(self):
+        return self._valueType
+
+    def setValueType(self, valueType):
+        self._valueType = valueType
+        self.valueTypeChanged.emit(self)
+
     def getIsSelectedAsActive(self):
         return self._isSelectedAsActive
 
@@ -354,6 +372,9 @@ class Command(QtCore.QObject):
         if self._upperLimit < value:
             self._upperLimit = value
             self.maxChangedPerWidget.emit(self)
+
+
+
 
 
 # TODO do i really need this class

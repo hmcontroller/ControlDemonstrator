@@ -41,6 +41,7 @@ class ConfigFileManager(object):
             commandDict["initialValue"] = command.initialValue
             commandDict["pendingMode"] = command._pendingSendMode
             commandDict["inputMethod"] = command._inputMethod
+            commandDict["valueType"] = command._valueType
             commandDescriptions.append(commandDict)
 
 
@@ -96,7 +97,7 @@ class ConfigFileManager(object):
         newCommandObjects = CommandList()
         newMessageFormatList = list()
 
-        communicator = self.makeCommunicator(newProjectMiscSettings, newMessageFormatList)
+        communicator = self.makeCommunicator(newProjectMiscSettings, newMessageFormatList, newCommandObjects)
 
 
         return newProjectMiscSettings, newChannelObjects, newCommandObjects, newMessageFormatList, communicator
@@ -113,12 +114,12 @@ class ConfigFileManager(object):
         newMessageFormatList = self.getMessageFormatList(jsonStuff["channels"])
 
 
-        communicator = self.makeCommunicator(newProjectMiscSettings, newMessageFormatList)
+        communicator = self.makeCommunicator(newProjectMiscSettings, newMessageFormatList, newCommandObjects)
 
         return newProjectMiscSettings, newChannelObjects, newCommandObjects, newMessageFormatList, communicator
 
-    def makeCommunicator(self, projectMiscSettings, messageFormatList):
-        return Communicator(self.applicationSettings, projectMiscSettings, messageFormatList)
+    def makeCommunicator(self, projectMiscSettings, messageFormatList, commands):
+        return Communicator(self.applicationSettings, projectMiscSettings, messageFormatList, commands)
 
 
     def makeChannelObjects(self, channelDescriptions, bufferLength):
@@ -190,6 +191,9 @@ class ConfigFileManager(object):
 
             if "inputMethod" in commandDescription:
                 command.setInputMethod(commandDescription["inputMethod"])
+
+            if "valueType" in commandDescription:
+                command.setValueType(commandDescription["valueType"])
 
         return commandList
 

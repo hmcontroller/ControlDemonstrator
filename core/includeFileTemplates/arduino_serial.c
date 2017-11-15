@@ -7,7 +7,7 @@ void appendByteToBuffer(uint8_t inByte);
 void shiftGivenPositionToBufferStart(int position);
 int seekForFullMessage();
 void extractMessage(int messageStartPosition);
-void applyExtractedInMessage();
+
 
 #define OUT_START_BYTE (char)7
 #define OUT_STOP_BYTE (char)8
@@ -19,7 +19,6 @@ void applyExtractedInMessage();
 #define IN_STOP_BYTE (char)8
 
 void microRayInit() {
-    setInitialValues();
     Serial.begin(BAUD_RATE);
 }
 
@@ -55,7 +54,7 @@ void receiveMessage() {
 
     if(foundMessageStartPosition > -1) {
         extractMessage(foundMessageStartPosition);
-        applyExtractedInMessage();
+        prepareInMessage();
     }
 }
 
@@ -106,15 +105,7 @@ int seekForFullMessage() {
 
 void extractMessage(int messageStartPosition) {
     memcpy(&messageInBuffer.parameterNumber, &rawMessageInBuffer[messageStartPosition + 1], 4);
-    memcpy(&messageInBuffer.value, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
+    memcpy(&messageInBuffer.parameterValueInt, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
     shiftGivenPositionToBufferStart(messageStartPosition + IN_MESSAGE_SIZE + 2);
 }
 
-void applyExtractedInMessage() {
-    if (messageInBuffer.parameterNumber >= 0) {
-        parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
-    }
-    else {
-        specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
-    }
-}

@@ -23,16 +23,17 @@ class Communicator(QtCore.QObject):
     commandSend = QtCore.pyqtSignal(object)
     commStateChanged = QtCore.pyqtSignal(object)
 
-    def __init__(self, applicationSettings, projectSettings, messageMap):
+    def __init__(self, applicationSettings, projectSettings, messageMap, commands):
         super(Communicator, self).__init__()
 
         self._applicationSettings = applicationSettings
         self._projectSettings = projectSettings
+        self._commands = commands
         self._messageSize = None
         self._messageMap = None
 
 
-        self.interface = SerialInterface(applicationSettings, projectSettings)
+        self.interface = SerialInterface(applicationSettings, projectSettings, commands)
         self.setInterface(messageMap)
 
         # self.commState = CommState()
@@ -60,14 +61,14 @@ class Communicator(QtCore.QObject):
         for availableFramework in AVAILABLE_FRAMEWORKS:
             if self._projectSettings.controllerFrameworkAndInterface == availableFramework["macroName"]:
                 if availableFramework["interface"] == "UDP":
-                    self.interface = UdpInterface(self._applicationSettings, self._projectSettings)
+                    self.interface = UdpInterface(self._applicationSettings, self._projectSettings, self._commands)
                     self.interface.setMessageMap(messageMap)
                     self.interface._commState.changed.connect(self.commStateChanged)
                     self.interface.commandSend.connect(self.commandSend)
                     self.connectToController()
                     return
                 elif availableFramework["interface"] == "SERIAL":
-                    self.interface = SerialInterface(self._applicationSettings, self._projectSettings)
+                    self.interface = SerialInterface(self._applicationSettings, self._projectSettings, self._commands)
                     self.interface.setMessageMap(messageMap)
                     self.interface._commState.changed.connect(self.commStateChanged)
                     self.interface.commandSend.connect(self.commandSend)

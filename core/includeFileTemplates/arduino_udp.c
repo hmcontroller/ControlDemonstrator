@@ -12,7 +12,6 @@ EthernetUDP Udp;
 
 void microRayInit()
 {
-    setInitialValues();
     // Bring up the network interface
     Ethernet.begin(macAddress, ownIp);
     Udp.begin(port);
@@ -40,7 +39,7 @@ void receiveMessage() {
     if (availableBytes > 0) {
         Udp.read((char *)&messageInBuffer, sizeof(messageInBuffer));
         if (messageInBuffer.parameterNumber >= 0) {
-            parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
+            parameters[messageInBuffer.parameterNumber].valueInt = messageInBuffer.valueInt;
         }
         else {
             specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;

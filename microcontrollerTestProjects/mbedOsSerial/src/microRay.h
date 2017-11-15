@@ -8,8 +8,11 @@
 #define CHANNELS_AVAILABLE_COUNT                      2
 #define CHANNELS_REQUESTED_COUNT                      2
 #define CHANNELS_UNREQUESTED_COUNT                    0
-#define PARAMETER_COUNT                               1
+#define PARAMETER_COUNT                               2
 #define SPECIAL_COMMANDS_COUNT                        2
+#define BAUD_RATE                                115200
+#define INT_TYPE                                      1
+#define FLOAT_TYPE                                    2
 #define BAUD_RATE                                115200
 
 // All requested channels
@@ -19,7 +22,8 @@
 // All unrequested channels
 
 // all parameters
-#define mR_testParam                             (parameters[0])
+#define mR_testParamInt                          (parameters[0]).valueInt
+#define mR_testParamFloat                        (parameters[1]).valueFloat
 
 // all special parameters
 #define loopCycleTimeExceededByUs                (specialCommands[0])
@@ -33,39 +37,43 @@ void microRayCommunicate();
 #include <stdint.h>
 
 
-#if defined(MBED_OS_SERIAL) || defined(ARDUINO_SERIAL)
-    typedef struct MessageOut
-    {
-//        char startByte;
-        uint32_t loopStartTime;
-        uint32_t parameterNumber;
-        float parameterValue;
-        float channels[CHANNELS_REQUESTED_COUNT];
-//        char stopByte;
-    } MessageOut;
-#else
-    typedef struct MessageOut
-    {
-        uint32_t loopStartTime;
-        uint32_t parameterNumber;
-        float parameterValue;
-        float channels[CHANNELS_REQUESTED_COUNT];
-    } MessageOut;
-#endif
-
 typedef struct MessageIn
 {
     int32_t parameterNumber;
-    float value;
+    union {
+        int32_t parameterValueInt;
+        float parameterValueFloat;
+    };
 } MessageIn;
 
-// storage for channels
-extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
+typedef struct MessageOut
+{
+    uint32_t loopStartTime;
+    uint32_t parameterNumber;
+    union {
+        int32_t parameterValueInt;
+        float parameterValueFloat;
+    };
+    float channels[CHANNELS_REQUESTED_COUNT];
+} MessageOut;
 
-// storage for parameters, that could be set from the pc
-extern float parameters[PARAMETER_COUNT];
+extern MessageOut messageOutBuffer;
+
+
+
+typedef struct Parameter {
+    uint8_t dataType;
+    union {
+        int32_t valueInt;
+        float valueFloat;
+    };
+} Parameter;
+
+extern Parameter parameters[PARAMETER_COUNT];
 extern float specialCommands[SPECIAL_COMMANDS_COUNT];
 
-//extern MessageOutSerial messageOutBuffer;
-extern MessageOut messageOutBuffer;
+
+// storage for unrequested channels
+// requested channels are stored in messageOutBuffer
+extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
 #endif

@@ -1,6 +1,7 @@
 #include "microRay.h"
 
 void prepareOutMessage();
+void prepareInMessage();
 void sendMessage();
 void receiveMessage();
 
@@ -8,10 +9,6 @@ unsigned long lastTime = 0;
 
 // storage for unrequested channels
 float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
-
-// storage for parameters, that could be set from the pc
-float parameters[PARAMETER_COUNT] = {0.0f};
-float specialCommands[SPECIAL_COMMANDS_COUNT] = {0.0f};
 
 int parameterSendCounter = 0;
 int receivedBytesCount = 0;
@@ -26,16 +23,22 @@ void prepareOutMessage(unsigned long loopStartTime)
     // on each cycle, only one of the "controlled parameters" is send to the pc
 
     messageOutBuffer.loopStartTime = loopStartTime;
+    messageOutBuffer.parameterNumber = parameterSendCounter;
 
     if (parameterSendCounter < 0) {
-        messageOutBuffer.parameterNumber = parameterSendCounter;
-        //messageOutBuffer.parameterValue = parameters[requestedControlledParameters[parameterSendCounter]];
-        messageOutBuffer.parameterValue = specialCommands[(parameterSendCounter + 1) * -1];
+        messageOutBuffer.parameterValueFloat = specialCommands[(parameterSendCounter + 1) * -1];
     }
     else {
-        messageOutBuffer.parameterNumber = parameterSendCounter;
-        //messageOutBuffer.parameterValue = parameters[requestedControlledParameters[parameterSendCounter]];
-        messageOutBuffer.parameterValue = parameters[parameterSendCounter];
+        switch (parameters[parameterSendCounter].dataType) {
+            case INT_TYPE:
+                messageOutBuffer.parameterValueInt = parameters[parameterSendCounter].valueInt;
+                break;
+            case FLOAT_TYPE:
+                messageOutBuffer.parameterValueFloat = parameters[parameterSendCounter].valueFloat;
+                break;
+            default:
+                break;
+        }
     }
 
     // increment the counter for sending the "slow parameters"
@@ -46,16 +49,39 @@ void prepareOutMessage(unsigned long loopStartTime)
     }
 }
 
+void prepareInMessage() {
+    if (messageInBuffer.parameterNumber >= 0) {
+        switch (parameters[messageInBuffer.parameterNumber].dataType) {
+            case INT_TYPE:
+                parameters[messageInBuffer.parameterNumber].valueInt = messageInBuffer.parameterValueInt;
+                break;
+            case FLOAT_TYPE:
+                parameters[messageInBuffer.parameterNumber].valueFloat = messageInBuffer.parameterValueFloat;
+                break;
+            default:
+                break;
+        }
+    }
+    else {
+        specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.parameterValueFloat;
+    }
+}
+
 void microRayCommunicate()
 {
     sendMessage();
     receiveMessage();
 }
-void setInitialValues() {
-    mR_testParam = 3.0f;
-    loopCycleTimeExceededByUs = 0.0f;
-    serialTransmissionLag = 0.0f;
-}
+
+Parameter parameters[] = {
+    { 1, { .valueInt = 3} },
+    { 2, { .valueFloat = 2.0f} }
+};
+
+float specialCommands[] = {
+    0.0f,
+    0.0f
+};
 
 
 #include <mbed.h>
@@ -68,7 +94,6 @@ void appendByteToBuffer(uint8_t inByte);
 void shiftGivenPositionToBufferStart(int position);
 int seekForFullMessage();
 void extractMessage(int messageStartPosition);
-void applyExtractedInMessage();
 
 
 Serial mRserial(USBTX, USBRX, BAUD_RATE); // tx, rx
@@ -77,9 +102,6 @@ Timer dutyCycleTimer;
 Timer debugTimer;
 unsigned long timeOfLastSend = 0;
 unsigned long timeOfLastCompletedMessage = 0;
-
-DigitalOut redLed(LED3);
-DigitalOut greenLed(LED1);
 
 #define OUT_START_BYTE (char)7
 #define OUT_STOP_BYTE (char)8
@@ -108,7 +130,6 @@ void serialReadComplete(int events) {
 
 
 void microRayInit() {
-    setInitialValues();
     dutyCycleTimer.start();
     serialEventWriteComplete.attach(serialSendComplete);
     serialEventReceiveComplete.attach(serialReadComplete);
@@ -145,7 +166,7 @@ void receiveMessage() {
 
     if(foundMessageStartPosition > -1) {
         extractMessage(foundMessageStartPosition);
-        applyExtractedInMessage();
+        prepareInMessage();
     }
 }
 
@@ -194,15 +215,8 @@ int seekForFullMessage() {
 
 void extractMessage(int messageStartPosition) {
     memcpy(&messageInBuffer.parameterNumber, &rawMessageInBuffer[messageStartPosition + 1], 4);
-    memcpy(&messageInBuffer.value, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
+    memcpy(&messageInBuffer.parameterValueInt, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
     shiftGivenPositionToBufferStart(messageStartPosition + IN_MESSAGE_SIZE + 2);
 }
 
-void applyExtractedInMessage() {
-    if (messageInBuffer.parameterNumber >= 0) {
-        parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
-    }
-    else {
-        specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
-    }
-}
+

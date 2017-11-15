@@ -18,8 +18,9 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
     START_VALUE_COLUMN = 4
     PENDING_COLUMN = 5
     INPUT_METHOD_COLUMN = 6
-    DELETE_COLUMN = 7
-    ID_COLUMN = 8
+    DATA_TYPE_COLUMN = 7
+    DELETE_COLUMN = 8
+    ID_COLUMN = 9
 
     def __init__(self, commands, parent=None):
         super(CommandSettingsDialog, self).__init__(parent)
@@ -41,6 +42,7 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
         self.tableHeader.setResizeMode(self.START_VALUE_COLUMN, QtGui.QHeaderView.Interactive)
         self.tableHeader.setResizeMode(self.PENDING_COLUMN, QtGui.QHeaderView.Fixed)
         self.tableHeader.setResizeMode(self.INPUT_METHOD_COLUMN, QtGui.QHeaderView.Fixed)
+        self.tableHeader.setResizeMode(self.DATA_TYPE_COLUMN, QtGui.QHeaderView.Fixed)
         self.tableHeader.setResizeMode(self.DELETE_COLUMN, QtGui.QHeaderView.Fixed)
 
         self.tableWidget.setColumnHidden(self.ID_COLUMN, True)
@@ -52,6 +54,7 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
                        u"Startwert",
                        u"pending",
                        u"Eingabe per",
+                       u"Datentyp",
                        u"" ]
 
         for i, name in enumerate(columnNames):
@@ -68,6 +71,7 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
         self.tableWidget.setColumnWidth(self.DISPLAY_NAME_COLUMN, 200)
         self.tableWidget.setColumnWidth(self.PENDING_COLUMN, 60)
         self.tableWidget.setColumnWidth(self.INPUT_METHOD_COLUMN, 100)
+        self.tableWidget.setColumnWidth(self.DATA_TYPE_COLUMN, 100)
         self.tableWidget.setColumnWidth(self.MIN_COLUMN, 80)
         self.tableWidget.setColumnWidth(self.MAX_COLUMN, 80)
         self.tableWidget.setColumnWidth(self.START_VALUE_COLUMN, 80)
@@ -117,8 +121,11 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
                 else:
                     command.setPendingSendMode(False)
 
-                comboIndex = self.tableWidget.cellWidget(rowNumber, self.INPUT_METHOD_COLUMN).currentIndex()
-                command.setInputMethod(self.inputModes[comboIndex][0])
+                comboIndexInputMethod = self.tableWidget.cellWidget(rowNumber, self.INPUT_METHOD_COLUMN).currentIndex()
+                command.setInputMethod(self.inputModes[comboIndexInputMethod][0])
+
+                comboIndexDataType = self.tableWidget.cellWidget(rowNumber, self.DATA_TYPE_COLUMN).currentIndex()
+                command.setValueType(command.AVAILABLE_DATATYPES[comboIndexDataType]["type"])
 
                 command.setLowerLimit(float(self.tableWidget.item(rowNumber, self.MIN_COLUMN).text()))
                 command.setUpperLimit(float(self.tableWidget.item(rowNumber, self.MAX_COLUMN).text()))
@@ -175,6 +182,16 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
                 indexToSelect = n
         comboBox.setCurrentIndex(indexToSelect)
         self.tableWidget.setCellWidget(rowNumber, self.INPUT_METHOD_COLUMN, comboBox)
+
+        dataTypeItem = QtGui.QTableWidgetItem()
+        comboBoxDataType = QtGui.QComboBox()
+        indexToSelect = 0
+        for n, aDict in enumerate(command.AVAILABLE_DATATYPES):
+            comboBoxDataType.addItem(aDict["displayName"])
+            if command.getValueType() == aDict["type"]:
+                indexToSelect = n
+        comboBoxDataType.setCurrentIndex(indexToSelect)
+        self.tableWidget.setCellWidget(rowNumber, self.DATA_TYPE_COLUMN, comboBoxDataType)
 
         lowerLimitItem = QtGui.QTableWidgetItem(unicode(command._lowerLimit))
         self.tableWidget.setItem(rowNumber, self.MIN_COLUMN, lowerLimitItem)

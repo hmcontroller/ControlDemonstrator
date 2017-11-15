@@ -3,6 +3,7 @@
 
 from core.includeFileTemplates import *
 from gui.constants import AVAILABLE_FRAMEWORKS
+from core.command import Command
 
 class IncludeFileMaker(object):
     def __init__(self):
@@ -111,6 +112,18 @@ class IncludeFileMaker(object):
             "BAUD_RATE", self.projectSettings.comPortBaudRate,
             nameWidth=self.nameWidth, valueWidth=self.valueWidth)
 
+        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "INT_TYPE", Command.INT_TYPE,
+            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
+
+        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "FLOAT_TYPE", Command.FLOAT_TYPE,
+            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
+
+        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "BAUD_RATE", self.projectSettings.comPortBaudRate,
+            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
+
         self.headerFileString += "\n"
 
 
@@ -137,7 +150,11 @@ class IncludeFileMaker(object):
         # all parameters
         self.headerFileString += "// all parameters\n"
         for i, command in enumerate(self.commands):
-            macro = "(parameters[{}])".format(i)
+            macro = ""
+            if command._valueType == Command.INT_TYPE:
+                macro = "(parameters[{}]){}".format(i, ".valueInt")
+            elif command._valueType == Command.FLOAT_TYPE:
+                macro = "(parameters[{}]){}".format(i, ".valueFloat")
             self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
                 command.name, macro, nameWidth=self.nameWidth, valueWidth=self.valueWidth)
         self.headerFileString += "\n"
@@ -169,15 +186,25 @@ class IncludeFileMaker(object):
 
 
     def addSetInitialValuesFunctionToCFile(self):
-        self.cFileString += "void setInitialValues() {\n"
+        self.cFileString += "\n"
 
+        self.cFileString += "Parameter parameters[] = {\n"
         for command in self.commands:
-            self.cFileString += "    {} = {}f;\n".format(command.name, command.initialValue)
+            if command._valueType == command.INT_TYPE:
+                self.cFileString += "    {{ {dType}, {{ .valueInt = {value}}} }},\n".format(
+                    dType=command._valueType, value=int(command.initialValue))
+            elif command._valueType == command.FLOAT_TYPE:
+                self.cFileString += "    {{ {dType}, {{ .valueFloat = {value}f}} }},\n".format(
+                    dType=command._valueType, value=float(command.initialValue))
+        self.cFileString = self.cFileString.rstrip(",\n")
+        self.cFileString += "\n};\n\n"
 
+
+        self.cFileString += "float specialCommands[] = {\n"
         for command in self.commands.specialCmdList:
-            self.cFileString += "    {} = {}f;\n".format(command.name, command.initialValue)
-
-        self.cFileString += "}\n\n"
+            self.cFileString += "    {}f,\n".format(command.initialValue)
+        self.cFileString = self.cFileString.rstrip(",\n")
+        self.cFileString += "\n};\n\n"
 
 
     def addCTemplate(self):

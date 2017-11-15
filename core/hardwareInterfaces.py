@@ -18,11 +18,12 @@ class HardwareInterface(QtCore.QObject):
 
     commandSend = QtCore.pyqtSignal(object)
 
-    def __init__(self, applicationSettings, projectSettings):
+    def __init__(self, applicationSettings, projectSettings, commands):
         super(HardwareInterface, self).__init__()
 
         self._applicationSettings = applicationSettings
         self._projectSettings = projectSettings
+        self._commands = commands
         self._messageSize = None
         self._messageMap = None
 
@@ -92,7 +93,10 @@ class HardwareInterface(QtCore.QObject):
         raise NotImplementedError()
 
     def _packCommand(self, command):
-        return struct.pack("<1i1f", command.id, command.getValue())
+        if command.getValueType() == command.INT_TYPE:
+            return struct.pack("<1i1i", command.id, int(command.getValue()))
+        if command.getValueType() == command.FLOAT_TYPE:
+            return struct.pack("<1i1f", command.id, float(command.getValue()))
 
     def _unpack(self, rawPackets):
         # TODO - think about how to single source the packet configuration
@@ -103,13 +107,30 @@ class HardwareInterface(QtCore.QObject):
             if len(rawPacket) != self._messageMap.messageLengthInBytes:
                 self._commState.state = CommState.WRONG_CONFIG
                 return unpackedMessages
+
+            currentParameterNumber = 0
             message = list()
             for messagePartInfo in self._messageMap:
                 messagePart = MessageData()
+
+
                 rawPart = rawPacket[messagePartInfo.positionInBytes : messagePartInfo.positionInBytes + messagePartInfo.lengthInBytes]
 
                 # only these values are changed, the others are just copied
-                messagePart.value = struct.unpack(messagePartInfo.unpackString, rawPart)[0]
+                if messagePartInfo.name == "parameterNumber":
+                    messagePart.value = struct.unpack(messagePartInfo.unpackString, rawPart)[0]
+                    currentParameterNumber = messagePart.value
+                elif messagePartInfo.name == "parameterValue":
+                    if currentParameterNumber < 0:
+                        messagePart.value = struct.unpack("<f", rawPart)[0]
+                    elif self._commands.getCommandById(currentParameterNumber).getValueType() == \
+                            self._commands.getCommandById(currentParameterNumber).FLOAT_TYPE:
+                        messagePart.value = struct.unpack("<f", rawPart)[0]
+                    elif self._commands.getCommandById(currentParameterNumber).getValueType() == \
+                            self._commands.getCommandById(currentParameterNumber).INT_TYPE:
+                        messagePart.value = struct.unpack("<i", rawPart)[0]
+                else:
+                    messagePart.value = struct.unpack(messagePartInfo.unpackString, rawPart)[0]
 
                 messagePart.positionInBytes = messagePartInfo.positionInBytes
                 messagePart.lengthInBytes = messagePartInfo.lengthInBytes
@@ -129,8 +150,8 @@ class HardwareInterface(QtCore.QObject):
 
 
 class UdpInterface(HardwareInterface):
-    def __init__(self, applicationSettings, projectSettings):
-        super(UdpInterface, self).__init__(applicationSettings, projectSettings)
+    def __init__(self, applicationSettings, projectSettings, commands):
+        super(UdpInterface, self).__init__(applicationSettings, projectSettings, commands)
         self._socket = None
 
 
@@ -211,8 +232,8 @@ class UdpInterface(HardwareInterface):
 
 
 class UsbHidInterface(HardwareInterface):
-    def __init__(self, applicationSettings, projectSettings):
-        super(UsbHidInterface, self).__init__(applicationSettings, projectSettings)
+    def __init__(self, applicationSettings, projectSettings, commands):
+        super(UsbHidInterface, self).__init__(applicationSettings, projectSettings, commands)
 
     def send(self, commandList):
         pass
@@ -234,8 +255,8 @@ class SerialInterface(HardwareInterface):
         921600
     ]
 
-    def __init__(self, applicationSettings, projectSettings):
-        super(SerialInterface, self).__init__(applicationSettings, projectSettings)
+    def __init__(self, applicationSettings, projectSettings, commands):
+        super(SerialInterface, self).__init__(applicationSettings, projectSettings, commands)
 
 
 
