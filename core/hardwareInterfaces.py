@@ -116,21 +116,29 @@ class HardwareInterface(QtCore.QObject):
 
                 rawPart = rawPacket[messagePartInfo.positionInBytes : messagePartInfo.positionInBytes + messagePartInfo.lengthInBytes]
 
-                # only these values are changed, the others are just copied
-                if messagePartInfo.name == "parameterNumber":
-                    messagePart.value = struct.unpack(messagePartInfo.unpackString, rawPart)[0]
-                    currentParameterNumber = messagePart.value
-                elif messagePartInfo.name == "parameterValue":
-                    if currentParameterNumber < 0:
-                        messagePart.value = struct.unpack("<f", rawPart)[0]
-                    elif self._commands.getCommandById(currentParameterNumber).getValueType() == \
-                            self._commands.getCommandById(currentParameterNumber).FLOAT_TYPE:
-                        messagePart.value = struct.unpack("<f", rawPart)[0]
-                    elif self._commands.getCommandById(currentParameterNumber).getValueType() == \
-                            self._commands.getCommandById(currentParameterNumber).INT_TYPE:
-                        messagePart.value = struct.unpack("<i", rawPart)[0]
-                else:
-                    messagePart.value = struct.unpack(messagePartInfo.unpackString, rawPart)[0]
+                messagePart.rawValue = rawPart
+
+                # ATTENTION: dirty HACK ahead
+                # unpacking of parameter confirmation takes place at MessageInterpreter.getMicroControllerCommandReturned
+                # here, the value is extracted as float
+
+                # if messagePartInfo.name == "parameterNumber":
+                #     messagePart.value = struct.unpack(messagePartInfo.unpackString, rawPart)[0]
+                #     currentParameterNumber = messagePart.value
+                # elif messagePartInfo.name == "parameterValue":
+                #     if currentParameterNumber < 0:
+                #         messagePart.value = struct.unpack("<f", rawPart)[0]
+                #     elif self._commands.getCommandById(currentParameterNumber).getValueType() == \
+                #             self._commands.getCommandById(currentParameterNumber).FLOAT_TYPE:
+                #         messagePart.value = struct.unpack("<f", rawPart)[0]
+                #     elif self._commands.getCommandById(currentParameterNumber).getValueType() == \
+                #             self._commands.getCommandById(currentParameterNumber).INT_TYPE:
+                #         messagePart.value = struct.unpack("<i", rawPart)[0]
+                # else:
+                #     messagePart.value = struct.unpack(messagePartInfo.unpackString, rawPart)[0]
+                #
+
+                messagePart.value = struct.unpack(messagePartInfo.unpackString, rawPart)[0]
 
                 messagePart.positionInBytes = messagePartInfo.positionInBytes
                 messagePart.lengthInBytes = messagePartInfo.lengthInBytes

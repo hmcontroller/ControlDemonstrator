@@ -29,5 +29,6 @@ class MessageData():
         self.unpackString = "<i"
         self.name = None
         self.value = 0
+        self.rawValue = 0
         self.isUserChannel = False
         self.userChannelId = None

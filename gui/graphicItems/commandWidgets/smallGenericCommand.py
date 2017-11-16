@@ -5,6 +5,7 @@ import time
 from PyQt4 import QtGui, QtCore
 
 from core.command import Command
+from core.engineeringNotation.engineeringNotation import EngNumber
 
 from baseCommand import BaseCommand
 from gui.graphicItems.floatValidator import FloatValidator
@@ -467,9 +468,17 @@ class SmallGenericCommand(BaseCommand):
 
         # draw return value
         QPainter.setFont(self.otherFont)
+        # engNumber = EngNumber(self.command.valueOfLastResponse)
+        # numberToShow = "".format(engNumber.__repr__())
+        # if isinstance(self.command.valueOfLastResponse, float):
+        #     numberToShow = u"{:0.2E}".format(self.command.valueOfLastResponse)
+        # if isinstance(self.command.valueOfLastResponse, int):
+        #     numberToShow = u"{}".format(self.command.valueOfLastResponse)
         QPainter.drawText(self.returnValueRect,
                          QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                          QtCore.QString(str(self.command.valueOfLastResponse)))
+                         # QtCore.QString(u"{:0.2e}".format(self.command.valueOfLastResponse)))
+                         # QtCore.QString(numberToShow))
 
         QPainter.setPen(self.blackPen)
 

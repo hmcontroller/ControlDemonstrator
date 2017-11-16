@@ -22,6 +22,7 @@ class ProjectSettings(QtCore.QObject):
         self._pathToControllerCodeFolder = u""
         self._openedFrom = u""
         self._unsavedChanges = False
+        self._suppressParameterConfirmation = False
 
     def somethingChanged(self):
         self._unsavedChanges = True
@@ -118,6 +119,16 @@ class ProjectSettings(QtCore.QObject):
     def pathToControllerCodeFolder(self, value):
         self._pathToControllerCodeFolder = value
         self.somethingChanged()
+
+    @property
+    def suppressParameterConfirmation(self):
+        return self._suppressParameterConfirmation
+
+    @suppressParameterConfirmation.setter
+    def suppressParameterConfirmation(self, value):
+        self._suppressParameterConfirmation = value
+        self.somethingChanged()
+
 
     @property
     def openedFrom(self):

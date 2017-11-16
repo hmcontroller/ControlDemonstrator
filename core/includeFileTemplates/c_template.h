@@ -18,11 +18,13 @@ typedef struct MessageIn
 typedef struct MessageOut
 {
     uint32_t loopStartTime;
+#if !defined(SUPPRESS_PARAM_CONFIRMATION)
     uint32_t parameterNumber;
     union {
         int32_t parameterValueInt;
         float parameterValueFloat;
     };
+#endif
     float channels[CHANNELS_REQUESTED_COUNT];
 } MessageOut;
 

@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 
+import struct
+
 from core.command import CommandConfirmation
 
 
@@ -39,12 +41,26 @@ class MessageInterpreter():
         return 0
 
     @staticmethod
-    def getMicroControllerCommandReturned(message):
+    def getMicroControllerCommandReturned(message, commands):
         cmd = CommandConfirmation()
         for i, messagePart in enumerate(message):
             if messagePart.name == "parameterNumber":
                 cmd.id = messagePart.value
             if messagePart.name == "parameterValue":
+                # cmd.returnValue = messagePart.value
+
+
+                if cmd.id < 0:
+                    messagePart.value = struct.unpack("<f", messagePart.rawValue)[0]
+                elif commands.getCommandById(cmd.id).getValueType() == commands.getCommandById(cmd.id).FLOAT_TYPE:
+                    messagePart.value = struct.unpack("<f", messagePart.rawValue)[0]
+                elif commands.getCommandById(cmd.id).getValueType() == commands.getCommandById(cmd.id).INT_TYPE:
+                    messagePart.value = struct.unpack("<i", messagePart.rawValue)[0]
+                else:
+                    pass
+
                 cmd.returnValue = messagePart.value
+
         return cmd
+
 

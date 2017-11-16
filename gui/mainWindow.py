@@ -752,6 +752,9 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         if accepted and hasattr(self, "communicator"):
             self.receiveTimer.stop()
             self.communicator.setInterface(self.messageFormatList)
+            newMessageMap = self.projectConfigManager.getMessageFormatList(self.channels, self.projectSettings)
+            self.communicator.setMessageMap(newMessageMap)
+
             self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
         return accepted
 
@@ -764,7 +767,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         self.receiveTimer.stop()
 
-        newMessageMap = self.projectConfigManager.getMessageFormatList(self.channels)
+        newMessageMap = self.projectConfigManager.getMessageFormatList(self.channels, self.projectSettings)
         self.communicator.setMessageMap(newMessageMap)
 
         self.receiveTimer.start(self.applicationSettings.receiveMessageIntervalLengthInMs)
@@ -844,7 +847,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     def handleNewData(self, message):
         MessageInterpreter.mapUserChannels(self.channels, message)
-        returnedCommand = MessageInterpreter.getMicroControllerCommandReturned(message)
+        returnedCommand = MessageInterpreter.getMicroControllerCommandReturned(message, self.commands)
 
         try:
             command = self.commands.getCommandById(returnedCommand.id)

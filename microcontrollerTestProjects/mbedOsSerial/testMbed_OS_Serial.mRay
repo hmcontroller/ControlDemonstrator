@@ -30,11 +30,11 @@
             "initialValue": 3.0, 
             "displayName": "", 
             "name": "mR_testParamInt", 
-            "min": -100000.0, 
-            "max": 678704.0, 
+            "min": 0.0, 
+            "max": 1.0, 
             "valueType": 1, 
             "pendingMode": false, 
-            "inputMethod": 1, 
+            "inputMethod": 2, 
             "id": 0
         }, 
         {
@@ -63,6 +63,7 @@
         "computerIP": "192.168.0.133", 
         "udpPort": 10000, 
         "pathToControllerCodeFolder": "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\microRay\\microcontrollerTestProjects\\mbedOsSerial\\src", 
+        "suppressParameterConfirmation": false, 
         "controllerLoopCycleTimeInUs": 3000, 
         "controllerIP": "192.168.0.15"
     }

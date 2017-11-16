@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'projectMiscSettingsDialog.ui'
 #
-# Created: Wed Oct 25 13:21:06 2017
+# Created: Thu Nov 16 14:43:21 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_ProjectMiscSettingsDialog(object):
     def setupUi(self, ProjectMiscSettingsDialog):
         ProjectMiscSettingsDialog.setObjectName(_fromUtf8("ProjectMiscSettingsDialog"))
-        ProjectMiscSettingsDialog.resize(802, 416)
+        ProjectMiscSettingsDialog.resize(1282, 448)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -35,8 +35,6 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.verticalLayout = QtGui.QVBoxLayout(ProjectMiscSettingsDialog)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.formLayout = QtGui.QFormLayout()
-        self.formLayout.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
-        self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.ExpandingFieldsGrow)
         self.formLayout.setObjectName(_fromUtf8("formLayout"))
         self.label_2 = QtGui.QLabel(ProjectMiscSettingsDialog)
         self.label_2.setObjectName(_fromUtf8("label_2"))
@@ -56,12 +54,19 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.toolButtonSelectControllerCodeFolder.setObjectName(_fromUtf8("toolButtonSelectControllerCodeFolder"))
         self.horizontalLayout_3.addWidget(self.toolButtonSelectControllerCodeFolder)
         self.formLayout.setLayout(1, QtGui.QFormLayout.FieldRole, self.horizontalLayout_3)
+        self.label_9 = QtGui.QLabel(ProjectMiscSettingsDialog)
+        self.label_9.setObjectName(_fromUtf8("label_9"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_9)
+        self.checkBoxParamConfSuppression = QtGui.QCheckBox(ProjectMiscSettingsDialog)
+        self.checkBoxParamConfSuppression.setText(_fromUtf8(""))
+        self.checkBoxParamConfSuppression.setObjectName(_fromUtf8("checkBoxParamConfSuppression"))
+        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.checkBoxParamConfSuppression)
         self.label_4 = QtGui.QLabel(ProjectMiscSettingsDialog)
         self.label_4.setObjectName(_fromUtf8("label_4"))
-        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_4)
+        self.formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self.label_4)
         self.comboBoxFrameworkAndInterface = QtGui.QComboBox(ProjectMiscSettingsDialog)
         self.comboBoxFrameworkAndInterface.setObjectName(_fromUtf8("comboBoxFrameworkAndInterface"))
-        self.formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self.comboBoxFrameworkAndInterface)
+        self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.comboBoxFrameworkAndInterface)
         self.verticalLayout.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 10, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         self.verticalLayout.addItem(spacerItem)
@@ -136,6 +141,7 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.label_2.setText(_translate("ProjectMiscSettingsDialog", "Controller loop cycle time in us", None))
         self.label_3.setText(_translate("ProjectMiscSettingsDialog", "path to controller code folder", None))
         self.toolButtonSelectControllerCodeFolder.setText(_translate("ProjectMiscSettingsDialog", "...", None))
+        self.label_9.setText(_translate("ProjectMiscSettingsDialog", "Suppress parameter confirmation", None))
         self.label_4.setText(_translate("ProjectMiscSettingsDialog", "Framework and interface", None))
         self.portChangedLabel.setText(_translate("ProjectMiscSettingsDialog", "original port lost, alternatives are available", None))
         self.groupBoxUdp.setTitle(_translate("ProjectMiscSettingsDialog", "Framework and interface settings", None))

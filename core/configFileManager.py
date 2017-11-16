@@ -56,6 +56,7 @@ class ConfigFileManager(object):
         projectSettingsDescriptions["pathToControllerCodeFolder"] = projectSettings.pathToControllerCodeFolder
         projectSettingsDescriptions["comPortDescription"] = projectSettings.comPortDescription
         projectSettingsDescriptions["comPortBaudRate"] = projectSettings.comPortBaudRate
+        projectSettingsDescriptions["suppressParameterConfirmation"] = projectSettings.suppressParameterConfirmation
 
         tabSettings = list()
         for aTabSetting in projectSettings.tabSettingsDescriptions:
@@ -111,7 +112,7 @@ class ConfigFileManager(object):
         newChannelObjects = self.makeChannelObjects(jsonStuff["channels"], self.applicationSettings.bufferLength)
         newCommandObjects = self.makeCommandObjects(jsonStuff["commands"])
 
-        newMessageFormatList = self.getMessageFormatList(jsonStuff["channels"])
+        newMessageFormatList = self.getMessageFormatList(jsonStuff["channels"], jsonStuff["miscSettings"])
 
 
         communicator = self.makeCommunicator(newProjectMiscSettings, newMessageFormatList, newCommandObjects)
@@ -227,6 +228,9 @@ class ConfigFileManager(object):
         if "comPortBaudRate" in settingsDescriptions:
             projectMiscSettings.comPortBaudRate = settingsDescriptions["comPortBaudRate"]
 
+        if "suppressParameterConfirmation" in settingsDescriptions:
+            projectMiscSettings.suppressParameterConfirmation = settingsDescriptions["suppressParameterConfirmation"]
+
         tabSettingsDescriptions = settingsDescriptions["tabs"]
 
         tabDescriptionObjects = list()
@@ -244,7 +248,7 @@ class ConfigFileManager(object):
         return projectMiscSettings
 
 
-    def getMessageFormatList(self, channelDescriptionsOrMeasurementData):
+    def getMessageFormatList(self, channelDescriptionsOrMeasurementData, projectSettingsOrDescriptions):
         messagePartsList = list()
 
         messageInformation = Message()
@@ -286,34 +290,48 @@ class ConfigFileManager(object):
         # mData1.name = "lastLoopDuration"
         # messageInformation.append(mData1)
 
-        # parameterNumber
-        mData2 = MessageData()
-        # mData2.id = channelCounter
-        channelCounter += 1
-        mData2.positionInBytes = positionCounter
-        mData2.lengthInBytes = 4
-        # mData2.lengthInBytes = 4
-        positionCounter += mData2.lengthInBytes
-        mData2.dataType = int
-        # mData2.unpackString = "<I"  # unsigned int
-        mData2.unpackString = "<i" # signed int
-        mData2.name = "parameterNumber"
-        messageInformation.append(mData2)
+        suppressParameterConfirmation = False
+        if isinstance(projectSettingsOrDescriptions, ProjectSettings):
+            if projectSettingsOrDescriptions.suppressParameterConfirmation is True:
+                suppressParameterConfirmation = True
+            else:
+                suppressParameterConfirmation = False
+        else:
+            if projectSettingsOrDescriptions["suppressParameterConfirmation"] is True:
+                suppressParameterConfirmation = True
+            else:
+                suppressParameterConfirmation = False
 
-        # parameterValue
-        mData3 = MessageData()
-        # mData3.id = channelCounter
-        channelCounter += 1
-        mData3.positionInBytes = positionCounter
-        mData3.lengthInBytes = 4
-        positionCounter += mData3.lengthInBytes
-        mData3.dataType = float
-        mData3.unpackString = "<f"
-        mData3.name = "parameterValue"
-        messageInformation.append(mData3)
+
+        if suppressParameterConfirmation is False:
+
+            # parameterNumber
+            mData2 = MessageData()
+            # mData2.id = channelCounter
+            channelCounter += 1
+            mData2.positionInBytes = positionCounter
+            mData2.lengthInBytes = 4
+            # mData2.lengthInBytes = 4
+            positionCounter += mData2.lengthInBytes
+            mData2.dataType = int
+            # mData2.unpackString = "<I"  # unsigned int
+            mData2.unpackString = "<i" # signed int
+            mData2.name = "parameterNumber"
+            messageInformation.append(mData2)
+
+            # parameterValue
+            mData3 = MessageData()
+            # mData3.id = channelCounter
+            channelCounter += 1
+            mData3.positionInBytes = positionCounter
+            mData3.lengthInBytes = 4
+            positionCounter += mData3.lengthInBytes
+            mData3.dataType = float
+            mData3.unpackString = "<f"
+            mData3.name = "parameterValue"
+            messageInformation.append(mData3)
 
         # channels
-
         if isinstance(channelDescriptionsOrMeasurementData, MeasurementData):
             for i, channel in enumerate(channelDescriptionsOrMeasurementData.channels):
                 if not channel.isRequested:

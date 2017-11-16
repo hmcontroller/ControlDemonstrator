@@ -10,7 +10,10 @@ unsigned long lastTime = 0;
 // storage for unrequested channels
 float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
 
+#if !defined(SUPPRESS_PARAM_CONFIRMATION)
 int parameterSendCounter = 0;
+#endif
+
 int receivedBytesCount = 0;
 int sendBytesCount = 0;
 
@@ -23,8 +26,9 @@ void prepareOutMessage(unsigned long loopStartTime)
     // on each cycle, only one of the "controlled parameters" is send to the pc
 
     messageOutBuffer.loopStartTime = loopStartTime;
-    messageOutBuffer.parameterNumber = parameterSendCounter;
 
+    #if !defined(SUPPRESS_PARAM_CONFIRMATION)
+    messageOutBuffer.parameterNumber = parameterSendCounter;
     if (parameterSendCounter < 0) {
         messageOutBuffer.parameterValueFloat = specialCommands[(parameterSendCounter + 1) * -1];
     }
@@ -47,6 +51,7 @@ void prepareOutMessage(unsigned long loopStartTime)
     {
         parameterSendCounter = SPECIAL_COMMANDS_COUNT * -1;
     }
+#endif
 }
 
 void prepareInMessage() {

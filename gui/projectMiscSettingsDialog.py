@@ -73,6 +73,8 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
         dialog.lineEditControllerIP.setText(dialog.settings.controllerIP)
         dialog.lineEditUDPPort.setText(unicode(dialog.settings.udpPort))
 
+        dialog.checkBoxParamConfSuppression.setChecked(dialog.settings.suppressParameterConfirmation)
+
         dialog.refreshComPortsCombo()
         for i, portDescription in enumerate(dialog.lastComPortsListing):
             if portDescription == dialog.settings.comPortDescription:
@@ -106,6 +108,9 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
             dialog.settings.controllerIP = unicode(dialog.lineEditControllerIP.text())
             dialog.settings.udpPort = int(dialog.lineEditUDPPort.text())
             dialog.settings.comPortDescription = unicode(dialog.comboBoxComPort.currentText())
+
+            dialog.settings.suppressParameterConfirmation = dialog.checkBoxParamConfSuppression.isChecked()
+
             return QtGui.QDialog.Accepted
         else:
             return QtGui.QDialog.Rejected
