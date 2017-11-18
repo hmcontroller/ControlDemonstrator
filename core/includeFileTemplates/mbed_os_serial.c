@@ -1,7 +1,10 @@
 
 #include <mbed.h>
 
-void serialSendComplete(int events);
+void serialSendCompleteOne(int events);
+void serialSendCompleteTwo(int events);
+void serialSendCompleteThree(int events);
+void serialReadComplete(int events);
 
 void receiveMessage();
 void readIncomingBytesIntoBuffer();
@@ -27,14 +30,30 @@ unsigned long timeOfLastCompletedMessage = 0;
 #define IN_START_BYTE (char)7
 #define IN_STOP_BYTE (char)8
 
-event_callback_t serialEventWriteComplete;
+unsigned char startOut = 7;
+unsigned char endOut = 8;
+
+
+event_callback_t serialEventWriteCompleteOne = serialSendCompleteOne;
+event_callback_t serialEventWriteCompleteTwo = serialSendCompleteTwo;
+event_callback_t serialEventWriteCompleteThree = serialSendCompleteThree;
+event_callback_t serialEventReceiveComplete = serialReadComplete;
+
+
 int debugCounterSend = 0;
-void serialSendComplete(int events) {
-    mRserial.putc(OUT_STOP_BYTE);
+void serialSendCompleteOne(int events) {
+    mRserial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), serialEventWriteCompleteTwo, SERIAL_EVENT_TX_COMPLETE);
+}
+
+void serialSendCompleteTwo(int events) {
+    mRserial.write((uint8_t *)&endOut, 1, serialEventWriteCompleteThree, SERIAL_EVENT_TX_COMPLETE);
+}
+
+void serialSendCompleteThree(int events) {
     timeOfLastCompletedMessage = timeOfLastSend;
 }
 
-event_callback_t serialEventReceiveComplete;
+
 uint8_t singleInBuffer = 0;
 void serialReadComplete(int events) {
     appendByteToBuffer(singleInBuffer);
@@ -43,11 +62,12 @@ void serialReadComplete(int events) {
     mRserial.read(&singleInBuffer, 1, serialEventReceiveComplete);
 }
 
-
 void microRayInit() {
     dutyCycleTimer.start();
-    serialEventWriteComplete.attach(serialSendComplete);
-    serialEventReceiveComplete.attach(serialReadComplete);
+    //serialEventWriteComplete.attach(serialSendComplete);
+    //serialEventReceiveComplete.attach(serialReadComplete);
+
+    // start async receive of serial data
     mRserial.read(&singleInBuffer, 1, serialEventReceiveComplete);
 
     //mRserial.set_dma_usage_tx(1);
@@ -57,12 +77,15 @@ void microRayInit() {
 int serialTransmissionLagCounter = 0;
 void sendMessage() {
 
+
     prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
 
     if(timeOfLastCompletedMessage == timeOfLastSend) {
         timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
-        mRserial.putc(OUT_START_BYTE);
-        mRserial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), serialEventWriteComplete, SERIAL_EVENT_TX_COMPLETE);
+        mRserial.write((uint8_t *)&startOut, 1, serialEventWriteCompleteOne, SERIAL_EVENT_TX_COMPLETE);
+        //mRserial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), 0, 0);
+        //mRserial.write((uint8_t *)&endOut, 1, serialEventWriteComplete, SERIAL_EVENT_TX_COMPLETE);
+        //mRserial.putc(OUT_STOP_BYTE);
     }
     else {
         serialTransmissionLagCounter++;

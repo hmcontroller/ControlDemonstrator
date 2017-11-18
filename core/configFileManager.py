@@ -297,10 +297,11 @@ class ConfigFileManager(object):
             else:
                 suppressParameterConfirmation = False
         else:
-            if projectSettingsOrDescriptions["suppressParameterConfirmation"] is True:
-                suppressParameterConfirmation = True
-            else:
-                suppressParameterConfirmation = False
+            if "suppressParameterConfirmation" in projectSettingsOrDescriptions:
+                if projectSettingsOrDescriptions["suppressParameterConfirmation"] is True:
+                    suppressParameterConfirmation = True
+                else:
+                    suppressParameterConfirmation = False
 
 
         if suppressParameterConfirmation is False:
