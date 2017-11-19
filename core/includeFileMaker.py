@@ -120,10 +120,6 @@ class IncludeFileMaker(object):
             "FLOAT_TYPE", Command.FLOAT_TYPE,
             nameWidth=self.nameWidth, valueWidth=self.valueWidth)
 
-        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "BAUD_RATE", self.projectSettings.comPortBaudRate,
-            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
-
         if self.projectSettings.suppressParameterConfirmation is True:
             self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
                 "SUPPRESS_PARAM_CONFIRMATION", "1",
