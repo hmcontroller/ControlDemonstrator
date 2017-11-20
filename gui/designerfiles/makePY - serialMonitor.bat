@@ -1,0 +1,1 @@
+pyuic4 -o serialMonitor.py serialMonitor.ui

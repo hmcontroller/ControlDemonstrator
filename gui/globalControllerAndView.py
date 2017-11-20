@@ -11,7 +11,7 @@ from gui.resources import *
 from core.communicator import CommState
 
 class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
-    def __init__(self, commandList, communicator, mainWindow, parent=None):
+    def __init__(self, commandList, communicator, mainWindow, serialMonitor, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setupUi(self)
 
@@ -26,11 +26,17 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.communicator.commStateChanged.connect(self.commStateChanged)
         self.communicator.commandSend.connect(self.reportCommandSend)
 
+        self.serialMonitor = serialMonitor
+
+
         if mainWindow is not None:
             self.mainWindow = mainWindow
             self.mainWindow.displayMessage.connect(self.showMessage)
 
         # self.commToggleButton.clicked.connect(self.toggleComm)
+
+
+        self.pushButtonSerialMonitor.clicked.connect(self.toggleSerialMonitor)
 
         self.pendingSendButton.clicked.connect(self.sendPendingCommands)
         self.pendingCancelButton.clicked.connect(self.cancelPendingCommands)
@@ -123,6 +129,9 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
 
         self.singleLineTextEdit.verticalScrollBar().setValue(self.singleLineTextEdit.verticalScrollBar().minimum())
 
+        self.showMessage(message, kindOfMessage="softWarning")
+
+
     def commStateBoxBlink(self):
         pal = QtGui.QPalette()
         pal.setColor(QtGui.QPalette.Base, QtCore.Qt.red)
@@ -171,3 +180,9 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
 
         self.messageTextEdit.append(messageToShow)
         self.messageTextEdit.verticalScrollBar().setValue(self.messageTextEdit.verticalScrollBar().maximum())
+
+    def toggleSerialMonitor(self):
+        if self.serialMonitor.isVisible():
+            self.serialMonitor.hide()
+        else:
+            self.serialMonitor.show()

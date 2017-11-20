@@ -13,6 +13,7 @@ from PyQt4 import QtCore
 
 from core.messageData import MessageData
 from core.model.commState import CommState
+from core.model.receivedData import ReceivedData
 
 class HardwareInterface(QtCore.QObject):
 
@@ -162,6 +163,9 @@ class UdpInterface(HardwareInterface):
         super(UdpInterface, self).__init__(applicationSettings, projectSettings, commands)
         self._socket = None
 
+    def sendRawCommand(self, command):
+        pass
+
 
     def connectToController(self):
 
@@ -202,6 +206,7 @@ class UdpInterface(HardwareInterface):
         pass
 
     def receive(self):
+        receivedData = ReceivedData()
         packets = list()
 
         if self._commState.play is False:
@@ -234,7 +239,12 @@ class UdpInterface(HardwareInterface):
 
         if len(packets) > 0:
             self._commState.timeOfLastReceive = datetime.datetime.now()
-        return self._unpack(packets)
+
+        receivedData.messages = self._unpack(packets)
+        for aPacket in packets:
+            for aChar in aPacket:
+                receivedData.messageAsChars += struct.unpack('c', aChar)[0]
+        return receivedData
 
 
 
@@ -284,6 +294,11 @@ class SerialInterface(HardwareInterface):
         self.noMessageInsideCounter = 0
 
         self.ser = serial.Serial()
+
+        self.outputToRawMonitor = True
+
+    def sendRawCommand(self, command):
+        self.ser.write(command)
 
 
     @QtCore.pyqtSlot(object)
@@ -393,15 +408,21 @@ class SerialInterface(HardwareInterface):
             self.commandSend.emit(commandToSend)
 
     def receive(self):
+        receivedData = ReceivedData()
         messages = list()
         messagePositions = list()
 
         if self._commState.play is False:
-            return messages
+            return receivedData
 
+        rawMessageAsChars = ""
         try:
             if self.ser.in_waiting > 0:
+
                 incomingMessage = self.ser.read(self.ser.in_waiting)
+
+                for aByte in incomingMessage:
+                    receivedData.messageAsChars += struct.unpack('c', aByte)[0]
 
                 messageToProcess = self.lastMessageRemainder + incomingMessage
 
@@ -423,7 +444,7 @@ class SerialInterface(HardwareInterface):
                         self.lastMessageRemainder = b""
                         self._commState.state = CommState.WRONG_CONFIG
 
-                    return messages
+                    return receivedData
 
 
                 while True:
@@ -444,16 +465,16 @@ class SerialInterface(HardwareInterface):
             # self._commState.state = CommState.NO_CONN
             if self._connectionPollTimer.isActive() is False:
                 self._connectionPollTimer.start(1000)
-            return list()
+            return receivedData
 
 
-        unpackedMessages = self._unpack(messages)
+        receivedData.messages = self._unpack(messages)
 
-        if len(unpackedMessages) > 0:
+        if len(receivedData.messages) > 0:
             self._commState.timeOfLastReceive = datetime.datetime.now()
 
 
-        return unpackedMessages
+        return receivedData
 
 
 

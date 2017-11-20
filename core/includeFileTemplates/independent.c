@@ -74,6 +74,6 @@ void prepareInMessage() {
 
 void microRayCommunicate()
 {
-    sendMessage();
     receiveMessage();
+    sendMessage();
 }

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'globalControllerAndView.ui'
 #
-# Created: Thu May 25 10:01:01 2017
+# Created: Mon Nov 20 13:36:23 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -28,11 +28,11 @@ class Ui_GlobalControllerAndView(object):
         GlobalControllerAndView.setObjectName(_fromUtf8("GlobalControllerAndView"))
         GlobalControllerAndView.resize(1645, 73)
         GlobalControllerAndView.setMaximumSize(QtCore.QSize(16777215, 73))
-        self.horizontalLayout_6 = QtGui.QHBoxLayout(GlobalControllerAndView)
-        self.horizontalLayout_6.setMargin(0)
-        self.horizontalLayout_6.setObjectName(_fromUtf8("horizontalLayout_6"))
-        self.horizontalLayout_5 = QtGui.QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(_fromUtf8("horizontalLayout_5"))
+        self.horizontalLayout_4 = QtGui.QHBoxLayout(GlobalControllerAndView)
+        self.horizontalLayout_4.setMargin(0)
+        self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.verticalLayout_2 = QtGui.QVBoxLayout()
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.pendingGroupBox_2 = QtGui.QGroupBox(GlobalControllerAndView)
@@ -58,7 +58,9 @@ class Ui_GlobalControllerAndView(object):
         self.verticalLayout_2.addWidget(self.pendingGroupBox_2)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem)
-        self.horizontalLayout_5.addLayout(self.verticalLayout_2)
+        self.horizontalLayout.addLayout(self.verticalLayout_2)
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.toolButton = QtGui.QToolButton(GlobalControllerAndView)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
@@ -66,13 +68,17 @@ class Ui_GlobalControllerAndView(object):
         sizePolicy.setHeightForWidth(self.toolButton.sizePolicy().hasHeightForWidth())
         self.toolButton.setSizePolicy(sizePolicy)
         self.toolButton.setObjectName(_fromUtf8("toolButton"))
-        self.horizontalLayout_5.addWidget(self.toolButton)
+        self.verticalLayout.addWidget(self.toolButton)
+        self.pushButtonSerialMonitor = QtGui.QPushButton(GlobalControllerAndView)
+        self.pushButtonSerialMonitor.setObjectName(_fromUtf8("pushButtonSerialMonitor"))
+        self.verticalLayout.addWidget(self.pushButtonSerialMonitor)
+        self.horizontalLayout.addLayout(self.verticalLayout)
         self.singleLineTextEdit = QtGui.QTextEdit(GlobalControllerAndView)
         self.singleLineTextEdit.setMaximumSize(QtCore.QSize(400, 16777215))
         self.singleLineTextEdit.setReadOnly(True)
         self.singleLineTextEdit.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.singleLineTextEdit.setObjectName(_fromUtf8("singleLineTextEdit"))
-        self.horizontalLayout_5.addWidget(self.singleLineTextEdit)
+        self.horizontalLayout.addWidget(self.singleLineTextEdit)
         self.messageTextEdit = QtGui.QTextEdit(GlobalControllerAndView)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -83,8 +89,8 @@ class Ui_GlobalControllerAndView(object):
         self.messageTextEdit.setMaximumSize(QtCore.QSize(16777215, 130))
         self.messageTextEdit.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.messageTextEdit.setObjectName(_fromUtf8("messageTextEdit"))
-        self.horizontalLayout_5.addWidget(self.messageTextEdit)
-        self.horizontalLayout_6.addLayout(self.horizontalLayout_5)
+        self.horizontalLayout.addWidget(self.messageTextEdit)
+        self.horizontalLayout_4.addLayout(self.horizontalLayout)
 
         self.retranslateUi(GlobalControllerAndView)
         QtCore.QMetaObject.connectSlotsByName(GlobalControllerAndView)
@@ -95,4 +101,5 @@ class Ui_GlobalControllerAndView(object):
         self.pendingSendButton.setText(_translate("GlobalControllerAndView", "send", None))
         self.pendingCancelButton.setText(_translate("GlobalControllerAndView", "cancel", None))
         self.toolButton.setText(_translate("GlobalControllerAndView", "...", None))
+        self.pushButtonSerialMonitor.setText(_translate("GlobalControllerAndView", "SM", None))
 

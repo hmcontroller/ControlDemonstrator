@@ -32,7 +32,6 @@ class Communicator(QtCore.QObject):
         self._messageSize = None
         self._messageMap = None
 
-
         self.interface = SerialInterface(applicationSettings, projectSettings, commands)
         self.setInterface(messageMap)
 
@@ -56,6 +55,10 @@ class Communicator(QtCore.QObject):
         self._connectionPollTimer.setSingleShot(True)
         self._connectionPollTimer.timeout.connect(self.connectToController)
 
+    def sendRawCommand(self, command):
+        self.interface.sendRawCommand(command)
+
+
     def setInterface(self, messageMap):
         self.disconnectFromController()
         for availableFramework in AVAILABLE_FRAMEWORKS:
@@ -74,6 +77,7 @@ class Communicator(QtCore.QObject):
                     self.interface.commandSend.connect(self.commandSend)
                     self.connectToController()
                     return
+
 
 
     def setMessageMap(self, formatList):

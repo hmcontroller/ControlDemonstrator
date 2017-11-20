@@ -12,7 +12,7 @@ class TabGenericView(QtGui.QWidget, Ui_tabGenericView):
 
     changingName = QtCore.pyqtSignal(str)
 
-    def __init__(self, commands, channels, applicationSettings, projectSettings, communicator, mainWindow, parent=None):
+    def __init__(self, commands, channels, applicationSettings, projectSettings, communicator, mainWindow, serialMonitor, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setupUi(self)
 

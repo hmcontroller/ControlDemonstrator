@@ -36,6 +36,7 @@ from gui.tabGenericView import TabGenericView
 from gui.tabSmallGenericView import TabSmallGenericView
 from gui.resources import *
 
+from gui.serialMonitor import SerialMonitor
 
 
 
@@ -111,6 +112,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         self.setWindowTitle("microRay {}".format(self.applicationSettings.currentVersion))
 
+        self.serialMonitor = SerialMonitor()
+        self.serialMonitor.commandInput.connect(self.sendRawCommand)
 
         # setup a timer, that triggers to read from the controller
         self.receiveTimer = QtCore.QTimer()
@@ -199,6 +202,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         # time.sleep(3)
         splashScreen.finish(self)
         self.logger.info("GUI load complete")
+
 
 
 
@@ -335,13 +339,32 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             # tabContentClass = getattr(import_module(givenTab.pathToClassFile), givenTab.className)
             # tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
 
+
             classInstance = None
             if givenTab.className == "TabWaterLineExperiment":
-                classInstance = TabWaterLineExperiment(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+                classInstance = TabWaterLineExperiment(self.commands,
+                                                       self.channels,
+                                                       self.applicationSettings,
+                                                       self.projectSettings,
+                                                       self.communicator,
+                                                       self,
+                                                       self.serialMonitor)
             elif givenTab.className == "TabSmallGenericView":
-                classInstance = TabSmallGenericView(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+                classInstance = TabSmallGenericView(self.commands,
+                                                    self.channels,
+                                                    self.applicationSettings,
+                                                    self.projectSettings,
+                                                    self.communicator,
+                                                    self,
+                                                    self.serialMonitor)
             elif givenTab.className == "TabGenericView":
-                classInstance = TabGenericView(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+                classInstance = TabGenericView(self.commands,
+                                               self.channels,
+                                               self.applicationSettings,
+                                               self.projectSettings,
+                                               self.communicator,
+                                               self,
+                                               self.serialMonitor)
             else:
                 raise ValueError("inappropriate tab given in project file")
 
@@ -390,11 +413,29 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         # tabContentClassInstance = tabContentClass(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator)
 
         if tab.className == "TabWaterLineExperiment":
-            classInstance = TabWaterLineExperiment(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+            classInstance = TabWaterLineExperiment(self.commands,
+                                                   self.channels,
+                                                   self.applicationSettings,
+                                                   self.projectSettings,
+                                                   self.communicator,
+                                                   self,
+                                                   self.serialMonitor)
         elif tab.className == "TabSmallGenericView":
-            classInstance = TabSmallGenericView(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+            classInstance = TabSmallGenericView(self.commands,
+                                                self.channels,
+                                                self.applicationSettings,
+                                                self.projectSettings,
+                                                self.communicator,
+                                                self,
+                                                self.serialMonitor)
         elif tab.className == "TabGenericView":
-            classInstance = TabGenericView(self.commands, self.channels, self.applicationSettings, self.projectSettings, self.communicator, self)
+            classInstance = TabGenericView(self.commands,
+                                           self.channels,
+                                           self.applicationSettings,
+                                           self.projectSettings,
+                                           self.communicator,
+                                           self,
+                                           self.serialMonitor)
         else:
             raise ValueError("inappropriate tab given in project file")
 
@@ -837,10 +878,12 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         self.send()
 
     def receive(self):
-        messages = self.communicator.receive()
-        for message in messages:
+        receivedData = self.communicator.receive()
+        for message in receivedData.messages:
             self.handleNewData(message)
             # self.calculateSomeStuff(message)
+        if len(receivedData.messageAsChars) > 0:
+            self.serialMonitor.showMessage(receivedData.messageAsChars)
 
     def send(self):
         self.communicator.send(self.commands)
@@ -859,6 +902,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             except:
                 self.communicator.commState.state = CommState.WRONG_CONFIG
 
+    def sendRawCommand(self, command):
+        self.communicator.sendRawCommand(command)
 
     def calculateSomeStuff(self, message):
         loopCycleDuration = MessageInterpreter.getLoopCycleDuration(message)
