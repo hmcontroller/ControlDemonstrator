@@ -784,7 +784,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     def generateCCode(self):
 
-        if isinstance(self.communicator.interface, SerialInterface):
+        if isinstance(self.communicator.interface, SerialInterface) and self.projectSettings.controllerFrameworkAndInterface == "ARDUINO_SERIAL":
             self.communicator.disconnectFromController()
 
         showControllerPathHint = False
@@ -808,10 +808,10 @@ class MicroRayMainWindow(QtGui.QMainWindow):
             errorMessage = traceback.format_exc()
             self.displayMessage.emit(u"failed to generate code. Errormessage:\n{}".format(errorMessage), "warning")
 
-        if isinstance(self.communicator.interface, SerialInterface):
-            self.displayMessage.emit(u"Communication paused, please recompile your controller code.", "warning")
-        else:
-            self.displayMessage.emit(u"Please recompile your controller code.", "warning")
+        # if isinstance(self.communicator.interface, SerialInterface):
+        #     self.displayMessage.emit(u"Communication paused, please recompile your controller code.", "warning")
+        # else:
+        #     self.displayMessage.emit(u"Please recompile your controller code.", "warning")
 
     def setActualValuesToInitialValues(self):
         dialog = ValuesToInitialValuesDialog(self.commands)

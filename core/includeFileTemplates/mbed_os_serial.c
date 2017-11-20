@@ -7,7 +7,7 @@ void serialSendCompleteThree(int events);
 void serialReadComplete(int events);
 
 void receiveMessage();
-void readIncomingBytesIntoBuffer();
+// void readIncomingBytesIntoBuffer();
 void appendByteToBuffer(uint8_t inByte);
 void shiftGivenPositionToBufferStart(int position);
 int seekForFullMessage();
@@ -94,9 +94,10 @@ void sendMessage() {
     }
 }
 
-uint8_t rawMessageInBuffer[IN_BUFFER_SIZE];
+volatile uint8_t rawMessageInBuffer[IN_BUFFER_SIZE];
 uint8_t rawMessageInBufferTemp[IN_BUFFER_SIZE];
-int16_t bufferPosition = 0;
+volatile int16_t bufferPosition = 0;
+uint8_t newRawMessage[IN_MESSAGE_SIZE];
 
 void receiveMessage() {
     //readIncomingBytesIntoBuffer();
@@ -108,9 +109,9 @@ void receiveMessage() {
     }
 }
 
-void readIncomingBytesIntoBuffer() {
-    appendByteToBuffer(singleInBuffer);
-}
+// void readIncomingBytesIntoBuffer() {
+//     appendByteToBuffer(singleInBuffer);
+// }
 
 void appendByteToBuffer(uint8_t inByte) {
     // prevent buffer from overfilling
@@ -118,28 +119,33 @@ void appendByteToBuffer(uint8_t inByte) {
     if(bufferPosition >= IN_BUFFER_SIZE) {
         shiftGivenPositionToBufferStart(1);
     }
+    __disable_irq();
     rawMessageInBuffer[bufferPosition] = inByte;
     bufferPosition += 1;
+    __enable_irq();
 }
 
 void shiftGivenPositionToBufferStart(int position) {
+    __disable_irq();
     // copy and shift
     int i;
     for(i = position; i < bufferPosition; i++) {
         rawMessageInBufferTemp[i - position] = rawMessageInBuffer[i];
     }
 
-    // actualize bufferPosition
-    bufferPosition = bufferPosition - position;
-
     // copy back
     for(i = 0; i < bufferPosition; i++) {
         rawMessageInBuffer[i] = rawMessageInBufferTemp[i];
     }
+
+    // actualize bufferPosition
+    bufferPosition = bufferPosition - position;
+    __enable_irq();
 }
 
 int seekForFullMessage() {
     int i;
+    __disable_irq();
     for (i = 0; i < bufferPosition - IN_MESSAGE_SIZE; i++) {
         if (rawMessageInBuffer[i] == IN_START_BYTE) {
             int expectedStopBytePosition = i + IN_MESSAGE_SIZE + 1;
@@ -148,13 +154,18 @@ int seekForFullMessage() {
             }
         }
     }
+    __enable_irq();
     return -1;
 }
 
 void extractMessage(int messageStartPosition) {
-    memcpy(&messageInBuffer.parameterNumber, &rawMessageInBuffer[messageStartPosition + 1], 4);
-    memcpy(&messageInBuffer.parameterValueInt, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
+    int i = 0;
+    __disable_irq();
+    for (i=0; i < IN_MESSAGE_SIZE; i++) {
+        newRawMessage[i] = rawMessageInBuffer[i + messageStartPosition];
+    }
+    __enable_irq();
+    memcpy(&messageInBuffer.parameterNumber, &newRawMessage[1], 4);
+    memcpy(&messageInBuffer.parameterValueInt, &newRawMessage[1 + 4], 4);
     shiftGivenPositionToBufferStart(messageStartPosition + IN_MESSAGE_SIZE + 2);
 }
-
-
