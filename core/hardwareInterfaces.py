@@ -395,6 +395,9 @@ class SerialInterface(HardwareInterface):
             # stopByte = struct.pack("<1B", 57)
 
             self.ser.write(self.outStartByte)
+            # self.ser.write(self.outStartByte + packedData + self.outStopByte)
+            # self.ser.write(packedData)
+
             # time.sleep(0.0005)
             for aChar in packedData:
                 self.ser.write(aChar)

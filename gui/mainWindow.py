@@ -818,7 +818,12 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     def editCommands(self):
         dialog = CommandSettingsDialog(self.commands)
-        dialog.updateSettings()
+        while 1:
+            try:
+                dialog.updateSettings()
+                break
+            except:
+                pass
 
     def appSettingsChanged(self, settings):
         self.refreshRecentProjectsMenu()

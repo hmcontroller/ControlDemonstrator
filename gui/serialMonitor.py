@@ -38,6 +38,8 @@ class SerialMonitor(QtGui.QWidget, Ui_SerialMonitor):
         self.checkBoxAutoScroll.setChecked(True)
         self.checkBoxAutoScroll.stateChanged.connect(self.setAutoscrollMode)
 
+        self.pushButtonSend.clicked.connect(self.sendCommand)
+
 
     def showMessage(self, message, green=False):
         now = datetime.datetime.now().strftime("%H:%M:%S.%f")
@@ -49,9 +51,9 @@ class SerialMonitor(QtGui.QWidget, Ui_SerialMonitor):
         else:
             self.plainTextEdit.setPalette(self.palGreen)
             # self.plainTextEdit.setTextColor(QtCore.Qt.darkGreen)
-            # color = "DarkGreen"
+            color = "DarkGreen"
 
-        html = '<font style="font-size:12pt" face="Courier New" color="{}">{}</font>'.format(color, messageToShow)
+        # html = '<font style="font-size:12pt" face="Courier New" color="{}">{}</font>'.format(color, messageToShow)
 
         self.plainTextEdit.moveCursor(QtGui.QTextCursor.End)
         # self.plainTextEdit.append(messageToShow)

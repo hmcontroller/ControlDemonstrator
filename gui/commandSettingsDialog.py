@@ -127,9 +127,24 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
                 comboIndexDataType = self.tableWidget.cellWidget(rowNumber, self.DATA_TYPE_COLUMN).currentIndex()
                 command.setValueType(command.AVAILABLE_DATATYPES[comboIndexDataType]["type"])
 
-                command.setLowerLimit(float(self.tableWidget.item(rowNumber, self.MIN_COLUMN).text()))
-                command.setUpperLimit(float(self.tableWidget.item(rowNumber, self.MAX_COLUMN).text()))
-                command.initialValue = (float(self.tableWidget.item(rowNumber, self.START_VALUE_COLUMN).text()))
+                lowerLimit = self.tableWidget.item(rowNumber, self.MIN_COLUMN).text().replace(",", ".")
+                upperLimit  = self.tableWidget.item(rowNumber, self.MAX_COLUMN).text().replace(",", ".")
+                initialValue  = self.tableWidget.item(rowNumber, self.START_VALUE_COLUMN).text().replace(",", ".")
+
+                try:
+                    lowerLimit = float(lowerLimit)
+                    upperLimit = float(upperLimit)
+                    initialValue = float(initialValue)
+                except:
+                    box = QtGui.QMessageBox()
+                    box.setText(u"wrong number format at line {}".format(rowNumber + 1))
+                    box.setStandardButtons(QtGui.QMessageBox.Ok | QtGui.QMessageBox.Cancel)
+                    box.exec_()
+                    raise Exception("wrong number format")
+                else:
+                    command.setLowerLimit(lowerLimit)
+                    command.setUpperLimit(upperLimit)
+                    command.initialValue = (initialValue)
 
                 self.commands.cmdList.append(command)
 
