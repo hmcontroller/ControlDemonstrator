@@ -6,7 +6,7 @@ from PyQt4 import QtCore, QtGui
 
 from gui.designerfiles.globalControllerAndView import Ui_GlobalControllerAndView
 from gui.resources import *
-
+from gui.messageBoard import MessageBoardWidget, MessageBoard
 
 from core.communicator import CommState
 
@@ -14,6 +14,9 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
     def __init__(self, commandList, communicator, mainWindow, serialMonitor, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setupUi(self)
+
+        self.setMinimumHeight(72)
+        self.setMaximumHeight(72)
 
         self.commStateBlinkTimer = QtCore.QTimer()
         self.commStateBlinkTimer.setSingleShot(True)
@@ -36,7 +39,7 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         # self.commToggleButton.clicked.connect(self.toggleComm)
 
 
-        self.pushButtonSerialMonitor.clicked.connect(self.toggleSerialMonitor)
+        self.toolButtonSerialMonitor.clicked.connect(self.toggleSerialMonitor)
 
         self.pendingSendButton.clicked.connect(self.sendPendingCommands)
         self.pendingCancelButton.clicked.connect(self.cancelPendingCommands)
@@ -55,6 +58,11 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.pausePixmap = QtGui.QPixmap(pausePath)
         self.pauseIcon = QtGui.QIcon(self.pausePixmap)
 
+        self.serialMonitorPixmap = QtGui.QPixmap(monitorIconPath)
+        self.serialIcon = QtGui.QIcon(self.serialMonitorPixmap)
+        self.toolButtonSerialMonitor.setIcon(self.serialIcon)
+        self.toolButtonSerialMonitor.setIconSize(QtCore.QSize(25, 25))
+
         self.toolButton.setIcon(self.pauseIcon)
         self.toolButton.clicked.connect(self.togglePlayPause)
         self.toolButton.setIconSize(QtCore.QSize(25, 25))
@@ -66,19 +74,20 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.messageTextEdit.setPalette(pal)
         self.messageTextEdit.setCurrentFont(QtGui.QFont("Courier New"))
         self.messageTextEdit.setFontPointSize(12)
-        self.messageTextEdit.document().setMaximumBlockCount(10000)
+        self.messageTextEdit.document().setMaximumBlockCount(5000)
         self.messageTextEdit.setTextColor(QtCore.Qt.darkGreen)
 
-        self.singleLineTextEdit.setAutoFillBackground(True)
-        self.singleLineTextEdit.setPalette(pal)
-        self.singleLineTextEdit.setCurrentFont(QtGui.QFont("Courier New"))
-        self.singleLineTextEdit.setFontPointSize(12)
-        self.singleLineTextEdit.document().setMaximumBlockCount(3)
-        self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
-        # self.singleLineTextEdit.setWordWrapMode(QtGui.QTextOption.NoWrap)
-        self.singleLineTextEdit.setLineWrapMode(QtGui.QTextEdit.WidgetWidth)
+        # self.singleLineTextEdit.setAutoFillBackground(True)
+        # self.singleLineTextEdit.setPalette(pal)
+        # self.singleLineTextEdit.setCurrentFont(QtGui.QFont("Courier New"))
+        # self.singleLineTextEdit.setFontPointSize(12)
+        # self.singleLineTextEdit.document().setMaximumBlockCount(3)
+        # self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
+        # # self.singleLineTextEdit.setWordWrapMode(QtGui.QTextOption.NoWrap)
+        # self.singleLineTextEdit.setLineWrapMode(QtGui.QTextEdit.WidgetWidth)
 
-
+        self.messageBoard = MessageBoardWidget(mainWindow)
+        self.horizontalLayout.insertWidget(0, self.messageBoard, 0)
 
         self.commStateChanged(self.communicator.commState)
 
@@ -100,50 +109,58 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         message = u""
         if commState.state == CommState.COMM_ESTABLISHED:
             message = u"Comm OK"
-            self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
+            # self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
+            self.messageBoard.setComStateMessage(MessageBoard.COM_OK)
+            self.messageBoard.resetOnceTriggeredFlags()
         elif commState.state == CommState.COMM_TIMEOUT:
             message = u"Comm TIMEOUT, waiting..."
-            self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
+            # self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
+            self.messageBoard.setComStateMessage(MessageBoard.TIME_OUT)
         elif commState.state == CommState.WRONG_CONFIG:
             message = u"config file mismatch"
-            self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
+            # self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
+            self.messageBoard.setComStateMessage(MessageBoard.WRONG_CONFIG)
         elif commState.state == CommState.NO_CONN:
             message = u"no connection, waiting..."
-            self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
+            # self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
+            self.messageBoard.setComStateMessage(MessageBoard.WAITING)
         elif commState.state == CommState.UNKNOWN:
             message = u"unknown state"
-            self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
+            # self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
+            self.messageBoard.setComStateMessage(MessageBoard.UNKNOWN)
         elif commState.state == CommState.COMM_PAUSED:
             message = u"Com paused"
-            self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
+            # self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
+            self.messageBoard.setComStateMessage(MessageBoard.PAUSE)
 
-        self.singleLineTextEdit.append(message)
+        # self.singleLineTextEdit.append(message)
 
-        self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
-        self.singleLineTextEdit.append(commState.interfaceDescription)
+        # self.singleLineTextEdit.setTextColor(QtCore.Qt.darkGreen)
+        # self.singleLineTextEdit.append(commState.interfaceDescription)
+        self.messageBoard.setComInfo(commState.interfaceDescription)
 
-        self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
-        self.singleLineTextEdit.append(commState.specialFailures)
+        # self.singleLineTextEdit.setTextColor(QtCore.Qt.red)
+        # self.singleLineTextEdit.append(commState.specialFailures)
 
         # if commState.specialFailures
 
-        self.singleLineTextEdit.verticalScrollBar().setValue(self.singleLineTextEdit.verticalScrollBar().minimum())
+        # self.singleLineTextEdit.verticalScrollBar().setValue(self.singleLineTextEdit.verticalScrollBar().minimum())
 
-        self.showMessage(message, kindOfMessage="softWarning")
+        # self.showMessage(message, kindOfMessage="softWarning")
 
 
     def commStateBoxBlink(self):
         pal = QtGui.QPalette()
         pal.setColor(QtGui.QPalette.Base, QtCore.Qt.red)
-        self.singleLineTextEdit.setAutoFillBackground(True)
-        self.singleLineTextEdit.setPalette(pal)
+        # self.singleLineTextEdit.setAutoFillBackground(True)
+        # self.singleLineTextEdit.setPalette(pal)
         self.commStateBlinkTimer.start()
 
     def clearCommStateBlink(self):
         pal = QtGui.QPalette()
         pal.setColor(QtGui.QPalette.Base, QtCore.Qt.black)
-        self.singleLineTextEdit.setAutoFillBackground(True)
-        self.singleLineTextEdit.setPalette(pal)
+        # self.singleLineTextEdit.setAutoFillBackground(True)
+        # self.singleLineTextEdit.setPalette(pal)
 
 
     def reportCommandSend(self, command):

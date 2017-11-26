@@ -39,10 +39,11 @@ from gui.resources import *
 from gui.serialMonitor import SerialMonitor
 
 
-
 class MicroRayMainWindow(QtGui.QMainWindow):
 
     displayMessage = QtCore.pyqtSignal(object, object)
+    skippedData = QtCore.pyqtSignal(object)
+    badData = QtCore.pyqtSignal()
 
     def __init__(self, exceptionMagnet, logger, rootFolder, tempFolder, settingsFolder, splashScreen):
         QtGui.QMainWindow.__init__(self)
@@ -202,6 +203,10 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         # time.sleep(3)
         splashScreen.finish(self)
         self.logger.info("GUI load complete")
+
+
+        # self.testWindow = TestMessageBoardWindow()
+        # self.testWindow.show()
 
 
 
@@ -957,6 +962,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         # duty cylce time exceeded
         if command.id == -1:
             if command.valueOfLastResponse > 0.2:
+
                 warning = "Duty cycle time exceeded by {} us.".format(command.valueOfLastResponse)
                 if warning != self.lastDutyCycleTimeExceededWarning:
                     self.displayMessage.emit(warning, "warning")
@@ -966,9 +972,10 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         if command.id == -2:
             # print command.valueOfLastResponse
             if command.valueOfLastResponse > 0.2:
+                self.skippedData.emit(int(command.valueOfLastResponse))
                 warning = "Transmission lag. {} bytes from last loop. Deactivate some channels or increase your loop time.".format(int(command.valueOfLastResponse))
                 if warning != self.lastTransmissionLagWarning:
-                    self.displayMessage.emit(warning, "warning")
+                    # self.displayMessage.emit(warning, "warning")
                     self.lastTransmissionLagWarning = warning
 
 

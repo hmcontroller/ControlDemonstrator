@@ -170,7 +170,7 @@ class UdpInterface(HardwareInterface):
     def connectToController(self):
 
         self._commState.play = True
-        self._commState.interfaceDescription = u"UDP via IP {} Port {}".format(self._projectSettings.computerIP, self._projectSettings.udpPort)
+        self._commState.interfaceDescription = u"{}\n{}".format(self._projectSettings.computerIP, self._projectSettings.udpPort)
 
         try:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -298,7 +298,9 @@ class SerialInterface(HardwareInterface):
         self.outputToRawMonitor = True
 
     def sendRawCommand(self, command):
-        self.ser.write(command)
+        if hasattr(self, "ser"):
+            if self.ser.is_open:
+                self.ser.write(command)
 
 
     @QtCore.pyqtSlot(object)
@@ -333,7 +335,7 @@ class SerialInterface(HardwareInterface):
         for port in ports:
             if port.description == self._projectSettings.comPortDescription:
                 portToConnectTo = port
-                self._commState.interfaceDescription = u"{}".format(port.description)
+                self._commState.interfaceDescription = u"{}".format(port.device)
 
         if portToConnectTo is None:
             self._commState.state = CommState.NO_CONN
