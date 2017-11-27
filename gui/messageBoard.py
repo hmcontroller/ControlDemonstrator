@@ -232,22 +232,18 @@ class MessageBoard(QtGui.QGraphicsObject):
     @QtCore.pyqtSlot()
     def cancelComStateInvert(self):
         self.comStateShowInverted = False
-        self.update()
 
     @QtCore.pyqtSlot()
     def cancelComInfoInvert(self):
         self.comInfoShowInverted = False
-        self.update()
 
     @QtCore.pyqtSlot()
     def cancelSkippedInvert(self):
         self.skippedShowInverted = False
-        self.update()
 
     @QtCore.pyqtSlot()
     def cancelBadDataInvert(self):
         self.badDataShowInverted = False
-        self.update()
 
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
@@ -294,7 +290,14 @@ class MessageBoard(QtGui.QGraphicsObject):
                          QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
                          QtCore.QString(self.SKIPPED.text))
 
-        QPainter.setPen(self.greenPen)
+
+        if self.comInfoShowInverted is True:
+            QPainter.fillRect(self.smallUpperRightRect, QtGui.QColor(255, 140, 0))
+            QPainter.setPen(QtGui.QPen(QtCore.Qt.black))
+        else:
+            QPainter.setPen(self.greenPen)
+
+
         QPainter.drawText(self.upperRightRect,
                          QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
                          QtCore.QString(self.comInfoText))
