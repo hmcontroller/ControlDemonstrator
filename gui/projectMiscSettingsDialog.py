@@ -75,6 +75,8 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
 
         dialog.checkBoxParamConfSuppression.setChecked(dialog.settings.suppressParameterConfirmation)
 
+        dialog.checkBoxDebugMode.setChecked(dialog.settings.debugMode)
+
         dialog.refreshComPortsCombo()
         for i, portDescription in enumerate(dialog.lastComPortsListing):
             if portDescription == dialog.settings.comPortDescription:
@@ -110,6 +112,8 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
             dialog.settings.comPortDescription = unicode(dialog.comboBoxComPort.currentText())
 
             dialog.settings.suppressParameterConfirmation = dialog.checkBoxParamConfSuppression.isChecked()
+
+            dialog.settings.debugMode = dialog.checkBoxDebugMode.isChecked()
 
             return QtGui.QDialog.Accepted
         else:

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'projectMiscSettingsDialog.ui'
 #
-# Created: Thu Nov 16 14:43:21 2017
+# Created: Tue Nov 28 08:56:58 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_ProjectMiscSettingsDialog(object):
     def setupUi(self, ProjectMiscSettingsDialog):
         ProjectMiscSettingsDialog.setObjectName(_fromUtf8("ProjectMiscSettingsDialog"))
-        ProjectMiscSettingsDialog.resize(1282, 448)
+        ProjectMiscSettingsDialog.resize(1282, 765)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -67,6 +67,13 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.comboBoxFrameworkAndInterface = QtGui.QComboBox(ProjectMiscSettingsDialog)
         self.comboBoxFrameworkAndInterface.setObjectName(_fromUtf8("comboBoxFrameworkAndInterface"))
         self.formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self.comboBoxFrameworkAndInterface)
+        self.label_10 = QtGui.QLabel(ProjectMiscSettingsDialog)
+        self.label_10.setObjectName(_fromUtf8("label_10"))
+        self.formLayout.setWidget(4, QtGui.QFormLayout.LabelRole, self.label_10)
+        self.checkBoxDebugMode = QtGui.QCheckBox(ProjectMiscSettingsDialog)
+        self.checkBoxDebugMode.setText(_fromUtf8(""))
+        self.checkBoxDebugMode.setObjectName(_fromUtf8("checkBoxDebugMode"))
+        self.formLayout.setWidget(4, QtGui.QFormLayout.FieldRole, self.checkBoxDebugMode)
         self.verticalLayout.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 10, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         self.verticalLayout.addItem(spacerItem)
@@ -143,6 +150,7 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.toolButtonSelectControllerCodeFolder.setText(_translate("ProjectMiscSettingsDialog", "...", None))
         self.label_9.setText(_translate("ProjectMiscSettingsDialog", "Suppress parameter confirmation", None))
         self.label_4.setText(_translate("ProjectMiscSettingsDialog", "Framework and interface", None))
+        self.label_10.setText(_translate("ProjectMiscSettingsDialog", "DEBUG mode", None))
         self.portChangedLabel.setText(_translate("ProjectMiscSettingsDialog", "original port lost, alternatives are available", None))
         self.groupBoxUdp.setTitle(_translate("ProjectMiscSettingsDialog", "Framework and interface settings", None))
         self.label_5.setText(_translate("ProjectMiscSettingsDialog", "computer IP", None))

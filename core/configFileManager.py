@@ -57,6 +57,7 @@ class ConfigFileManager(object):
         projectSettingsDescriptions["comPortDescription"] = projectSettings.comPortDescription
         projectSettingsDescriptions["comPortBaudRate"] = projectSettings.comPortBaudRate
         projectSettingsDescriptions["suppressParameterConfirmation"] = projectSettings.suppressParameterConfirmation
+        projectSettingsDescriptions["debugMode"] = projectSettings.debugMode
 
         tabSettings = list()
         for aTabSetting in projectSettings.tabSettingsDescriptions:
@@ -230,6 +231,9 @@ class ConfigFileManager(object):
 
         if "suppressParameterConfirmation" in settingsDescriptions:
             projectMiscSettings.suppressParameterConfirmation = settingsDescriptions["suppressParameterConfirmation"]
+
+        if "debugMode" in settingsDescriptions:
+            projectMiscSettings.debugMode = settingsDescriptions["debugMode"]
 
         tabSettingsDescriptions = settingsDescriptions["tabs"]
 

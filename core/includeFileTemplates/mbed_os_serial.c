@@ -13,7 +13,7 @@ int seekForFullMessage();
 void extractMessage(int messageStartPosition);
 
 
-Serial mRserial(USBTX, USBRX, BAUD_RATE); // tx, rx
+Serial mrSerial(USBTX, USBRX, BAUD_RATE); // tx, rx
 Ticker serialReceiver;
 
 Timer dutyCycleTimer;
@@ -41,11 +41,11 @@ event_callback_t serialEventWriteCompleteThree = serialSendCompleteThree;
 
 int debugCounterSend = 0;
 void serialSendCompleteOne(int events) {
-    mRserial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), serialEventWriteCompleteTwo, SERIAL_EVENT_TX_COMPLETE);
+    mrSerial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), serialEventWriteCompleteTwo, SERIAL_EVENT_TX_COMPLETE);
 }
 
 void serialSendCompleteTwo(int events) {
-    mRserial.write((uint8_t *)&endOut, 1, serialEventWriteCompleteThree, SERIAL_EVENT_TX_COMPLETE);
+    mrSerial.write((uint8_t *)&endOut, 1, serialEventWriteCompleteThree, SERIAL_EVENT_TX_COMPLETE);
 }
 
 void serialSendCompleteThree(int events) {
@@ -57,14 +57,6 @@ void serialSendCompleteThree(int events) {
 void microRayInit() {
     dutyCycleTimer.start();
     serialReceiver.attach(&readIncomingBytesIntoBuffer, 0.00001f);
-    //serialEventWriteComplete.attach(serialSendComplete);
-    //serialEventReceiveComplete.attach(serialReadComplete);
-
-    // start async receive of serial data
-    //mRserial.read(&singleInBuffer, 1, serialEventReceiveComplete);
-
-    //mRserial.set_dma_usage_tx(1);
-    //mRserial.set_dma_usage_rx(1);
 }
 
 int serialTransmissionLagCounter = 0;
@@ -74,7 +66,7 @@ void sendMessage() {
 
     if(timeOfLastCompletedMessage == timeOfLastSend) {
         timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
-        mRserial.write((uint8_t *)&startOut, 1, serialEventWriteCompleteOne, SERIAL_EVENT_TX_COMPLETE);
+        mrSerial.write((uint8_t *)&startOut, 1, serialEventWriteCompleteOne, SERIAL_EVENT_TX_COMPLETE);
     }
     else {
         serialTransmissionLagCounter++;
@@ -98,8 +90,8 @@ void receiveMessage() {
 void readIncomingBytesIntoBuffer() {
     int i = 0;
     for (i = 0; i < IN_MESSAGE_SIZE; i++) {
-        if (mRserial.readable ()) {
-            appendByteToBuffer(mRserial.getc());
+        if (mrSerial.readable ()) {
+            appendByteToBuffer(mrSerial.getc());
         }
         else {
             break;
@@ -109,13 +101,12 @@ void readIncomingBytesIntoBuffer() {
 
 void appendByteToBuffer(uint8_t inByte) {
 
-    // mRserial.printf("inbyte %c\n", inByte);
-
     // prevent buffer from overfilling
     if(bufferPosition >= IN_BUFFER_SIZE) {
         // shift whole buffer one to the left to free last position
         shiftGivenPositionToBufferStart(1);
     }
+
     rawMessageInBuffer[bufferPosition] = inByte;
     bufferPosition += 1;
 }
@@ -153,6 +144,5 @@ int seekForFullMessage() {
 void extractMessage(int messageStartPosition) {
     memcpy(&messageInBuffer.parameterNumber, &rawMessageInBuffer[messageStartPosition + 1], 4);
     memcpy(&messageInBuffer.parameterValueInt, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
-    // mRserial.printf("%i %.2f",messageInBuffer.parameterNumber, messageInBuffer.parameterValueFloat );
     shiftGivenPositionToBufferStart(messageStartPosition + IN_MESSAGE_SIZE + 2);
 }

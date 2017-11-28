@@ -23,6 +23,7 @@ class ProjectSettings(QtCore.QObject):
         self._openedFrom = u""
         self._unsavedChanges = False
         self._suppressParameterConfirmation = False
+        self._debugMode = False
 
     def somethingChanged(self):
         self._unsavedChanges = True
@@ -129,6 +130,14 @@ class ProjectSettings(QtCore.QObject):
         self._suppressParameterConfirmation = value
         self.somethingChanged()
 
+    @property
+    def debugMode(self):
+        return self._debugMode
+
+    @debugMode.setter
+    def debugMode(self, value):
+        self._debugMode = value
+        self.somethingChanged()
 
     @property
     def openedFrom(self):

@@ -48,6 +48,7 @@ class IncludeFileMaker(object):
         self.addSomeImportantMacros()
         self.addChannelsToHeaderFile()
         self.addCommandsToHeaderFile()
+        self.addSerialAsExtern()
 
         self.addHeaderTemplate()
 
@@ -125,6 +126,13 @@ class IncludeFileMaker(object):
                 "SUPPRESS_PARAM_CONFIRMATION", "1",
                 nameWidth=self.nameWidth, valueWidth=self.valueWidth)
 
+        if self.projectSettings.debugMode is True:
+            self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+                "mrDEBUG", "",
+                nameWidth=self.nameWidth, valueWidth=self.valueWidth)
+
+
+
         self.headerFileString += "\n"
 
 
@@ -167,6 +175,13 @@ class IncludeFileMaker(object):
             self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
                 command.name, macro, nameWidth=self.nameWidth, valueWidth=self.valueWidth)
         self.headerFileString += "\n"
+
+
+    def addSerialAsExtern(self):
+        if self.projectSettings.controllerFrameworkAndInterface == "MBED_OS_SERIAL":
+            self.headerFileString += "extern Serial mrSerial;"
+
+
 
     def addHeaderTemplate(self):
         with open(headerTemplatePath, "r") as headerTemplate:
