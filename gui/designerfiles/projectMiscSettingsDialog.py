@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'projectMiscSettingsDialog.ui'
 #
-# Created: Tue Nov 28 08:56:58 2017
+# Created: Tue Nov 28 13:04:08 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -74,6 +74,19 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.checkBoxDebugMode.setText(_fromUtf8(""))
         self.checkBoxDebugMode.setObjectName(_fromUtf8("checkBoxDebugMode"))
         self.formLayout.setWidget(4, QtGui.QFormLayout.FieldRole, self.checkBoxDebugMode)
+        self.label_11 = QtGui.QLabel(ProjectMiscSettingsDialog)
+        self.label_11.setObjectName(_fromUtf8("label_11"))
+        self.formLayout.setWidget(5, QtGui.QFormLayout.LabelRole, self.label_11)
+        self.checkBoxRecordMode = QtGui.QCheckBox(ProjectMiscSettingsDialog)
+        self.checkBoxRecordMode.setText(_fromUtf8(""))
+        self.checkBoxRecordMode.setObjectName(_fromUtf8("checkBoxRecordMode"))
+        self.formLayout.setWidget(5, QtGui.QFormLayout.FieldRole, self.checkBoxRecordMode)
+        self.label_12 = QtGui.QLabel(ProjectMiscSettingsDialog)
+        self.label_12.setObjectName(_fromUtf8("label_12"))
+        self.formLayout.setWidget(6, QtGui.QFormLayout.LabelRole, self.label_12)
+        self.lineEditRecordBufferLength = QtGui.QLineEdit(ProjectMiscSettingsDialog)
+        self.lineEditRecordBufferLength.setObjectName(_fromUtf8("lineEditRecordBufferLength"))
+        self.formLayout.setWidget(6, QtGui.QFormLayout.FieldRole, self.lineEditRecordBufferLength)
         self.verticalLayout.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 10, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         self.verticalLayout.addItem(spacerItem)
@@ -151,6 +164,8 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.label_9.setText(_translate("ProjectMiscSettingsDialog", "Suppress parameter confirmation", None))
         self.label_4.setText(_translate("ProjectMiscSettingsDialog", "Framework and interface", None))
         self.label_10.setText(_translate("ProjectMiscSettingsDialog", "DEBUG mode", None))
+        self.label_11.setText(_translate("ProjectMiscSettingsDialog", "record mode", None))
+        self.label_12.setText(_translate("ProjectMiscSettingsDialog", "record Buffer Length", None))
         self.portChangedLabel.setText(_translate("ProjectMiscSettingsDialog", "original port lost, alternatives are available", None))
         self.groupBoxUdp.setTitle(_translate("ProjectMiscSettingsDialog", "Framework and interface settings", None))
         self.label_5.setText(_translate("ProjectMiscSettingsDialog", "computer IP", None))

@@ -447,7 +447,8 @@ class SerialInterface(HardwareInterface):
                     # prevent overfill of 'buffer'
                     if len(self.lastMessageRemainder) > self._messageMap.messageLengthInBytes * 3:
                         self.lastMessageRemainder = b""
-                        self._commState.state = CommState.WRONG_CONFIG
+                        if self._commState.state != CommState.DEBUG:
+                            self._commState.state = CommState.WRONG_CONFIG
 
                     return receivedData
 

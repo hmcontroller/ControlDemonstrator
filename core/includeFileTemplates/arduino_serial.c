@@ -18,13 +18,18 @@ void extractMessage(int messageStartPosition);
 #define IN_START_BYTE (char)7
 #define IN_STOP_BYTE (char)8
 
+int serialBufferSize = 0;
 void microRayInit() {
     Serial.begin(BAUD_RATE);
+    serialBufferSize = Serial.availableForWrite();
 }
 
 
 void sendMessage() {
-    prepareOutMessage(micros());
+    if (!transmitRecordBuffer) {
+        prepareOutMessage(micros());
+    }
+
     // check, if there is still data not send from the previous loop
     #ifdef SERIAL_TX_BUFFER_SIZE
         int bytesStillInBuffer = SERIAL_TX_BUFFER_SIZE - Serial.availableForWrite();
@@ -32,14 +37,25 @@ void sendMessage() {
             serialTransmissionLag = bytesStillInBuffer;
         }
     #endif
+
+    lastMessageSendComplete = false;
     Serial.write(7);
     Serial.write((byte *)&messageOutBuffer, sizeof(messageOutBuffer));
     Serial.write(8);
+
+    // wait for message to complete during recording transfer
+    if (transmitRecordBuffer) {
+        while (Serial.availableForWrite() < serialBufferSize) {
+            // wait
+        }
+        lastMessageSendComplete = true;
+    }
 }
 
 
-
-
+void recordMessage() {
+    prepareOutMessage(micros());
+}
 
 
 
@@ -108,4 +124,3 @@ void extractMessage(int messageStartPosition) {
     memcpy(&messageInBuffer.parameterValueInt, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
     shiftGivenPositionToBufferStart(messageStartPosition + IN_MESSAGE_SIZE + 2);
 }
-

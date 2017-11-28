@@ -16,6 +16,7 @@ class CommState(QtCore.QObject):
     COMM_TIMEOUT = 3
     WRONG_CONFIG = 4
     NO_CONN = 5
+    DEBUG = 6
 
     def __init__(self):
         super(CommState, self).__init__()

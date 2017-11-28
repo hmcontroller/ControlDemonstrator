@@ -24,6 +24,8 @@ class ProjectSettings(QtCore.QObject):
         self._unsavedChanges = False
         self._suppressParameterConfirmation = False
         self._debugMode = False
+        self._recordMode = False
+        self._recordBufferLength = 1
 
     def somethingChanged(self):
         self._unsavedChanges = True
@@ -137,6 +139,24 @@ class ProjectSettings(QtCore.QObject):
     @debugMode.setter
     def debugMode(self, value):
         self._debugMode = value
+        self.somethingChanged()
+
+    @property
+    def recordMode(self):
+        return self._recordMode
+
+    @recordMode.setter
+    def recordMode(self, value):
+        self._recordMode = value
+        self.somethingChanged()
+
+    @property
+    def recordBufferLength(self):
+        return self._recordBufferLength
+
+    @recordBufferLength.setter
+    def recordBufferLength(self, value):
+        self._recordBufferLength = value
         self.somethingChanged()
 
     @property

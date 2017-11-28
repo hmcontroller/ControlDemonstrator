@@ -131,6 +131,10 @@ class IncludeFileMaker(object):
                 "mrDEBUG", "",
                 nameWidth=self.nameWidth, valueWidth=self.valueWidth)
 
+        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "RECORD_BUFFER_LENGTH", self.projectSettings.recordBufferLength,
+            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
+
 
 
         self.headerFileString += "\n"

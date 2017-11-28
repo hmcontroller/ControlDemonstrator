@@ -51,12 +51,16 @@ void microRayInit() {
 
 
 void sendMessage() {
-    prepareOutMessage(dutyCycleTimer.read_us());
-
+    if (!transmitRecordBuffer) {
+        prepareOutMessage(dutyCycleTimer.read_us());
+    }
+    
     // send data to the pc via Ethernet with mbed os
     debugTimer.reset();
     debugTimer.start();
+    lastMessageSendComplete = false;
     sendBytesCount = socket.sendto(udp_server_address, (char *)&messageOutBuffer, sizeof(messageOutBuffer));
+    lastMessageSendComplete = true;
     SEND_TIMER = (float)debugTimer.read_us();
 
     #ifdef DEBUG

@@ -58,6 +58,8 @@ class ConfigFileManager(object):
         projectSettingsDescriptions["comPortBaudRate"] = projectSettings.comPortBaudRate
         projectSettingsDescriptions["suppressParameterConfirmation"] = projectSettings.suppressParameterConfirmation
         projectSettingsDescriptions["debugMode"] = projectSettings.debugMode
+        projectSettingsDescriptions["recordMode"] = projectSettings.recordMode
+        projectSettingsDescriptions["recordBufferLength"] = projectSettings.recordBufferLength
 
         tabSettings = list()
         for aTabSetting in projectSettings.tabSettingsDescriptions:
@@ -234,6 +236,12 @@ class ConfigFileManager(object):
 
         if "debugMode" in settingsDescriptions:
             projectMiscSettings.debugMode = settingsDescriptions["debugMode"]
+
+        if "recordMode" in settingsDescriptions:
+            projectMiscSettings.recordMode = settingsDescriptions["recordMode"]
+
+        if "recordBufferLength" in settingsDescriptions:
+            projectMiscSettings.recordBufferLength = settingsDescriptions["recordBufferLength"]
 
         tabSettingsDescriptions = settingsDescriptions["tabs"]
 

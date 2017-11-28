@@ -41,6 +41,7 @@ event_callback_t serialEventWriteCompleteThree = serialSendCompleteThree;
 
 int debugCounterSend = 0;
 void serialSendCompleteOne(int events) {
+    lastMessageSendComplete = false;
     mrSerial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), serialEventWriteCompleteTwo, SERIAL_EVENT_TX_COMPLETE);
 }
 
@@ -50,6 +51,7 @@ void serialSendCompleteTwo(int events) {
 
 void serialSendCompleteThree(int events) {
     timeOfLastCompletedMessage = timeOfLastSend;
+    lastMessageSendComplete = true;
 }
 
 
@@ -61,9 +63,10 @@ void microRayInit() {
 
 int serialTransmissionLagCounter = 0;
 void sendMessage() {
-
-    prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
-
+    if (!transmitRecordBuffer) {
+        prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
+    }
+    
     if(timeOfLastCompletedMessage == timeOfLastSend) {
         timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
         mrSerial.write((uint8_t *)&startOut, 1, serialEventWriteCompleteOne, SERIAL_EVENT_TX_COMPLETE);

@@ -33,7 +33,7 @@ class TabSmallGenericView(QtGui.QWidget, Ui_tabGenericView):
 
         self.controller = ControllerSmallGeneric(self.commands, self.channels)
 
-        self.globalController = GlobalControllerAndView(self.commands, self.communicator, mainWindow, serialMonitor)
+        self.globalController = GlobalControllerAndView(self.commands, self.communicator, mainWindow, serialMonitor, self.projectSettings)
 
         self.commandViewLayout.insertWidget(0, self.globalController, 0)
 

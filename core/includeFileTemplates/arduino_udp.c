@@ -22,13 +22,17 @@ void microRayInit()
 
 void sendMessage()
 {
-    prepareOutMessage(micros());
-
+    if (!transmitRecordBuffer) {
+        prepareOutMessage(micros());
+    }
+    
     lastTime = micros();
+    lastMessageSendComplete = false;
     Udp.beginPacket(remoteIp, port);
     Udp.write((char *)&messageOutBuffer, sizeof(messageOutBuffer));
     Udp.endPacket();
     // sendTimer = (float)(micros() - lastTime);
+    lastMessageSendComplete = true;
 }
 
 

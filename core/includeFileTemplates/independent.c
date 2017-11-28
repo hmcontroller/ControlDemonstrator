@@ -4,8 +4,16 @@ void prepareOutMessage();
 void prepareInMessage();
 void sendMessage();
 void receiveMessage();
+void recordMessage();
 
 unsigned long lastTime = 0;
+bool lastMessageSendComplete = false;
+
+bool record = false;
+bool transmitRecordBuffer = false;
+int recordingCounter = 0;
+int recordingSendCounter = 0;
+
 
 // storage for unrequested channels
 float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
@@ -19,6 +27,8 @@ int sendBytesCount = 0;
 
 MessageOut messageOutBuffer;
 MessageIn messageInBuffer;
+
+MessageOut recordBuffer[RECORD_BUFFER_LENGTH];
 
 void prepareOutMessage(unsigned long loopStartTime)
 {
@@ -68,14 +78,55 @@ void prepareInMessage() {
         }
     }
     else {
+        if (messageInBuffer.parameterNumber == -3) {
+            if (messageInBuffer.parameterValueFloat != specialCommands[(messageInBuffer.parameterNumber + 1) * -1]) {
+                if (messageInBuffer.parameterValueFloat > 0.5) {
+                    record = true;
+                }
+                else {
+                    record = false;
+                    transmitRecordBuffer = true;
+                }
+            }
+        }
         specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.parameterValueFloat;
     }
 }
 
 void microRayCommunicate()
 {
-    #ifndef mrDEBUG
     receiveMessage();
-    sendMessage();
-    #endif
+
+#ifndef mrDEBUG
+
+    if (record) {
+        recordMessage();
+        recordBuffer[recordingCounter] = messageOutBuffer;
+        recordingCounter += 1;
+        if (recordingCounter > RECORD_BUFFER_LENGTH) {
+            recordingCounter = 0;
+        }
+    }
+    else if (transmitRecordBuffer) {
+        // blocks until finished
+        transmitRecordBuffer = false;
+
+        for (recordingSendCounter = 0; recordingSendCounter < RECORD_BUFFER_LENGTH; recordingSendCounter++) {
+            int nextMessageIndex = recordingSendCounter + recordingCounter;
+            if (nextMessageIndex > RECORD_BUFFER_LENGTH){
+                nextMessageIndex -= RECORD_BUFFER_LENGTH;
+            }
+            messageOutBuffer = recordBuffer[nextMessageIndex];
+            sendMessage();
+            while (!lastMessageSendComplete) {
+                // wait
+            }
+        }
+        recordingCounter = 0;
+    }
+    else {
+        sendMessage();
+    }
+
+#endif
 }

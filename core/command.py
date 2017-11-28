@@ -44,6 +44,12 @@ class CommandList(QtCore.QObject):
         serialTransmissionLag.name = "serialTransmissionLag"
         self.appendSpecialCommand(serialTransmissionLag)
 
+        recordModeEnable = Command()
+        recordModeEnable.id = -3
+        recordModeEnable._value = 0
+        recordModeEnable.name = "mrRecordModeEnable"
+        self.appendSpecialCommand(recordModeEnable)
+
     def append(self, cmd):
         """
         schöne append-Methode ?
@@ -56,6 +62,7 @@ class CommandList(QtCore.QObject):
         """
         schöne append-Methode ?
         """
+        cmd.valueChanged.connect(self.specialCommandChanged)
         self.specialCmdList.append(cmd)
 
     def removeCommand(self, command):
@@ -88,6 +95,9 @@ class CommandList(QtCore.QObject):
             self.pendingCommands.append(command)
         else:
             self.changedCommands.append(command)
+
+    def specialCommandChanged(self, command):
+        self.changedCommands.append(command)
 
     def sendPendingCommands(self):
         while len(self.pendingCommands) > 0:
