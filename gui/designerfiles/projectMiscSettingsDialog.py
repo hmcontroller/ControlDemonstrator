@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'projectMiscSettingsDialog.ui'
 #
-# Created: Tue Nov 28 13:04:08 2017
+# Created: Wed Nov 29 08:49:40 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -87,6 +87,13 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.lineEditRecordBufferLength = QtGui.QLineEdit(ProjectMiscSettingsDialog)
         self.lineEditRecordBufferLength.setObjectName(_fromUtf8("lineEditRecordBufferLength"))
         self.formLayout.setWidget(6, QtGui.QFormLayout.FieldRole, self.lineEditRecordBufferLength)
+        self.label_13 = QtGui.QLabel(ProjectMiscSettingsDialog)
+        self.label_13.setObjectName(_fromUtf8("label_13"))
+        self.formLayout.setWidget(7, QtGui.QFormLayout.LabelRole, self.label_13)
+        self.checkBoxPauseAfterRecord = QtGui.QCheckBox(ProjectMiscSettingsDialog)
+        self.checkBoxPauseAfterRecord.setText(_fromUtf8(""))
+        self.checkBoxPauseAfterRecord.setObjectName(_fromUtf8("checkBoxPauseAfterRecord"))
+        self.formLayout.setWidget(7, QtGui.QFormLayout.FieldRole, self.checkBoxPauseAfterRecord)
         self.verticalLayout.addLayout(self.formLayout)
         spacerItem = QtGui.QSpacerItem(20, 10, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         self.verticalLayout.addItem(spacerItem)
@@ -166,6 +173,7 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.label_10.setText(_translate("ProjectMiscSettingsDialog", "DEBUG mode", None))
         self.label_11.setText(_translate("ProjectMiscSettingsDialog", "record mode", None))
         self.label_12.setText(_translate("ProjectMiscSettingsDialog", "record Buffer Length", None))
+        self.label_13.setText(_translate("ProjectMiscSettingsDialog", "pause after recording", None))
         self.portChangedLabel.setText(_translate("ProjectMiscSettingsDialog", "original port lost, alternatives are available", None))
         self.groupBoxUdp.setTitle(_translate("ProjectMiscSettingsDialog", "Framework and interface settings", None))
         self.label_5.setText(_translate("ProjectMiscSettingsDialog", "computer IP", None))

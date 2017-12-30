@@ -4,13 +4,14 @@ void prepareOutMessage();
 void prepareInMessage();
 void sendMessage();
 void receiveMessage();
+void record();
 void recordMessage();
+void transmitRecordings();
 
 unsigned long lastTime = 0;
-bool lastMessageSendComplete = false;
+volatile bool lastMessageSendComplete = false;
 
-bool record = false;
-bool transmitRecordBuffer = false;
+int sendMode = LIVE_MODE;
 int recordingCounter = 0;
 int recordingSendCounter = 0;
 
@@ -40,7 +41,7 @@ void prepareOutMessage(unsigned long loopStartTime)
     #if !defined(SUPPRESS_PARAM_CONFIRMATION)
     messageOutBuffer.parameterNumber = parameterSendCounter;
     if (parameterSendCounter < 0) {
-        messageOutBuffer.parameterValueFloat = specialCommands[(parameterSendCounter + 1) * -1];
+        messageOutBuffer.parameterValueInt = specialCommands[(parameterSendCounter + 1) * -1];
     }
     else {
         switch (parameters[parameterSendCounter].dataType) {
@@ -78,18 +79,18 @@ void prepareInMessage() {
         }
     }
     else {
+        // toggle recording mode
         if (messageInBuffer.parameterNumber == -3) {
-            if (messageInBuffer.parameterValueFloat != specialCommands[(messageInBuffer.parameterNumber + 1) * -1]) {
-                if (messageInBuffer.parameterValueFloat > 0.5) {
-                    record = true;
+            if (messageInBuffer.parameterValueInt != specialCommands[(messageInBuffer.parameterNumber + 1) * -1]) {
+                if (messageInBuffer.parameterValueInt == 1) {
+                    sendMode = RECORD_MODE;
                 }
-                else {
-                    record = false;
-                    transmitRecordBuffer = true;
+                else if (messageInBuffer.parameterValueInt == 0) {
+                    sendMode = RECORD_TRANSMISSION_MODE;
                 }
             }
         }
-        specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.parameterValueFloat;
+        specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.parameterValueInt;
     }
 }
 
@@ -98,35 +99,44 @@ void microRayCommunicate()
     receiveMessage();
 
 #ifndef mrDEBUG
-
-    if (record) {
-        recordMessage();
-        recordBuffer[recordingCounter] = messageOutBuffer;
-        recordingCounter += 1;
-        if (recordingCounter > RECORD_BUFFER_LENGTH) {
-            recordingCounter = 0;
-        }
-    }
-    else if (transmitRecordBuffer) {
-        // blocks until finished
-        transmitRecordBuffer = false;
-
-        for (recordingSendCounter = 0; recordingSendCounter < RECORD_BUFFER_LENGTH; recordingSendCounter++) {
-            int nextMessageIndex = recordingSendCounter + recordingCounter;
-            if (nextMessageIndex > RECORD_BUFFER_LENGTH){
-                nextMessageIndex -= RECORD_BUFFER_LENGTH;
-            }
-            messageOutBuffer = recordBuffer[nextMessageIndex];
+    switch (sendMode) {
+        case RECORD_MODE:
+            record();
+            break;
+        case RECORD_TRANSMISSION_MODE:
+            transmitRecordings();
+            break;
+        case LIVE_MODE:
             sendMessage();
-            while (!lastMessageSendComplete) {
-                // wait
-            }
-        }
+            break;
+        default:
+            break;
+    }
+#endif
+}
+
+void record() {
+    recordMessage();
+    recordBuffer[recordingCounter] = messageOutBuffer;
+    recordingCounter += 1;
+    if (recordingCounter > RECORD_BUFFER_LENGTH) {
         recordingCounter = 0;
     }
-    else {
-        sendMessage();
-    }
+}
 
-#endif
+void transmitRecordings() {
+    // blocks until finished
+    for (recordingSendCounter = 0; recordingSendCounter < RECORD_BUFFER_LENGTH; recordingSendCounter++) {
+        int nextMessageIndex = recordingSendCounter + recordingCounter;
+        if (nextMessageIndex > RECORD_BUFFER_LENGTH){
+            nextMessageIndex -= RECORD_BUFFER_LENGTH;
+        }
+        messageOutBuffer = recordBuffer[nextMessageIndex];
+        sendMessage();
+        while (!lastMessageSendComplete) {
+            // wait
+        }
+    }
+    recordingCounter = 0;
+    sendMode = LIVE_MODE;
 }

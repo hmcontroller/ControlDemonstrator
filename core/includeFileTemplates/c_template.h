@@ -41,9 +41,14 @@ typedef struct Parameter {
 } Parameter;
 
 extern Parameter parameters[PARAMETER_COUNT];
-extern float specialCommands[SPECIAL_COMMANDS_COUNT];
+extern int specialCommands[SPECIAL_COMMANDS_COUNT];
 
 
 // storage for unrequested channels
 // requested channels are stored in messageOutBuffer
 extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
+
+#define RECORD_MODE 0
+#define RECORD_TRANSMISSION_MODE 1
+#define LIVE_MODE 2
+#define RECORD_WAIT_MODE 3

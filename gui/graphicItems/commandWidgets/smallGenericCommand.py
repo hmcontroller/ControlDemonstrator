@@ -395,7 +395,8 @@ class SmallGenericCommand(BaseCommand):
         else:
             self.command.setPendingSendMode(True)
 
-    def pendingModeChanged(self, command):
+    @QtCore.pyqtSlot()
+    def pendingModeChanged(self, command=None):
         super(SmallGenericCommand, self).pendingModeChanged(command)
         if self.command.getPendingSendMode() is False:
             self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
@@ -405,7 +406,8 @@ class SmallGenericCommand(BaseCommand):
             self.pendingButton.symbol.setColor(QtCore.Qt.red)
 
     @QtCore.pyqtSlot()
-    def pendingValueCanceled(self, command):
+    def pendingValueCanceled(self, command=None):
+        super(SmallGenericCommand, self).pendingValueCanceled(command)
         self.valueLineEdit.clear()
         self.valueLineEdit.setStyleSheet(self.normalStyleSheet)
 

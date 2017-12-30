@@ -33,6 +33,8 @@ class TabWaterLineExperiment(QtGui.QWidget, Ui_tabWaterLineExperiment):
         self.verticalLayoutCommandView.setMargin(6)
 
         self.plotter = PlotWidget(self.channels, self.applicationSettings, self.projectSettings)
+
+
         self.horizontalLayoutPlotArea.insertWidget(0, self.plotter, 0)
         self.horizontalLayoutPlotArea.setMargin(0)
 

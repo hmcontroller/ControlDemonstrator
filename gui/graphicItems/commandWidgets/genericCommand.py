@@ -247,6 +247,7 @@ class GenericCommand(BaseCommand):
             self.maxLineEdit.setCursorPosition(0)
             self.update()
 
+    @QtCore.pyqtSlot()
     def pendingModeChanged(self, command):
         super(GenericCommand, self).pendingModeChanged(command)
         self.pendingStateCheckbox.setChecked(self.command.getPendingSendMode())
@@ -349,6 +350,8 @@ class GenericCommandWithoutMinMaxEdit(GenericCommand):
         self.minLineEdit.setReadOnly(True)
         self.maxLineEdit.setReadOnly(True)
 
+        self.minLineEditProxy.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.maxLineEditProxy.setFocusPolicy(QtCore.Qt.NoFocus)
 
         styleSheet = """border: none; background-color: rgba(0, 0, 0, 0);"""
         # styleSheet = """border: none; color: rgb(120, 120, 120); background-color: rgba(0, 0, 0, 0);"""

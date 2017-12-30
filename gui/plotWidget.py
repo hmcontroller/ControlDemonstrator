@@ -120,10 +120,11 @@ class PlotWidget(QtGui.QWidget):
             colorTuple = channel.colorRgbTuple
             color = QtGui.QColor(colorTuple[0], colorTuple[1], colorTuple[2])
             curve = self.plotWidget.plot(pen=color, clickable=True)
+            # curve.setClickable(True, 5)   # only in new version ?? did i change something in the source code ??
             curve.sigClicked.connect(self.curveClicked)
 
             # add a check box to show/hide the curve next to the plot window
-            box = IdColorLabelCheckbox(id=channel.id, color=color)
+            box = IdColorLabelCheckbox(channel=channel, id=channel.id, color=color)
             box.setFont(CHECK_BOX_FONT)
             box.setObjectName("checkBox{}".format(channel.id))
 
@@ -140,10 +141,17 @@ class PlotWidget(QtGui.QWidget):
             box.changed.connect(self.curveHideShow)
             if channel.show is True:
                 box.setChecked(True)
-                # curve.setVisible(True)
+                curve.setVisible(True)
             else:
                 box.setChecked(False)
-                # curve.setVisible(False)
+                curve.setVisible(False)
+
+            box.setRequested(channel.isRequested)
+
+            if channel.isRequested is False:
+                box.setChecked(False)
+                curve.setVisible(False)
+
 
             box.keyPressed.connect(self.keyPressEvent)
             # self.channelControllerList.addChannel(box)
@@ -151,7 +159,8 @@ class PlotWidget(QtGui.QWidget):
 
             listWidgetItem = QtGui.QListWidgetItem()
             listWidgetItem.setSizeHint(box.size())
-            # listWidgetItem.setBackgroundColor(QtCore.Qt.lightGray)
+
+            # listWidgetItem.setBackgroundColor(QtCore.Qt.red)
             self.listWidget.addItem(listWidgetItem)
             self.listWidget.setItemWidget(listWidgetItem, box)
 
@@ -163,21 +172,25 @@ class PlotWidget(QtGui.QWidget):
 
         self.updateVisibilityOfCurves()
 
+
     def updateVisibilityOfCurves(self):
         for id, something in self.channelControllers.iteritems():
-            if self.channels.getChannelById(id).show is True:
+            channel = self.channels.getChannelById(id)
+            if channel.show is True and channel.isRequested is True:
                 something["plotCurve"].setVisible(True)
             else:
                 something["plotCurve"].setVisible(False)
 
+    @QtCore.pyqtSlot()
     def verticalLineMoved(self):
         if self.movePlot is False:
             self.updateValueLabels()
         if self.verticalLine.getXPos() > 0:
             self.verticalLine.setPos(0)
 
-    def curveClicked(self):
-        pass
+    @QtCore.pyqtSlot()
+    def curveClicked(self, curve):
+        print "curve clicked"
 
     def showOrHideCurve(self, channel):
         pass
@@ -209,9 +222,28 @@ class PlotWidget(QtGui.QWidget):
     def updateValueLabels(self):
         timeOfVerticalLine = self.verticalLine.getXPos()
 
+        # timeOfVerticalLineUs = timeOfVerticalLine * 1000000
+
+        firstCurve = None
+        for key, something in self.channelControllers.iteritems():
+            firstCurve = something["plotCurve"]
+
+        xData, yData = firstCurve.getData()
+        highestTime = xData[-1]
+        timeOfVerticalLine += highestTime
+
+        # search for index 
+        indexAtVerticalLine = 0
+        for i in range(len(xData)):
+            if xData[i] > timeOfVerticalLine:
+                indexAtVerticalLine = i - 1
+                break
+
         valuesCount = len(self.channels.timeValues)
         # indexAtVerticalLine = int(self.applicationSettings.bufferLength + ((timeOfVerticalLine * 1000000) / self.projectSettings.controllerLoopCycleTimeInUs) - 1)
-        indexAtVerticalLine = int(valuesCount + ((timeOfVerticalLine * 1000000) / self.projectSettings.controllerLoopCycleTimeInUs) - 1)
+        # indexAtVerticalLine = int(valuesCount + ((timeOfVerticalLine * 1000000) / self.projectSettings.controllerLoopCycleTimeInUs) -1 )
+
+
 
         for key, something in self.channelControllers.iteritems():
             xData, yData = something["plotCurve"].getData()
@@ -242,6 +274,11 @@ class PlotWidget(QtGui.QWidget):
             self.toggleMovePlotButton.setIcon(self.pauseIcon)
         else:
             self.toggleMovePlotButton.setIcon(self.playIcon)
+
+    def pause(self):
+        self.movePlot = False
+        self.toggleMovePlotButton.setIcon(self.playIcon)
+
 
     def keyPressEvent(self, QKeyEvent):
         if QKeyEvent.key() == QtCore.Qt.Key_Space:

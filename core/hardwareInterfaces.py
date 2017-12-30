@@ -388,6 +388,9 @@ class SerialInterface(HardwareInterface):
         self._commState.state = CommState.COMM_PAUSED
 
     def send(self, commandList):
+        if not self.ser.is_open:
+            return
+
         # return
         if len(commandList.changedCommands) > 0 and self._commState.play is True:
             commandToSend = commandList.changedCommands.popleft()

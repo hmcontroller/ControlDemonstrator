@@ -1,7 +1,7 @@
 
-#include <mbed.h>
-#include "EthernetInterface.h"
-#include "SocketAddress.h"
+// #include <mbed.h>
+#include <EthernetInterface.h>
+#include <SocketAddress.h>
 
 #define SERVER_IP       "192.168.0.133"
 #define OWN_IP          "192.168.0.15"
@@ -18,9 +18,9 @@ Timer dutyCycleTimer;
 Timer debugTimer;
 Serial mRserial(USBTX, USBRX);
 
-DigitalOut greenLed(LED1);
-DigitalOut blueLed(LED2);
-DigitalOut redLed(LED3);
+// DigitalOut greenLed(LED1);
+// DigitalOut blueLed(LED2);
+// DigitalOut redLed(LED3);
 
 
 
@@ -51,10 +51,10 @@ void microRayInit() {
 
 
 void sendMessage() {
-    if (!transmitRecordBuffer) {
-        prepareOutMessage(dutyCycleTimer.read_us());
+    if (sendMode == LIVE_MODE) {
+        prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
     }
-    
+
     // send data to the pc via Ethernet with mbed os
     debugTimer.reset();
     debugTimer.start();
@@ -63,9 +63,9 @@ void sendMessage() {
     lastMessageSendComplete = true;
     SEND_TIMER = (float)debugTimer.read_us();
 
-    #ifdef DEBUG
-    mRserial.printf("SEND: %d %d %f\n", sendBytesCount, messageOutBuffer.parameterNumber, messageOutBuffer.parameterValue);
-    #endif
+    // #ifdef DEBUG
+    // mRserial.printf("SEND: %d %d %f\n", sendBytesCount, messageOutBuffer.parameterNumber, messageOutBuffer.parameterValue);
+    // #endif
 }
 
 
@@ -74,31 +74,36 @@ void receiveMessage() {
     // receive a command
     debugTimer.reset();
     debugTimer.start();
-    RECEIVED_BYTES_COUNT = (float)socket.recvfrom(&dump_address, (char *)&messageInBuffer, sizeof(messageInBuffer));
+    int receivedBytesCount = (float)socket.recvfrom(&dump_address, (char *)&messageInBuffer, sizeof(messageInBuffer));
     RECEIVE_TIMER = (float)debugTimer.read_us();
-    // if a command has been received
-    if (RECEIVED_BYTES_COUNT > 0.5f)
-    {
 
-        if (messageInBuffer.parameterNumber >= 0) {
-            parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
-        }
-        else {
-            specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
-        }
-        // for debugging
-        LAST_COMMAND_ID = messageInBuffer.parameterNumber;
-        LAST_COMMAND_VALUE = messageInBuffer.value;
-        // blue led blinkiblinki on successfull receive
-        blueLed = 1;
-    }
-    else
-    {
-        // red led on until next loop cycle
-        redLed = 1;
+    if (receivedBytesCount > 0) {
+        prepareInMessage();
     }
 
-    #ifdef DEBUG
-    mRserial.printf("RECV: %f %d %f\n", RECEIVED_BYTES_COUNT, messageInBuffer.parameterNumber, messageInBuffer.value);
-    #endif
+    // // if a command has been received
+    // if (RECEIVED_BYTES_COUNT > 0.5f)
+    // {
+    //
+    //     if (messageInBuffer.parameterNumber >= 0) {
+    //         parameters[messageInBuffer.parameterNumber] = messageInBuffer.parameterValueInt;
+    //     }
+    //     else {
+    //         specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.parameterValueInt;
+    //     }
+    //     // for debugging
+    //     // LAST_COMMAND_ID = messageInBuffer.parameterNumber;
+    //     // LAST_COMMAND_VALUE = messageInBuffer.parameterValueInt;
+    //     // blue led blinkiblinki on successfull receive
+    //     // blueLed = 1;
+    // }
+    // else
+    // {
+    //     // red led on until next loop cycle
+    //     // redLed = 1;
+    // }
+    //
+    // #ifdef DEBUG
+    // mRserial.printf("RECV: %f %d %f\n", RECEIVED_BYTES_COUNT, messageInBuffer.parameterNumber, messageInBuffer.value);
+    // #endif
 }

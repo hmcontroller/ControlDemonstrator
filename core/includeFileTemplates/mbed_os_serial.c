@@ -63,10 +63,10 @@ void microRayInit() {
 
 int serialTransmissionLagCounter = 0;
 void sendMessage() {
-    if (!transmitRecordBuffer) {
+    if (sendMode == LIVE_MODE) {
         prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
     }
-    
+
     if(timeOfLastCompletedMessage == timeOfLastSend) {
         timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
         mrSerial.write((uint8_t *)&startOut, 1, serialEventWriteCompleteOne, SERIAL_EVENT_TX_COMPLETE);
@@ -88,6 +88,11 @@ void receiveMessage() {
         extractMessage(foundMessageStartPosition);
         prepareInMessage();
     }
+}
+
+
+void recordMessage() {
+    prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
 }
 
 void readIncomingBytesIntoBuffer() {

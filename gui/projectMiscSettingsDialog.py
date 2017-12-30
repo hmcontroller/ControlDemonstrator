@@ -78,6 +78,8 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
         dialog.checkBoxDebugMode.setChecked(dialog.settings.debugMode)
 
         dialog.checkBoxRecordMode.setChecked(dialog.settings.recordMode)
+        dialog.lineEditRecordBufferLength.setText(str(dialog.settings.recordBufferLength))
+        dialog.checkBoxPauseAfterRecord.setChecked(dialog.settings.pauseAfterRecord)
 
         dialog.refreshComPortsCombo()
         for i, portDescription in enumerate(dialog.lastComPortsListing):
@@ -122,6 +124,7 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
                 dialog.settings.recordBufferLength = int(dialog.lineEditRecordBufferLength.text())
             except:
                 dialog.settings.recordBufferLength = 1
+            dialog.settings.pauseAfterRecord = dialog.checkBoxPauseAfterRecord.isChecked()
 
             return QtGui.QDialog.Accepted
         else:

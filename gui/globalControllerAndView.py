@@ -11,12 +11,17 @@ from gui.messageBoard import MessageBoardWidget, MessageBoard
 from core.communicator import CommState
 
 class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
-    def __init__(self, commandList, communicator, mainWindow, serialMonitor, projectSettings, parent=None):
+
+    pausePlot = QtCore.pyqtSignal()
+
+    def __init__(self, commandList, communicator, mainWindow, serialMonitor, projectSettings, channels, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setupUi(self)
 
         self.projectSettings = projectSettings
         self.projectSettings.changed.connect(self.projectSettingsChanged)
+
+        self.channels = channels
 
         self.setMinimumHeight(72)
         self.setMaximumHeight(72)
@@ -108,7 +113,7 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.toolButtonDebugMode.setIcon(self.debugDisabledIcon)
         self.toolButtonDebugMode.clicked.connect(self.toggleDebugMode)
         self.toolButtonDebugMode.setFixedSize(QtCore.QSize(32, 32))
-        self.toolButtonDebugMode.setIconSize(QtCore.QSize(20, 20))
+        self.toolButtonDebugMode.setIconSize(QtCore.QSize(15, 15))
 
 
 
@@ -173,10 +178,12 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         cmd = self.commandList.getSpecialCommandById(-3)
         if self.projectSettings.recordMode is True:
             self.projectSettings.recordMode = False
-            cmd.setValue(0.0)
+            cmd.setValue(0)
+            self.channels.clearWithActualTime()
         else:
             self.projectSettings.recordMode = True
-            cmd.setValue(1.0)
+            cmd.setValue(1)
+            self.channels.clearWithActualTime()
 
     def toggleDebugMode(self):
         if self.projectSettings.debugMode is True:

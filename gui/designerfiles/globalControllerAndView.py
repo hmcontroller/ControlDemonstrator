@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'globalControllerAndView.ui'
 #
-# Created: Tue Nov 28 12:34:09 2017
+# Created: Tue Nov 28 20:52:38 2017
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -36,9 +36,19 @@ class Ui_GlobalControllerAndView(object):
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.gridLayout = QtGui.QGridLayout()
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.toolButtonSerialMonitor = QtGui.QToolButton(GlobalControllerAndView)
+        self.toolButtonSerialMonitor.setText(_fromUtf8(""))
+        self.toolButtonSerialMonitor.setObjectName(_fromUtf8("toolButtonSerialMonitor"))
+        self.gridLayout.addWidget(self.toolButtonSerialMonitor, 1, 1, 1, 1)
+        self.toolButtonSendPending = QtGui.QToolButton(GlobalControllerAndView)
+        self.toolButtonSendPending.setObjectName(_fromUtf8("toolButtonSendPending"))
+        self.gridLayout.addWidget(self.toolButtonSendPending, 0, 0, 1, 1)
+        self.toolButtonCancelPending = QtGui.QToolButton(GlobalControllerAndView)
+        self.toolButtonCancelPending.setObjectName(_fromUtf8("toolButtonCancelPending"))
+        self.gridLayout.addWidget(self.toolButtonCancelPending, 1, 0, 1, 1)
         self.toolButtonRecordMode = QtGui.QToolButton(GlobalControllerAndView)
         self.toolButtonRecordMode.setObjectName(_fromUtf8("toolButtonRecordMode"))
-        self.gridLayout.addWidget(self.toolButtonRecordMode, 0, 2, 1, 1)
+        self.gridLayout.addWidget(self.toolButtonRecordMode, 1, 2, 1, 1)
         self.toolButtonPlay = QtGui.QToolButton(GlobalControllerAndView)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -47,20 +57,10 @@ class Ui_GlobalControllerAndView(object):
         self.toolButtonPlay.setSizePolicy(sizePolicy)
         self.toolButtonPlay.setMaximumSize(QtCore.QSize(100, 100))
         self.toolButtonPlay.setObjectName(_fromUtf8("toolButtonPlay"))
-        self.gridLayout.addWidget(self.toolButtonPlay, 0, 1, 1, 1)
-        self.toolButtonSerialMonitor = QtGui.QToolButton(GlobalControllerAndView)
-        self.toolButtonSerialMonitor.setText(_fromUtf8(""))
-        self.toolButtonSerialMonitor.setObjectName(_fromUtf8("toolButtonSerialMonitor"))
-        self.gridLayout.addWidget(self.toolButtonSerialMonitor, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.toolButtonPlay, 0, 2, 1, 1)
         self.toolButtonDebugMode = QtGui.QToolButton(GlobalControllerAndView)
         self.toolButtonDebugMode.setObjectName(_fromUtf8("toolButtonDebugMode"))
-        self.gridLayout.addWidget(self.toolButtonDebugMode, 1, 2, 1, 1)
-        self.toolButtonSendPending = QtGui.QToolButton(GlobalControllerAndView)
-        self.toolButtonSendPending.setObjectName(_fromUtf8("toolButtonSendPending"))
-        self.gridLayout.addWidget(self.toolButtonSendPending, 0, 0, 1, 1)
-        self.toolButtonCancelPending = QtGui.QToolButton(GlobalControllerAndView)
-        self.toolButtonCancelPending.setObjectName(_fromUtf8("toolButtonCancelPending"))
-        self.gridLayout.addWidget(self.toolButtonCancelPending, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.toolButtonDebugMode, 0, 1, 1, 1)
         self.horizontalLayout.addLayout(self.gridLayout)
         self.messageTextEdit = QtGui.QTextEdit(GlobalControllerAndView)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -80,9 +80,9 @@ class Ui_GlobalControllerAndView(object):
 
     def retranslateUi(self, GlobalControllerAndView):
         GlobalControllerAndView.setWindowTitle(_translate("GlobalControllerAndView", "Form", None))
+        self.toolButtonSendPending.setText(_translate("GlobalControllerAndView", "...", None))
+        self.toolButtonCancelPending.setText(_translate("GlobalControllerAndView", "...", None))
         self.toolButtonRecordMode.setText(_translate("GlobalControllerAndView", "...", None))
         self.toolButtonPlay.setText(_translate("GlobalControllerAndView", "...", None))
         self.toolButtonDebugMode.setText(_translate("GlobalControllerAndView", "...", None))
-        self.toolButtonSendPending.setText(_translate("GlobalControllerAndView", "...", None))
-        self.toolButtonCancelPending.setText(_translate("GlobalControllerAndView", "...", None))
 

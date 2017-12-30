@@ -30,6 +30,15 @@ class MeasurementData(QtCore.QObject):
             for i in range(0, self.bufferLength):
                 channel.appendSilently(0.0)
 
+    def clearWithActualTime(self):
+        try:
+            latest = self.timeValues[len(self.timeValues) - 1]
+        except:
+            latest = 0.0
+        self.clear(latest)
+        for channel in self.channels:
+            self.channelChanged.emit(self.timeValues, channel)
+
     def addChannel(self, channel):
         self.channels.append(channel)
         channel.changed.connect(self.channelConfigurationChanged)

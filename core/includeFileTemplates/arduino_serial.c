@@ -26,7 +26,7 @@ void microRayInit() {
 
 
 void sendMessage() {
-    if (!transmitRecordBuffer) {
+    if (sendMode == LIVE_MODE) {
         prepareOutMessage(micros());
     }
 
@@ -44,7 +44,7 @@ void sendMessage() {
     Serial.write(8);
 
     // wait for message to complete during recording transfer
-    if (transmitRecordBuffer) {
+    if (sendMode == RECORD_TRANSMISSION_MODE) {
         while (Serial.availableForWrite() < serialBufferSize) {
             // wait
         }

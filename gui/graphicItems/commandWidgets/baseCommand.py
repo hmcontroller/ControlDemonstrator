@@ -36,6 +36,7 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.command.minChangedPerWidget.connect(self.minChangedPerWidget)
         self.command.maxChangedPerWidget.connect(self.maxChangedPerWidget)
         self.command.pendingModeChanged.connect(self.pendingModeChanged)
+        self.command.pendingValueCanceled.connect(self.pendingValueCanceled)
 
         # use these parameters to paint your warnings
         self.showHoverIndication = False
@@ -47,7 +48,7 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.command.sameValueReceived.connect(self.sameValueReceived)
         self.command.differentValueReceived.connect(self.differentValueReceived)
         self.command.commTimeOut.connect(self.commTimeOut)
-        self.command.pendingValueCanceled.connect(self.pendingValueWasCanceled)
+        self.command.pendingValueCanceled.connect(self.pendingValueCanceled)
 
         # here brushes are defined to give a constant look of all warnings
         self.userInputWarningBrush = QtGui.QBrush(USER_INPUT_WARNING_COLOR)
@@ -59,20 +60,20 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.clearUserInputWarningTimer = QtCore.QTimer()
         self.clearUserInputWarningTimer.setSingleShot(True)
         self.clearUserInputWarningTimer.timeout.connect(self.clearUserInputWarning)
-        self.userInputWarningDuration = 200
+        self.userInputWarningDuration = 500
 
         # this timer generates a blink effect for the concerned warning
         self.commFailureWarningBlinkTimer = QtCore.QTimer()
         self.commFailureWarningBlinkTimer.setSingleShot(False)
         self.commFailureWarningBlinkTimer.timeout.connect(self.toggleCommFailureIndication)
-        self.commFailureWarningBlinkInterval = 200
+        self.commFailureWarningBlinkInterval = 500
         self.commFailureWarningBlinkTimer.start(self.commFailureWarningBlinkInterval)
 
         # this timer generates a blink effect for the concerned warning
         self.differentValueReceivedWarningBlinkTimer = QtCore.QTimer()
         self.differentValueReceivedWarningBlinkTimer.setSingleShot(False)
         self.differentValueReceivedWarningBlinkTimer.timeout.connect(self.toggleDifferentValueReceivedWarningIndication)
-        self.differentValueReceivedBlinkInterval = 200
+        self.differentValueReceivedBlinkInterval = 500
 
         # this timer stops a started warning after some time
         self.clearDifferentValueReceivedWarningTimer = QtCore.QTimer()
@@ -114,8 +115,9 @@ class BaseCommand(QtGui.QGraphicsObject):
 
     @QtCore.pyqtSlot()
     def commTimeOut(self):
-        self.commFailureWarningBlinkTimer.start(self.commFailureWarningBlinkInterval)
-        self.update()
+        if hasattr(self, "commFailureWarningBlinkTimer"):
+            self.commFailureWarningBlinkTimer.start(self.commFailureWarningBlinkInterval)
+            self.update()
 
     @QtCore.pyqtSlot()
     def toggleCommFailureIndication(self):
@@ -145,11 +147,11 @@ class BaseCommand(QtGui.QGraphicsObject):
         self.update()
 
     @QtCore.pyqtSlot()
-    def pendingModeChanged(self, command):
+    def pendingModeChanged(self, command=None):
         self.update()
 
     @QtCore.pyqtSlot()
-    def pendingValueWasCanceled(self, command=None):
+    def pendingValueCanceled(self, command=None):
         self.update()
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):

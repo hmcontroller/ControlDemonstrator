@@ -8,10 +8,14 @@ class IdColorLabelCheckbox(QtGui.QWidget):
     changed = QtCore.pyqtSignal(int, int)
     keyPressed = QtCore.pyqtSignal(object)
 
-    def __init__(self, parent=None, id=None, color=None):
+    def __init__(self, parent=None, channel=None, id=None, color=None):
         super(IdColorLabelCheckbox, self).__init__(parent)
         self.id = id
         self.color = color
+
+        self.channel = channel
+
+        # self.setStyleSheet("background-color:green;")
 
         verticalLayout = QtGui.QVBoxLayout(self)
 
@@ -22,6 +26,7 @@ class IdColorLabelCheckbox(QtGui.QWidget):
         verticalLayout.addLayout(horizontalLayout)
         verticalLayout.setMargin(0)
         verticalLayout.setSpacing(6)
+        verticalLayout.setContentsMargins(0, 3, 0, 3)
 
         self.checkBox = CheckBoxWithoutKeyPress()
         self.checkBox.keyPressed.connect(self.keyPressed)
@@ -30,8 +35,8 @@ class IdColorLabelCheckbox(QtGui.QWidget):
         self.label = ClickableLabel()
         self.label.clicked.connect(self.changeState)
 
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        # sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         self.label.setSizePolicy(sizePolicy)
 
@@ -72,6 +77,10 @@ class IdColorLabelCheckbox(QtGui.QWidget):
         minWidth += self.label.size().width()
         # self.setMinimumSize(minWidth, minHeight)
 
+        self.overlay = OverlayDrawing(self)
+        self.overlay.setGeometry(0, 0, 300, 50)
+        self.overlay.hide()
+
 
         self.checkBox.stateChanged.connect(self.statiChanged)
 
@@ -79,6 +88,8 @@ class IdColorLabelCheckbox(QtGui.QWidget):
         self.valueLabel.setText(value)
 
     def changeState(self):
+        if self.channel.isRequested is False:
+            return
         currentState = self.checkBox.checkState()
         if currentState == QtCore.Qt.Checked:
            self.checkBox.setCheckState(QtCore.Qt.Unchecked)
@@ -93,6 +104,13 @@ class IdColorLabelCheckbox(QtGui.QWidget):
 
     def setChecked(self, value):
         self.checkBox.setChecked(value)
+
+    def setRequested(self, value):
+        if value is True:
+            self.overlay.hide()
+        else:
+            self.overlay.show()
+
 
     def mousePressEvent(self, QMouseEvent):
         self.changeState()
@@ -120,12 +138,12 @@ class ColouredRectangle(QtGui.QWidget):
         self.path.lineTo(0, self.heightInPixels)
         self.path.closeSubpath()
 
-
     def paintEvent(self, QPaintEvent):
         painter = QtGui.QPainter()
         painter.begin(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
         painter.fillPath(self.path, self.brush)
+
 
     def boundingRect(self):
         return QtCore.QRectF(0, 0, self.widthInPixels, self.heightInPixels)
@@ -156,3 +174,27 @@ class ClickableLabel(QtGui.QLabel):
 
     def mousePressEvent(self, QMouseEvent):
         self.clicked.emit()
+
+
+
+class OverlayDrawing(QtGui.QWidget):
+    def __init__(self, parent=None):
+        super(OverlayDrawing, self).__init__(parent)
+        self.parent = parent
+        self.color = QtGui.QColor(200, 200, 200, 220)
+        # self.color = QtGui.QColor(QtCore.Qt.red)
+        self.brush = QtGui.QBrush(self.color)
+        self.brush.setStyle(QtCore.Qt.SolidPattern)
+        self.height = 50
+
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setVerticalStretch(0)
+        self.setSizePolicy(sizePolicy)
+
+    def paintEvent(self, qPaintEvent):
+        super(OverlayDrawing, self).paintEvent(qPaintEvent)
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        width = self.geometry().width()
+        painter.fillRect(0, 0, width, self.height, self.brush)
+

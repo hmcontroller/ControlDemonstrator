@@ -126,14 +126,21 @@ class IncludeFileMaker(object):
                 "SUPPRESS_PARAM_CONFIRMATION", "1",
                 nameWidth=self.nameWidth, valueWidth=self.valueWidth)
 
+        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "RECORD_BUFFER_LENGTH", self.projectSettings.recordBufferLength,
+            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
+
+        pauseAfterRecord = 0
+        if self.projectSettings.pauseAfterRecord is True:
+            pauseAfterRecord = 1
+        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "PAUSE_AFTER_RECORD", pauseAfterRecord,
+            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
+
         if self.projectSettings.debugMode is True:
             self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
                 "mrDEBUG", "",
                 nameWidth=self.nameWidth, valueWidth=self.valueWidth)
-
-        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
-            "RECORD_BUFFER_LENGTH", self.projectSettings.recordBufferLength,
-            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
 
 
 
@@ -182,8 +189,9 @@ class IncludeFileMaker(object):
 
 
     def addSerialAsExtern(self):
-        if self.projectSettings.controllerFrameworkAndInterface == "MBED_OS_SERIAL":
-            self.headerFileString += "extern Serial mrSerial;"
+        pass
+        # if self.projectSettings.controllerFrameworkAndInterface == "MBED_OS_SERIAL":
+        #     self.headerFileString += "extern Serial mrSerial;"
 
 
 
@@ -220,9 +228,9 @@ class IncludeFileMaker(object):
         self.cFileString += "\n};\n\n"
 
 
-        self.cFileString += "float specialCommands[] = {\n"
+        self.cFileString += "int specialCommands[] = {\n"
         for command in self.commands.specialCmdList:
-            self.cFileString += "    {}f,\n".format(command.initialValue)
+            self.cFileString += "    {},\n".format(command.initialValue)
         self.cFileString = self.cFileString.rstrip(",\n")
         self.cFileString += "\n};\n\n"
 

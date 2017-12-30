@@ -60,6 +60,7 @@ class ConfigFileManager(object):
         projectSettingsDescriptions["debugMode"] = projectSettings.debugMode
         projectSettingsDescriptions["recordMode"] = projectSettings.recordMode
         projectSettingsDescriptions["recordBufferLength"] = projectSettings.recordBufferLength
+        projectSettingsDescriptions["pauseAfterRecord"] = projectSettings.pauseAfterRecord
 
         tabSettings = list()
         for aTabSetting in projectSettings.tabSettingsDescriptions:
@@ -242,6 +243,9 @@ class ConfigFileManager(object):
 
         if "recordBufferLength" in settingsDescriptions:
             projectMiscSettings.recordBufferLength = settingsDescriptions["recordBufferLength"]
+
+        if "pauseAfterRecord" in settingsDescriptions:
+            projectMiscSettings.pauseAfterRecord = settingsDescriptions["pauseAfterRecord"]
 
         tabSettingsDescriptions = settingsDescriptions["tabs"]
 

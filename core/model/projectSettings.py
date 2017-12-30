@@ -26,6 +26,7 @@ class ProjectSettings(QtCore.QObject):
         self._debugMode = False
         self._recordMode = False
         self._recordBufferLength = 1
+        self._pauseAfterRecord = False
 
     def somethingChanged(self):
         self._unsavedChanges = True
@@ -157,6 +158,15 @@ class ProjectSettings(QtCore.QObject):
     @recordBufferLength.setter
     def recordBufferLength(self, value):
         self._recordBufferLength = value
+        self.somethingChanged()
+
+    @property
+    def pauseAfterRecord(self):
+        return self._pauseAfterRecord
+
+    @pauseAfterRecord.setter
+    def pauseAfterRecord(self, value):
+        self._pauseAfterRecord = value
         self.somethingChanged()
 
     @property

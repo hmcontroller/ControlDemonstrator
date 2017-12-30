@@ -35,18 +35,24 @@ class CommandList(QtCore.QObject):
         loopTimeExceededCheck = Command()
         loopTimeExceededCheck.id = -1
         loopTimeExceededCheck._value = 0
+        loopTimeExceededCheck.initialValue = 0
+        loopTimeExceededCheck.setValueType(Command.INT_TYPE)
         loopTimeExceededCheck.name = "loopCycleTimeExceededByUs"
         self.appendSpecialCommand(loopTimeExceededCheck)
 
         serialTransmissionLag = Command()
         serialTransmissionLag.id = -2
         serialTransmissionLag._value = 0
+        serialTransmissionLag.initialValue = 0
+        serialTransmissionLag.setValueType(Command.INT_TYPE)
         serialTransmissionLag.name = "serialTransmissionLag"
         self.appendSpecialCommand(serialTransmissionLag)
 
         recordModeEnable = Command()
         recordModeEnable.id = -3
         recordModeEnable._value = 0
+        recordModeEnable.initialValue = 0
+        recordModeEnable.setValueType(Command.INT_TYPE)
         recordModeEnable.name = "mrRecordModeEnable"
         self.appendSpecialCommand(recordModeEnable)
 

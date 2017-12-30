@@ -33,7 +33,7 @@ class TabSmallGenericView(QtGui.QWidget, Ui_tabGenericView):
 
         self.controller = ControllerSmallGeneric(self.commands, self.channels)
 
-        self.globalController = GlobalControllerAndView(self.commands, self.communicator, mainWindow, serialMonitor, self.projectSettings)
+        self.globalController = GlobalControllerAndView(self.commands, self.communicator, mainWindow, serialMonitor, self.projectSettings, self.channels)
 
         self.commandViewLayout.insertWidget(0, self.globalController, 0)
 
@@ -44,6 +44,7 @@ class TabSmallGenericView(QtGui.QWidget, Ui_tabGenericView):
 
         self.plotter = PlotWidget(self.channels, self.applicationSettings, self.projectSettings)
         self.plotLayout.insertWidget(0, self.plotter, 0)
+        self.globalController.pausePlot.connect(self.plotter.pause)
 
         self.splitter.splitterMoved.connect(self.splitterMoved)
 

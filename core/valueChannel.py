@@ -11,6 +11,7 @@ class ValueChannel(QtCore.QObject):
     newValueArrived = QtCore.pyqtSignal(object)
     changed = QtCore.pyqtSignal(object)
     showChanged = QtCore.pyqtSignal(object)
+    requestedChanged = QtCore.pyqtSignal(object)
 
     def __init__(self, bufferLength):
         super(ValueChannel, self).__init__()
@@ -95,6 +96,7 @@ class ValueChannel(QtCore.QObject):
     def isRequested(self, value):
         self._isRequested = value
         self.changed.emit(self)
+        self.requestedChanged.emit(self)
 
     @property
     def messageData(self):
