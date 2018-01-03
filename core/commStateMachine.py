@@ -32,133 +32,133 @@ class CommStateMachine(QtCore.QObject):
     def doTransit(self, transition):
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        if self.state == CommState.UNKNOWN:
+        if self.state.state == CommState.UNKNOWN:
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
             if transition == self.CONNECTION_LOST:
-                self.state == CommState.NO_CONN
+                self.state.state = CommState.NO_CONN
 
             elif transition == self.CONNECTION_ESTABLISHED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.MALFORMED_DATA_RECEIVED:
-                self.state == CommState.WRONG_CONFIG
+                self.state.state = CommState.WRONG_CONFIG
 
             elif transition == self.WELL_FORMED_DATA_RECEIVED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.CONNECTION_TIMED_OUT:
-                self.state == CommState.COMM_TIMEOUT
+                self.state.state = CommState.COMM_TIMEOUT
 
             elif transition == self.RECORDING_TRANSMISSION_COMPLETE:
-                self.state == CommState.PAUSE
+                self.state.state = CommState.PAUSE
 
             elif transition == self.PLAY_MODE_ENABLED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.PLAY_MODE_DISABLED:
-                self.state == CommState.PAUSE
+                self.state.state = CommState.PAUSE
 
             elif transition == self.DEBUG_MODE_ENABLED:
-                self.state == CommState.DEBUG
+                self.state.state = CommState.DEBUG
 
             elif transition == self.DEBUG_MODE_DISABLED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.RECORD_MODE_ENABLED:
-                self.state == CommState.RECORD
+                self.state.state = CommState.RECORD
 
             elif transition == self.RECORD_MODE_DISABLED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
 
 
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        elif self.state == CommState.COMM_OK:
+        elif self.state.state == CommState.COMM_OK:
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
             if transition == self.CONNECTION_LOST:
-                self.state == CommState.NO_CONN
+                self.state.state = CommState.NO_CONN
 
             elif transition == self.CONNECTION_ESTABLISHED:
                 pass
 
             elif transition == self.MALFORMED_DATA_RECEIVED:
-                self.state == CommState.WRONG_CONFIG
+                self.state.state = CommState.WRONG_CONFIG
 
             elif transition == self.WELL_FORMED_DATA_RECEIVED:
                 pass
 
             elif transition == self.CONNECTION_TIMED_OUT:
-                self.state == CommState.COMM_TIMEOUT
+                self.state.state = CommState.COMM_TIMEOUT
 
             elif transition == self.RECORDING_TRANSMISSION_COMPLETE:
-                self.state == CommState.PAUSE
+                self.state.state = CommState.PAUSE
 
             elif transition == self.PLAY_MODE_ENABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.PLAY_MODE_DISABLED:
-                self.state == CommState.PAUSE
+                self.state.state = CommState.PAUSE
 
             elif transition == self.DEBUG_MODE_ENABLED:
-                self.state == CommState.DEBUG
+                self.state.state = CommState.DEBUG
 
             elif transition == self.DEBUG_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.RECORD_MODE_ENABLED:
-                self.state == CommState.RECORD
+                self.state.state = CommState.RECORD
 
             elif transition == self.RECORD_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        elif self.state == CommState.WRONG_CONFIG:
+        elif self.state.state == CommState.WRONG_CONFIG:
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
             if transition == self.CONNECTION_LOST:
-                self.state == CommState.NO_CONN
+                self.state.state = CommState.NO_CONN
 
             elif transition == self.CONNECTION_ESTABLISHED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.MALFORMED_DATA_RECEIVED:
                 pass
 
             elif transition == self.WELL_FORMED_DATA_RECEIVED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.CONNECTION_TIMED_OUT:
-                self.state == CommState.COMM_TIMEOUT
+                self.state.state = CommState.COMM_TIMEOUT
 
             elif transition == self.RECORDING_TRANSMISSION_COMPLETE:
                 pass
 
             elif transition == self.PLAY_MODE_ENABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.PLAY_MODE_DISABLED:
-                self.state == CommState.PAUSE
+                self.state.state = CommState.PAUSE
 
             elif transition == self.DEBUG_MODE_ENABLED:
-                self.state == CommState.DEBUG
+                self.state.state = CommState.DEBUG
 
             elif transition == self.DEBUG_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.RECORD_MODE_ENABLED:
-                self.state == CommState.RECORD
+                self.state.state = CommState.RECORD
 
             elif transition == self.RECORD_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
 
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        elif self.state == CommState.NO_CONN:
+        elif self.state.state == CommState.NO_CONN:
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
@@ -166,132 +166,132 @@ class CommStateMachine(QtCore.QObject):
                 pass
 
             elif transition == self.CONNECTION_ESTABLISHED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.MALFORMED_DATA_RECEIVED:
-                self.state == CommState.WRONG_CONFIG
+                self.state.state = CommState.WRONG_CONFIG
 
             elif transition == self.WELL_FORMED_DATA_RECEIVED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.CONNECTION_TIMED_OUT:
                 pass
 
             elif transition == self.RECORDING_TRANSMISSION_COMPLETE:
-                self.state == CommState.PAUSE
+                self.state.state = CommState.PAUSE
 
             elif transition == self.PLAY_MODE_ENABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.PLAY_MODE_DISABLED:
-                self.state == CommState.PAUSE
+                self.state.state = CommState.PAUSE
 
             elif transition == self.DEBUG_MODE_ENABLED:
-                self.state == CommState.DEBUG
+                self.state.state = CommState.DEBUG
 
             elif transition == self.DEBUG_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.RECORD_MODE_ENABLED:
-                self.state == CommState.RECORD
+                self.state.state = CommState.RECORD
 
             elif transition == self.RECORD_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
 
 
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        elif self.state == CommState.COMM_TIMEOUT:
+        elif self.state.state == CommState.COMM_TIMEOUT:
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
             if transition == self.CONNECTION_LOST:
-                self.state == CommState.NO_CONN
+                self.state.state = CommState.NO_CONN
 
             elif transition == self.CONNECTION_ESTABLISHED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.MALFORMED_DATA_RECEIVED:
-                self.state == CommState.WRONG_CONFIG
+                self.state.state = CommState.WRONG_CONFIG
 
             elif transition == self.WELL_FORMED_DATA_RECEIVED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.CONNECTION_TIMED_OUT:
                 pass
 
             elif transition == self.RECORDING_TRANSMISSION_COMPLETE:
-                self.state == CommState.PAUSE
+                self.state.state = CommState.PAUSE
 
             elif transition == self.PLAY_MODE_ENABLED:
-                self.state == CommState.PLAY
-
-            elif transition == self.PAUSE_MODE_ENABLED:
-                self.state == CommState.PAUSE
-
-            elif transition == self.DEBUG_MODE_ENABLED:
-                self.state == CommState.DEBUG
-
-            elif transition == self.DEBUG_MODE_DISABLED:
-                self.state == CommState.PLAY
-
-            elif transition == self.RECORD_MODE_ENABLED:
-                self.state == CommState.RECORD
-
-            elif transition == self.RECORD_MODE_DISABLED:
-                self.state == CommState.PLAY
-
-
-
-
-
-
-        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        elif self.state == CommState.PLAY:
-        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-            if transition == self.CONNECTION_LOST:
-                self.state == CommState.NO_CONN
-
-            elif transition == self.CONNECTION_ESTABLISHED:
-                self.state == CommState.COMM_OK
-
-            elif transition == self.MALFORMED_DATA_RECEIVED:
-                self.state == CommState.WRONG_CONFIG
-
-            elif transition == self.WELL_FORMED_DATA_RECEIVED:
-                self.state == CommState.COMM_OK
-
-            elif transition == self.CONNECTION_TIMED_OUT:
-                self.state == CommState.COMM_TIMEOUT
-
-            elif transition == self.RECORDING_TRANSMISSION_COMPLETE:
-                self.state == CommState.PAUSE
-
-            elif transition == self.PLAY_MODE_ENABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.PLAY_MODE_DISABLED:
-                self.state == CommState.PAUSE
+                self.state.state = CommState.PAUSE
 
             elif transition == self.DEBUG_MODE_ENABLED:
-                self.state == CommState.DEBUG
+                self.state.state = CommState.DEBUG
 
             elif transition == self.DEBUG_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.RECORD_MODE_ENABLED:
-                self.state == CommState.RECORD
+                self.state.state = CommState.RECORD
 
             elif transition == self.RECORD_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
+
 
 
 
 
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        elif self.state == CommState.PAUSE:
+        elif self.state.state == CommState.PLAY:
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+            if transition == self.CONNECTION_LOST:
+                self.state.state = CommState.NO_CONN
+
+            elif transition == self.CONNECTION_ESTABLISHED:
+                self.state.state = CommState.COMM_OK
+
+            elif transition == self.MALFORMED_DATA_RECEIVED:
+                self.state.state = CommState.WRONG_CONFIG
+
+            elif transition == self.WELL_FORMED_DATA_RECEIVED:
+                self.state.state = CommState.COMM_OK
+
+            elif transition == self.CONNECTION_TIMED_OUT:
+                self.state.state = CommState.COMM_TIMEOUT
+
+            elif transition == self.RECORDING_TRANSMISSION_COMPLETE:
+                self.state.state = CommState.PAUSE
+
+            elif transition == self.PLAY_MODE_ENABLED:
+                self.state.state = CommState.PLAY
+
+            elif transition == self.PLAY_MODE_DISABLED:
+                self.state.state = CommState.PAUSE
+
+            elif transition == self.DEBUG_MODE_ENABLED:
+                self.state.state = CommState.DEBUG
+
+            elif transition == self.DEBUG_MODE_DISABLED:
+                self.state.state = CommState.PLAY
+
+            elif transition == self.RECORD_MODE_ENABLED:
+                self.state.state = CommState.RECORD
+
+            elif transition == self.RECORD_MODE_DISABLED:
+                self.state.state = CommState.PLAY
+
+
+
+
+
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        elif self.state.state == CommState.PAUSE:
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
             if transition == self.CONNECTION_LOST:
@@ -313,19 +313,19 @@ class CommStateMachine(QtCore.QObject):
                 pass
 
             elif transition == self.PLAY_MODE_ENABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.PLAY_MODE_DISABLED:
                 pass
 
             elif transition == self.DEBUG_MODE_ENABLED:
-                self.state == CommState.DEBUG
+                self.state.state = CommState.DEBUG
 
             elif transition == self.DEBUG_MODE_DISABLED:
                 pass
 
             elif transition == self.RECORD_MODE_ENABLED:
-                self.state == CommState.RECORD
+                self.state.state = CommState.RECORD
 
             elif transition == self.RECORD_MODE_DISABLED:
                 pass
@@ -337,7 +337,7 @@ class CommStateMachine(QtCore.QObject):
 
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        elif self.state == CommState.DEBUG:
+        elif self.state.state == CommState.DEBUG:
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
@@ -360,22 +360,22 @@ class CommStateMachine(QtCore.QObject):
                 pass
 
             elif transition == self.PLAY_MODE_ENABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
-            elif transition == self.PAUSE_MODE_ENABLED:
-                self.state == CommState.PAUSE
+            elif transition == self.PLAY_MODE_DISABLED:
+                self.state.state = CommState.PAUSE
 
             elif transition == self.DEBUG_MODE_ENABLED:
                 pass
 
             elif transition == self.DEBUG_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.RECORD_MODE_ENABLED:
-                self.state == CommState.RECORD
+                self.state.state = CommState.RECORD
 
             elif transition == self.RECORD_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
 
 
@@ -383,18 +383,18 @@ class CommStateMachine(QtCore.QObject):
 
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        elif self.state == CommState.RECORD:
+        elif self.state.state == CommState.RECORD:
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
             if transition == self.CONNECTION_LOST:
-                self.state == CommState.NO_CONN
+                self.state.state = CommState.NO_CONN
 
             elif transition == self.CONNECTION_ESTABLISHED:
-                self.state == CommState.COMM_OK
+                self.state.state = CommState.COMM_OK
 
             elif transition == self.MALFORMED_DATA_RECEIVED:
-                self.state == CommState.WRONG_CONFIG
+                self.state.state = CommState.WRONG_CONFIG
 
             elif transition == self.WELL_FORMED_DATA_RECEIVED:
                 pass
@@ -403,42 +403,42 @@ class CommStateMachine(QtCore.QObject):
                 pass
 
             elif transition == self.RECORDING_TRANSMISSION_COMPLETE:
-                self.state == CommState.PAUSE
+                self.state.state = CommState.PAUSE
 
             elif transition == self.PLAY_MODE_ENABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
-            elif transition == self.PAUSE_MODE_ENABLED:
-                self.state == CommState.PAUSE
+            elif transition == self.PLAY_MODE_DISABLED:
+                self.state.state = CommState.PAUSE
 
             elif transition == self.DEBUG_MODE_ENABLED:
-                self.state == CommState.DEBUG
+                self.state.state = CommState.DEBUG
 
             elif transition == self.DEBUG_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
             elif transition == self.RECORD_MODE_ENABLED:
                 pass
 
             elif transition == self.RECORD_MODE_DISABLED:
-                self.state == CommState.PLAY
+                self.state.state = CommState.PLAY
 
 
 
     # def connectionLost(self):
-    #     if self.state == CommState.UNKNOWN:
+    #     if self.state.state = CommState.UNKNOWN:
     #         pass
-    #     elif self.state == CommState.COMM_OK:
+    #     elif self.state.state = CommState.COMM_OK:
     #         pass
-    #     elif self.state == CommState.COMM_PAUSED:
+    #     elif self.state.state = CommState.COMM_PAUSED:
     #         pass
-    #     elif self.state == CommState.COMM_TIMEOUT:
+    #     elif self.state.state = CommState.COMM_TIMEOUT:
     #         pass
-    #     elif self.state == CommState.WRONG_CONFIG:
+    #     elif self.state.state = CommState.WRONG_CONFIG:
     #         pass
-    #     elif self.state == CommState.NO_CONN:
+    #     elif self.state.state = CommState.NO_CONN:
     #         pass
-    #     elif self.state == CommState.DEBUG:
+    #     elif self.state.state = CommState.DEBUG:
     #         pass
-    #     elif self.state == CommState.RECORD:
+    #     elif self.state.state = CommState.RECORD:
     #         pass

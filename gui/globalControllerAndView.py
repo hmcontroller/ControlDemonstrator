@@ -9,6 +9,7 @@ from gui.resources import *
 from gui.messageBoard import MessageBoardWidget, MessageBoard
 
 from core.model.commState import CommState
+from core.commStateMachine import CommStateMachine
 
 class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
 
@@ -34,7 +35,8 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
 
         self.commandList = commandList
         self.communicator = communicator
-        self.communicator.commStateChanged.connect(self.commStateChanged)
+        self.communicator.commStateMachine.state.changed.connect(self.commStateChanged)
+        self.communicator.commStateMachine.state.interfaceChanged.connect(self.commInterfaceChanged)
         self.communicator.commandSend.connect(self.reportCommandSend)
         self.communicator.microcontrollerStatus.changed.connect(self.statusFlagsChanged)
 
@@ -155,7 +157,8 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.messageBoard = MessageBoardWidget(mainWindow)
         self.horizontalLayout.insertWidget(0, self.messageBoard, 0)
 
-        self.commStateChanged(self.communicator.commState)
+        self.commStateChanged(self.communicator.commStateMachine.state)
+        self.commInterfaceChanged(self.communicator.commStateMachine.state)
         self.projectSettingsChanged(self.projectSettings)
 
     def projectSettingsChanged(self, settings):
@@ -170,10 +173,12 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
             self.toolButtonRecordMode.setIcon(self.recordDisabledIcon)
 
     def togglePlayPause(self):
-        if self.communicator.commState._play is True:
+        if self.communicator.commStateMachine.state.play is True:
             self.communicator.disconnectFromController()
+            self.communicator.commStateMachine.doTransit(CommStateMachine.PLAY_MODE_DISABLED)
         else:
             self.communicator.connectToController()
+            self.communicator.commStateMachine.doTransit(CommStateMachine.PLAY_MODE_ENABLED)
 
     def toggleRecordMode(self):
         cmd = self.commandList.getSpecialCommandById(-3)
@@ -181,16 +186,20 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
             self.projectSettings.recordMode = False
             cmd.setValue(0)
             self.channels.clearWithActualTime()
+            self.communicator.commStateMachine.doTransit(CommStateMachine.RECORD_MODE_DISABLED)
         else:
             self.projectSettings.recordMode = True
             cmd.setValue(1)
             self.channels.clearWithActualTime()
+            self.communicator.commStateMachine.doTransit(CommStateMachine.RECORD_MODE_ENABLED)
 
     def toggleDebugMode(self):
         if self.projectSettings.debugMode is True:
             self.projectSettings.debugMode = False
+            self.communicator.commStateMachine.doTransit(CommStateMachine.DEBUG_MODE_DISABLED)
         else:
             self.projectSettings.debugMode = True
+            self.communicator.commStateMachine.doTransit(CommStateMachine.DEBUG_MODE_ENABLED)
 
     def commStateChanged(self, commState):
 
@@ -212,6 +221,8 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
             self.messageBoard.setComStateMessage(MessageBoard.WAITING)
         elif commState.state == CommState.UNKNOWN:
             self.messageBoard.setComStateMessage(MessageBoard.UNKNOWN)
+        elif commState.state == CommState.PLAY:
+            self.messageBoard.setComStateMessage(MessageBoard.PLAY)
         elif commState.state == CommState.PAUSE:
             self.messageBoard.setComStateMessage(MessageBoard.PAUSE)
         elif commState.state == CommState.DEBUG:
@@ -219,8 +230,10 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         elif commState.state == CommState.RECORD:
             self.messageBoard.setComStateMessage(MessageBoard.RECORD)
 
-        self.messageBoard.setComInfo(commState.interfaceDescription)
 
+
+    def commInterfaceChanged(self, state):
+        self.messageBoard.setComInfo(state.interfaceDescription)
 
     # def commStateBoxBlink(self):
     #     pal = QtGui.QPalette()

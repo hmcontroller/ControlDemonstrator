@@ -13,6 +13,8 @@ from PyQt4 import QtCore
 
 from core.hardwareInterfaces import UdpInterface, UsbHidInterface, SerialInterface
 from core.model.microcontrollerStatus import MicrocontrollerStatus
+from core.commStateMachine import CommStateMachine
+from core.model.commState import CommState
 
 from gui.constants import AVAILABLE_FRAMEWORKS
 
@@ -32,8 +34,10 @@ class Communicator(QtCore.QObject):
         self._messageMap = None
 
         self.microcontrollerStatus = MicrocontrollerStatus()
+        self.commStateMachine = CommStateMachine(CommState(projectSettings))
+        # self.commStateMachine.state.changed.emit(self.commStateMachine.state)
 
-        self.interface = SerialInterface(applicationSettings, projectSettings, commands)
+        self.interface = SerialInterface(applicationSettings, projectSettings, commands, self.commStateMachine)
         self.setInterface(messageMap)
 
         # self.commState = CommState()
@@ -66,16 +70,16 @@ class Communicator(QtCore.QObject):
         for availableFramework in AVAILABLE_FRAMEWORKS:
             if self._projectSettings.controllerFrameworkAndInterface == availableFramework["macroName"]:
                 if availableFramework["interface"] == "UDP":
-                    self.interface = UdpInterface(self._applicationSettings, self._projectSettings, self._commands)
+                    self.interface = UdpInterface(self._applicationSettings, self._projectSettings, self._commands, self.commStateMachine)
                     self.interface.setMessageMap(messageMap)
-                    self.interface._commState.changed.connect(self.commStateChanged)
+                    self.interface.commStateMachine.state.changed.connect(self.commStateChanged)
                     self.interface.commandSend.connect(self.commandSend)
                     self.connectToController()
                     return
                 elif availableFramework["interface"] == "SERIAL":
-                    self.interface = SerialInterface(self._applicationSettings, self._projectSettings, self._commands)
+                    self.interface = SerialInterface(self._applicationSettings, self._projectSettings, self._commands, self.commStateMachine)
                     self.interface.setMessageMap(messageMap)
-                    self.interface._commState.changed.connect(self.commStateChanged)
+                    self.interface.commStateMachine.state.changed.connect(self.commStateChanged)
                     self.interface.commandSend.connect(self.commandSend)
                     self.connectToController()
                     return

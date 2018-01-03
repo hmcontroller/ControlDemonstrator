@@ -5,21 +5,20 @@ import errno
 import struct
 import serial
 import serial.tools.list_ports
-import time
 from collections import deque
 import datetime
 
 from PyQt4 import QtCore
 
 from core.messageData import MessageData
-from core.model.commState import CommState
+from core.commStateMachine import CommStateMachine
 from core.model.receivedData import ReceivedData
 
 class HardwareInterface(QtCore.QObject):
 
     commandSend = QtCore.pyqtSignal(object)
 
-    def __init__(self, applicationSettings, projectSettings, commands):
+    def __init__(self, applicationSettings, projectSettings, commands, commStateMachine):
         super(HardwareInterface, self).__init__()
 
         self._applicationSettings = applicationSettings
@@ -28,7 +27,7 @@ class HardwareInterface(QtCore.QObject):
         self._messageSize = None
         self._messageMap = None
 
-        self._commState = CommState(projectSettings)
+        self.commStateMachine = commStateMachine
 
         self._directCommandSendBuffer = deque()
         self._pendingCommandSendBuffer = deque()
@@ -60,26 +59,9 @@ class HardwareInterface(QtCore.QObject):
     def disconnectFromController(self):
         raise NotImplementedError()
 
-    def toggleCommunication(self):
-        if self._commState.play is False:
-            self._commState.play = True
-            self.connectToController()
-        else:
-            self._commState.play = False
-            self.disconnectFromController()
-
     def checkCommTimeOut(self):
-        if self._commState.state == CommState.COMM_OK:
-            if datetime.datetime.now() - self._commState.timeOfLastReceive > datetime.timedelta(seconds=2):
-                if self._commState.state == CommState.COMM_TIMEOUT:
-                    return
-                else:
-                    self._commState.state = CommState.COMM_TIMEOUT
-                    # if self._connectionPollTimer.isActive() is False:
-                    #     self._connectionPollTimer.start(1000)
-            else:
-                if self._commState.state != CommState.COMM_OK and self._commState.state != CommState.DEBUG:
-                    self._commState.state = CommState.COMM_OK
+        if datetime.datetime.now() - self.commStateMachine.state.timeOfLastReceive > datetime.timedelta(seconds=2):
+            self.commStateMachine.doTransit(CommStateMachine.CONNECTION_TIMED_OUT)
 
     def send(self, commandList):
         raise NotImplementedError()
@@ -106,7 +88,7 @@ class HardwareInterface(QtCore.QObject):
 
         for rawPacket in rawPackets:
             if len(rawPacket) != self._messageMap.messageLengthInBytes:
-                self._commState.state = CommState.WRONG_CONFIG
+                self.commStateMachine.doTransit(CommStateMachine.MALFORMED_DATA_RECEIVED)
                 return unpackedMessages
 
             currentParameterNumber = 0
@@ -153,14 +135,31 @@ class HardwareInterface(QtCore.QObject):
 
             unpackedMessages.append(message)
 
-        if len(unpackedMessages) > 0 and self._commState.state != CommState.DEBUG:
-            self._commState.state = CommState.COMM_OK
+        if len(unpackedMessages) > 0:
+            self.commStateMachine.doTransit(CommStateMachine.WELL_FORMED_DATA_RECEIVED)
         return unpackedMessages
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class UdpInterface(HardwareInterface):
-    def __init__(self, applicationSettings, projectSettings, commands):
-        super(UdpInterface, self).__init__(applicationSettings, projectSettings, commands)
+    def __init__(self, applicationSettings, projectSettings, commands, commState):
+        super(UdpInterface, self).__init__(applicationSettings, projectSettings, commands, commState)
         self._socket = None
 
     def sendRawCommand(self, command):
@@ -168,36 +167,28 @@ class UdpInterface(HardwareInterface):
 
 
     def connectToController(self):
-
-        self._commState.play = True
-        self._commState.interfaceDescription = u"{}\n{}".format(self._projectSettings.computerIP, self._projectSettings.udpPort)
+        self.commStateMachine.status.interfaceDescription = u"{}\n{}".format(self._projectSettings.computerIP, self._projectSettings.udpPort)
 
         try:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self._socket.bind((self._projectSettings.computerIP, self._projectSettings.udpPort))
             self._socket.setblocking(False)
             self._socket.settimeout(0)
-            if self._commState.state != CommState.DEBUG:
-                self._commState.state = CommState.COMM_OK
+            self.commStateMachine.doTransit(CommStateMachine.CONNECTION_ESTABLISHED)
         except socket.error, e:
             if e.args[0] == errno.WSAEADDRNOTAVAIL:
-                self._commState.state = CommState.NO_CONN
+                self.commStateMachine.doTransit(CommStateMachine.CONNECTION_LOST)
                 if self._connectionPollTimer.isActive() is False:
                     self._connectionPollTimer.start(1000)
 
     def disconnectFromController(self):
-
-        self._commState.play = False
-
         self._socket.close()
-        self._commState.state = CommState.PAUSE
 
     def send(self, commandList):
-        if len(commandList.changedCommands) > 0 and self._commState.play is True:
+        if len(commandList.changedCommands) > 0: # and self._commState.play is True:
             commandToSend = commandList.changedCommands.popleft()
             packedData = self._packCommand(commandToSend)
             self._socket.sendto(packedData, (self._projectSettings.controllerIP, self._projectSettings.udpPort))
-            # print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue()
             self.commandSend.emit(commandToSend)
 
     def sendPerTimer(self):
@@ -210,7 +201,7 @@ class UdpInterface(HardwareInterface):
         receivedData = ReceivedData()
         packets = list()
 
-        if self._commState.play is False:
+        if self.commStateMachine.status.play is False:
             return packets
 
         while True:
@@ -223,13 +214,13 @@ class UdpInterface(HardwareInterface):
                 if e.args[0] == errno.EWOULDBLOCK:
                     pass
                 elif e.args[0] == errno.WSAEADDRNOTAVAIL:
-                    self._commState.state = CommState.NO_CONN
+                    self.commStateMachine.doTransit(CommStateMachine.CONNECTION_LOST)
                     if self._connectionPollTimer.isActive() is False:
                         self._connectionPollTimer.start(1000)
                 elif e.args[0] == errno.WSAEMSGSIZE:
-                    self._commState.state = CommState.WRONG_CONFIG
+                    self.commStateMachine.doTransit(CommStateMachine.MALFORMED_DATA_RECEIVED)
                 elif e.args[0] == errno.WSAEINVAL:
-                    self._commState.state = CommState.NO_CONN
+                    self.commStateMachine.doTransit(CommStateMachine.CONNECTION_LOST)
                     if self._connectionPollTimer.isActive() is False:
                         self._connectionPollTimer.start(1000)
                 elif e.args[0] == errno.EBADF:
@@ -239,7 +230,7 @@ class UdpInterface(HardwareInterface):
                 break
 
         if len(packets) > 0:
-            self._commState.timeOfLastReceive = datetime.datetime.now()
+            self.commStateMachine.state.timeOfLastReceive = datetime.datetime.now()
 
         receivedData.messages = self._unpack(packets)
         for aPacket in packets:
@@ -250,15 +241,48 @@ class UdpInterface(HardwareInterface):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class UsbHidInterface(HardwareInterface):
-    def __init__(self, applicationSettings, projectSettings, commands):
-        super(UsbHidInterface, self).__init__(applicationSettings, projectSettings, commands)
+    def __init__(self, applicationSettings, projectSettings, commands, commState):
+        super(UsbHidInterface, self).__init__(applicationSettings, projectSettings, commands, commState)
 
     def send(self, commandList):
         pass
 
     def receive(self):
         pass
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class SerialInterface(HardwareInterface):
@@ -274,8 +298,8 @@ class SerialInterface(HardwareInterface):
         921600
     ]
 
-    def __init__(self, applicationSettings, projectSettings, commands):
-        super(SerialInterface, self).__init__(applicationSettings, projectSettings, commands)
+    def __init__(self, applicationSettings, projectSettings, commands, commState):
+        super(SerialInterface, self).__init__(applicationSettings, projectSettings, commands, commState)
 
 
 
@@ -298,6 +322,7 @@ class SerialInterface(HardwareInterface):
 
         self.outputToRawMonitor = True
 
+
     def sendRawCommand(self, command):
         if hasattr(self, "ser"):
             if self.ser.is_open:
@@ -314,10 +339,11 @@ class SerialInterface(HardwareInterface):
         else:
             self.connectToController()
 
+
     @QtCore.pyqtSlot(object)
     def connectToController(self):
 
-        self._commState.play = True
+        self.commStateMachine.state.play = True
 
         if self.ser is not None:
             if self.ser.isOpen():
@@ -326,39 +352,22 @@ class SerialInterface(HardwareInterface):
 
         ports = serial.tools.list_ports.comports()
         if len(ports) == 0:
-            self._commState.state = CommState.NO_CONN
+            self.commStateMachine.doTransit(CommStateMachine.CONNECTION_LOST)
             if self._connectionPollTimer.isActive() is False:
                 self._connectionPollTimer.start(1000)
             return
 
-        # portToConnectTo = ports[0]
         portToConnectTo = None
         for port in ports:
             if port.description == self._projectSettings.comPortDescription:
                 portToConnectTo = port
-                self._commState.interfaceDescription = u"{}".format(port.device)
+                self.commStateMachine.state.interfaceDescription = u"{}".format(port.device)
 
         if portToConnectTo is None:
-            self._commState.state = CommState.NO_CONN
+            self.commStateMachine.doTransit(CommStateMachine.CONNECTION_LOST)
             if self._connectionPollTimer.isActive() is False:
                 self._connectionPollTimer.start(1000)
             return
-
-
-        # datt müssma nochmal sauber neu machen
-
-        # if portToConnectTo is None and self._portOfferingInProgress is False:
-        #     # self.alternatePortAvailable.emit(1)
-        #     # self._commState.state = CommState.NO_CONN
-        #     self._portOfferingInProgress = True
-        # else:
-        #     if self._portOfferingInProgress is True:
-        #         # self.reEstablishedWantedPort.emit(1)
-        #         self._portOfferingInProgress = False
-        #
-        # if portToConnectTo is None:
-        #     return
-
 
 
         self.ser.baudrate = self.projectSettings.comPortBaudRate # 921600 # 115200
@@ -370,10 +379,9 @@ class SerialInterface(HardwareInterface):
 
         try:
             self.ser.open()
-            if self._commState.state != CommState.DEBUG:
-                self._commState.state = CommState.COMM_OK
+            self.commStateMachine.doTransit(CommStateMachine.CONNECTION_ESTABLISHED)
         except serial.SerialException:
-            self._commState.state = CommState.NO_CONN
+            self.commStateMachine.doTransit(CommStateMachine.CONNECTION_LOST)
             if self._connectionPollTimer.isActive() is False:
                 self._connectionPollTimer.start(1000)
 
@@ -381,20 +389,15 @@ class SerialInterface(HardwareInterface):
         return serial.tools.list_ports.comports()
 
     def disconnectFromController(self):
-
         self._connectionPollTimer.stop()
-
-        self._commState.play = False
-
+        self.commStateMachine.state.play = False
         self.ser.close()
-        self._commState.state = CommState.PAUSE
 
     def send(self, commandList):
         if not self.ser.is_open:
             return
 
-        # return
-        if len(commandList.changedCommands) > 0 and self._commState.play is True:
+        if len(commandList.changedCommands) > 0:
             commandToSend = commandList.changedCommands.popleft()
 
             # startByte = struct.pack("<1B", 7)
@@ -402,18 +405,10 @@ class SerialInterface(HardwareInterface):
             # stopByte = struct.pack("<1B", 57)
 
             self.ser.write(self.outStartByte)
-            # self.ser.write(self.outStartByte + packedData + self.outStopByte)
-            # self.ser.write(packedData)
-
-            # time.sleep(0.0005)
             for aChar in packedData:
                 self.ser.write(aChar)
-                # print aChar
                 # time.sleep(0.0005)
             self.ser.write(self.outStopByte)
-            # self.ser.write(packedData)
-
-            # print "command send", commandToSend.id, commandToSend.name, commandToSend.getValue(), packedData, len(packedData)
 
             self.commandSend.emit(commandToSend)
 
@@ -422,7 +417,7 @@ class SerialInterface(HardwareInterface):
         messages = list()
         messagePositions = list()
 
-        if self._commState.play is False:
+        if self.commStateMachine.state.play is False:
             return receivedData
 
         rawMessageAsChars = ""
@@ -439,7 +434,6 @@ class SerialInterface(HardwareInterface):
                 unpackedBytes = self.unpackAsBytes(messageToProcess)
                 backupedUnpackedBytes = self.unpackAsBytes(messageToProcess)
 
-                # print incomingMessage
 
                 messagePositions.append(self.findNextFullMessagePosition(0, unpackedBytes))
 
@@ -452,8 +446,7 @@ class SerialInterface(HardwareInterface):
                     # prevent overfill of 'buffer'
                     if len(self.lastMessageRemainder) > self._messageMap.messageLengthInBytes * 3:
                         self.lastMessageRemainder = b""
-                        if self._commState.state != CommState.DEBUG:
-                            self._commState.state = CommState.WRONG_CONFIG
+                        self.commStateMachine.doTransit(CommStateMachine.MALFORMED_DATA_RECEIVED)
 
                     return receivedData
 
@@ -473,7 +466,7 @@ class SerialInterface(HardwareInterface):
                     messages.append(messageToProcess[start : stop])
 
         except serial.SerialException:
-            # self._commState.state = CommState.NO_CONN
+            self.commStateMachine.doTransit(CommStateMachine.CONNECTION_LOST)
             if self._connectionPollTimer.isActive() is False:
                 self._connectionPollTimer.start(1000)
             return receivedData
@@ -482,7 +475,7 @@ class SerialInterface(HardwareInterface):
         receivedData.messages = self._unpack(messages)
 
         if len(receivedData.messages) > 0:
-            self._commState.timeOfLastReceive = datetime.datetime.now()
+            self.commStateMachine.state.timeOfLastReceive = datetime.datetime.now()
 
 
         return receivedData

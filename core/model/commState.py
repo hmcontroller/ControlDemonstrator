@@ -9,6 +9,7 @@ from PyQt4 import QtCore
 class CommState(QtCore.QObject):
 
     changed = QtCore.pyqtSignal(object)
+    interfaceChanged = QtCore.pyqtSignal(object)
 
     UNKNOWN = 0
     COMM_OK = 1
@@ -25,7 +26,7 @@ class CommState(QtCore.QObject):
         super(CommState, self).__init__()
         self.projectSettings = projectSettings
         self._play = True
-        self._state = self.UNKNOWN
+        self._state = self.PLAY
         self._interfaceDescription = u""
         self.timeOfLastReceive = datetime.datetime.now() - datetime.timedelta(hours=1000)
         self._specialFailures = u""

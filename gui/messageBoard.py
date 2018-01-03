@@ -134,6 +134,7 @@ class MessageBoard(QtGui.QGraphicsObject):
     WRONG_CONFIG = BoardMessage("wrong\nconfig", QtGui.QPen(QtCore.Qt.red))
     TIME_OUT = BoardMessage("Timeout,\nwaiting...", QtGui.QPen(QtCore.Qt.red))
     UNKNOWN = BoardMessage("Unknown\nstate", QtGui.QPen(QtGui.QColor(255, 140, 0)))
+    PLAY = BoardMessage("connecting", QtGui.QPen(QtGui.QColor(255, 140, 0)))
     PAUSE = BoardMessage("Com paused", QtGui.QPen(QtGui.QColor(255, 140, 0)))
     DEBUG = BoardMessage("Debug mode", QtGui.QPen(QtGui.QColor(255, 140, 0)))
     RECORD = BoardMessage("recording...", QtGui.QPen(QtGui.QColor(255, 140, 0)))
