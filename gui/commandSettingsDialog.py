@@ -28,6 +28,8 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
 
         self.commands = commands
 
+        self.tableWidget.clear()
+
         self.tableWidget.setColumnCount(9)
         self.tableWidget.setRowCount(len(self.commands))
         self.tableWidget.verticalHeader().setVisible(False)
@@ -157,7 +159,7 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
 
 
     def cellClicked(self, row, column):
-        if column == 7:
+        if column == self.DELETE_COLUMN:
             self.removeCommandFromTable(row)
 
 

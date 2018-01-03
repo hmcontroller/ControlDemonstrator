@@ -33,7 +33,7 @@ class PlotWidget(QtGui.QWidget):
 
         self.plotWidget = pyqtgraph.PlotWidget()
         self.plotWidget.setXRange(-float(self.applicationSettings.bufferLength)*(self.projectSettings.controllerLoopCycleTimeInUs / float(1000000)), 0)
-        self.plotWidget.setYRange(-1000, 1000)
+        self.plotWidget.setYRange(-1, 1)
         self.plotWidget.showGrid(x=True, y=True)
         self.horizontalLayoutPlotArea.addWidget(self.plotWidget)
 
@@ -222,22 +222,25 @@ class PlotWidget(QtGui.QWidget):
     def updateValueLabels(self):
         timeOfVerticalLine = self.verticalLine.getXPos()
 
-        # timeOfVerticalLineUs = timeOfVerticalLine * 1000000
+        if timeOfVerticalLine == 0:
+            indexAtVerticalLine = -1
+        else:
+            # timeOfVerticalLineUs = timeOfVerticalLine * 1000000
 
-        firstCurve = None
-        for key, something in self.channelControllers.iteritems():
-            firstCurve = something["plotCurve"]
+            firstCurve = None
+            for key, something in self.channelControllers.iteritems():
+                firstCurve = something["plotCurve"]
 
-        xData, yData = firstCurve.getData()
-        highestTime = xData[-1]
-        timeOfVerticalLine += highestTime
+            xData, yData = firstCurve.getData()
+            highestTime = xData[-1]
+            timeOfVerticalLine += highestTime
 
-        # search for index 
-        indexAtVerticalLine = 0
-        for i in range(len(xData)):
-            if xData[i] > timeOfVerticalLine:
-                indexAtVerticalLine = i - 1
-                break
+            # search for index
+            indexAtVerticalLine = 0
+            for i in range(len(xData)):
+                if xData[i] > timeOfVerticalLine:
+                    indexAtVerticalLine = i - 1
+                    break
 
         valuesCount = len(self.channels.timeValues)
         # indexAtVerticalLine = int(self.applicationSettings.bufferLength + ((timeOfVerticalLine * 1000000) / self.projectSettings.controllerLoopCycleTimeInUs) - 1)
@@ -248,7 +251,7 @@ class PlotWidget(QtGui.QWidget):
         for key, something in self.channelControllers.iteritems():
             xData, yData = something["plotCurve"].getData()
             # if 0 <= indexAtVerticalLine < self.applicationSettings.bufferLength:
-            if 0 <= indexAtVerticalLine < valuesCount:
+            if -1 <= indexAtVerticalLine < valuesCount:
                 yDataAtIndex = yData[indexAtVerticalLine]
                 something["controllerBox"].setValue(str(yDataAtIndex))
             else:

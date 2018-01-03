@@ -21,7 +21,7 @@ class TankGauge(QtGui.QGraphicsItem):
         self.relativeDisplayValue = 0
 
         self.lowerLimit = 0
-        self.upperLimit = 0
+        self.upperLimit = 1
         self.value = 0
         self.isRelativeScale = True
         self.isValueBelowLimit = False
@@ -60,6 +60,10 @@ class TankGauge(QtGui.QGraphicsItem):
 
         self.textRect = QtCore.QRectF(self.width + 10, self.calculatedPixelLevel + 10, self.width + 40, self.calculatedPixelLevel - 10)
         self.warningTextRect = QtCore.QRectF(0, self.tankTopPixel, self.width, self.tankBottomPixel - self.tankTopPixel)
+
+        self.calculatePixelLevel()
+        self.reposition()
+        # self.update()
 
         # self.warningBelowPath = QtGui.QPainterPath()
         # for i in range(0, 3):

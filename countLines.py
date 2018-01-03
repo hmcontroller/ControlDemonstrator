@@ -4,8 +4,8 @@ ownPath = os.path.dirname(os.path.abspath(__file__))
 ownName = os.path.basename(os.path.abspath(__file__))
 print "ownPath", ownPath, "ownName", ownName
 
+
 allInterestingFiles = []
-counter = 0
 
 def iterateFolders(path):
     allFiles = os.listdir(path)
@@ -28,37 +28,56 @@ def iterateFolders(path):
         if not filePath.endswith(".py"):
             continue
         allInterestingFiles.append(filePath)
-    #print allInterestingFiles
 
-def count(withoutComments=False):
+def count():
     print
 
     counter = 0
+    blankLinesCounter = 0
+    commentsCounter = 0
+    fileCounter = 0
+
+    insideBlockComment = False
 
     for aPath in allInterestingFiles:
         counterPerFile = 0
         with open(aPath, "r") as f:
+            fileCounter += 1
             for line in f:
-                if line == "":
-                    continue
-                if withoutComments:
-                    if line.strip().startswith("#"):
-                        continue
-                counter += 1
-                counterPerFile += 1
+                if line.strip() == "":
+                    blankLinesCounter += 1
+                if line.strip().startswith("#"):
+                    commentsCounter += 1
+                if line.strip().startswith('"""'):
+                    insideBlockComment = True
+                    commentsCounter += 1
+                if insideBlockComment is True:
+                    commentsCounter += 1
+                if line.strip().endswith('"""'):
+                    insideBlockComment = False
+                if insideBlockComment is False:
+                    counter += 1
+                    counterPerFile += 1
         print "count {} -> {}".format(aPath, counterPerFile)
-    return counter
+    return counter, blankLinesCounter, commentsCounter, fileCounter
 
 
 
 def run():
     iterateFolders(ownPath)
-    print "found {} lines.".format(count(withoutComments=True))
-    try:
-        input("Press Enter to close...")
-    except:
-        pass
-    print "bye"
+    counter, blankLinesCounter, commentsCounter, fileCounter = count()
+    print
+    print "{} files".format(fileCounter)
+    print "{} lines of code".format(counter)
+    print "{} lines with comments".format(commentsCounter)
+    print "{} blank lines".format(blankLinesCounter)
+    print "{} total lines".format(counter + blankLinesCounter + commentsCounter)
+    print "{:.1f} code lines per file".format(float(counter) / float(fileCounter))
+    print "\nThank you, byebye."
+    # try:
+    #     input("Press Enter to close...")
+    # except:
+    #     pass
 
 
 if __name__ == "__main__": run()

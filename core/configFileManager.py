@@ -306,6 +306,50 @@ class ConfigFileManager(object):
         # mData1.name = "lastLoopDuration"
         # messageInformation.append(mData1)
 
+
+        # status first byte
+        mData2 = MessageData()
+        # mData2.id = channelCounter
+        channelCounter += 1
+        mData2.positionInBytes = positionCounter
+        mData2.lengthInBytes = 2
+        # mData2.lengthInBytes = 2
+        positionCounter += mData2.lengthInBytes
+        mData2.dataType = str
+        # mData2.unpackString = "<I"  # unsigned int
+        mData2.unpackString = "<h"
+        mData2.name = "statusFlagsOne"
+        messageInformation.append(mData2)
+
+        # # status second byte
+        # mData3 = MessageData()
+        # # mData3.id = channelCounter
+        # channelCounter += 1
+        # mData3.positionInBytes = positionCounter
+        # mData3.lengthInBytes = 1
+        # # mData3.lengthInBytes = 1
+        # positionCounter += mData3.lengthInBytes
+        # mData3.dataType = str
+        # # mData3.unpackString = "<I"  # unsigned int
+        # mData3.unpackString = "<c" # char
+        # mData3.name = "statusFlagsTwo"
+        # messageInformation.append(mData3)
+
+        # parameterNumber
+        mData4 = MessageData()
+        # mData4.id = channelCounter
+        channelCounter += 1
+        mData4.positionInBytes = positionCounter
+        mData4.lengthInBytes = 2
+        # mData4.lengthInBytes = 2
+        positionCounter += mData4.lengthInBytes
+        mData4.dataType = int
+        # mData4.unpackString = "<I"  # unsigned int
+        mData4.unpackString = "<h" # signed short
+        mData4.name = "parameterNumber"
+        messageInformation.append(mData4)
+
+
         suppressParameterConfirmation = False
         if isinstance(projectSettingsOrDescriptions, ProjectSettings):
             if projectSettingsOrDescriptions.suppressParameterConfirmation is True:
@@ -322,19 +366,6 @@ class ConfigFileManager(object):
 
         if suppressParameterConfirmation is False:
 
-            # parameterNumber
-            mData2 = MessageData()
-            # mData2.id = channelCounter
-            channelCounter += 1
-            mData2.positionInBytes = positionCounter
-            mData2.lengthInBytes = 4
-            # mData2.lengthInBytes = 4
-            positionCounter += mData2.lengthInBytes
-            mData2.dataType = int
-            # mData2.unpackString = "<I"  # unsigned int
-            mData2.unpackString = "<i" # signed int
-            mData2.name = "parameterNumber"
-            messageInformation.append(mData2)
 
             # parameterValue
             mData3 = MessageData()

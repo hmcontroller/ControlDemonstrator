@@ -64,3 +64,27 @@ class MessageInterpreter():
         return cmd
 
 
+
+    @staticmethod
+    def checkStatusFlags(status, messages):
+        for i, message in enumerate(messages):
+            if message.name == "statusFlagsOne":
+                statusBytes = int(message.value)
+                firstFlag = statusBytes & (1 << 0)
+                secondFlag = statusBytes & (1 << 1)
+                thirdFlag = statusBytes & (1 << 2)
+
+                if firstFlag > 0:
+                    status.badData = True
+                else:
+                    status.badData = False
+
+                if secondFlag > 0:
+                    status.skippedTransmission = True
+                else:
+                    status.skippedTransmission = False
+
+            if message.name == "statusFlagsTwo":
+                pass
+
+        return 0

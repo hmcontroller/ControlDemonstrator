@@ -34,6 +34,13 @@ unsigned char startOut = 7;
 unsigned char endOut = 8;
 
 
+void microRayInit() {
+    messageOutBuffer.statusFlags = 0;
+    dutyCycleTimer.start();
+    serialReceiver.attach(&readIncomingBytesIntoBuffer, 0.00001f);
+}
+
+
 event_callback_t serialEventWriteCompleteOne = serialSendCompleteOne;
 event_callback_t serialEventWriteCompleteTwo = serialSendCompleteTwo;
 event_callback_t serialEventWriteCompleteThree = serialSendCompleteThree;
@@ -41,7 +48,6 @@ event_callback_t serialEventWriteCompleteThree = serialSendCompleteThree;
 
 int debugCounterSend = 0;
 void serialSendCompleteOne(int events) {
-    lastMessageSendComplete = false;
     mrSerial.write((uint8_t *)&messageOutBuffer, sizeof(messageOutBuffer), serialEventWriteCompleteTwo, SERIAL_EVENT_TX_COMPLETE);
 }
 
@@ -50,31 +56,36 @@ void serialSendCompleteTwo(int events) {
 }
 
 void serialSendCompleteThree(int events) {
-    timeOfLastCompletedMessage = timeOfLastSend;
+    // timeOfLastCompletedMessage = timeOfLastSend;
     lastMessageSendComplete = true;
 }
 
 
 
-void microRayInit() {
-    dutyCycleTimer.start();
-    serialReceiver.attach(&readIncomingBytesIntoBuffer, 0.00001f);
-}
-
 int serialTransmissionLagCounter = 0;
 void sendMessage() {
-    if (sendMode == LIVE_MODE) {
-        prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
-    }
 
-    if(timeOfLastCompletedMessage == timeOfLastSend) {
-        timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
+    // if(timeOfLastCompletedMessage == timeOfLastSend) {
+    if(lastMessageSendComplete) {
+        if (sendMode == LIVE_MODE) {
+            prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
+        }
+        // timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
+        lastMessageSendComplete = false;
         mrSerial.write((uint8_t *)&startOut, 1, serialEventWriteCompleteOne, SERIAL_EVENT_TX_COMPLETE);
     }
     else {
-        serialTransmissionLagCounter++;
-        serialTransmissionLag = (float)serialTransmissionLagCounter;
-        timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
+        if (sendMode == RECORD_TRANSMISSION_MODE) {
+            while(lastMessageSendComplete == false) {
+                // wait
+            }
+        }
+        else {
+            messageOutBuffer.statusFlags |= (1 << STATUS_SKIPPED);
+            serialTransmissionLagCounter++;
+            serialTransmissionLag = (float)serialTransmissionLagCounter;
+            // timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
+        }
     }
 }
 

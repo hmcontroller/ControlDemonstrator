@@ -120,6 +120,14 @@ class GenericCommand(BaseCommand):
         self.pendingValuePen = QtGui.QPen()
         self.pendingValuePen.setColor(PENDING_VALUE_COLOR)
 
+
+        # timer needed to stop a started userInputWarning
+        self.clearUserInputWarningTimer = QtCore.QTimer()
+        self.clearUserInputWarningTimer.setSingleShot(True)
+        self.clearUserInputWarningTimer.timeout.connect(self.clearUserInputWarning)
+        self.userInputWarningDuration = 1000
+
+
     # def minLostFocus(self):
     #     self.triggerNoChangeWarning()
     #     self.minLineEdit.setText(self.minLineEdit.oldValueText)
@@ -173,6 +181,11 @@ class GenericCommand(BaseCommand):
         # self.valueLineEdit.setText(str(self.command.getValue()))
         # self.valueLineEdit.setCursorPosition(0)
         self.update()
+
+    def activateUserInputWarning(self):
+        super(GenericCommand, self).activateUserInputWarning()
+        self.clearUserInputWarningTimer.start(self.userInputWarningDuration)
+
 
     def valueEditingReturnPressed(self):
         self.valueLineEdit.selectAll()

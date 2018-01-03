@@ -28,7 +28,7 @@ class HardwareInterface(QtCore.QObject):
         self._messageSize = None
         self._messageMap = None
 
-        self._commState = CommState()
+        self._commState = CommState(projectSettings)
 
         self._directCommandSendBuffer = deque()
         self._pendingCommandSendBuffer = deque()
@@ -69,7 +69,7 @@ class HardwareInterface(QtCore.QObject):
             self.disconnectFromController()
 
     def checkCommTimeOut(self):
-        if self._commState.state == CommState.COMM_ESTABLISHED:
+        if self._commState.state == CommState.COMM_OK:
             if datetime.datetime.now() - self._commState.timeOfLastReceive > datetime.timedelta(seconds=2):
                 if self._commState.state == CommState.COMM_TIMEOUT:
                     return
@@ -78,8 +78,8 @@ class HardwareInterface(QtCore.QObject):
                     # if self._connectionPollTimer.isActive() is False:
                     #     self._connectionPollTimer.start(1000)
             else:
-                if self._commState.state != CommState.COMM_ESTABLISHED:
-                    self._commState.state = CommState.COMM_ESTABLISHED
+                if self._commState.state != CommState.COMM_OK and self._commState.state != CommState.DEBUG:
+                    self._commState.state = CommState.COMM_OK
 
     def send(self, commandList):
         raise NotImplementedError()
@@ -153,8 +153,8 @@ class HardwareInterface(QtCore.QObject):
 
             unpackedMessages.append(message)
 
-        if len(unpackedMessages) > 0:
-            self._commState.state = CommState.COMM_ESTABLISHED
+        if len(unpackedMessages) > 0 and self._commState.state != CommState.DEBUG:
+            self._commState.state = CommState.COMM_OK
         return unpackedMessages
 
 
@@ -177,7 +177,8 @@ class UdpInterface(HardwareInterface):
             self._socket.bind((self._projectSettings.computerIP, self._projectSettings.udpPort))
             self._socket.setblocking(False)
             self._socket.settimeout(0)
-            self._commState.state = CommState.COMM_ESTABLISHED
+            if self._commState.state != CommState.DEBUG:
+                self._commState.state = CommState.COMM_OK
         except socket.error, e:
             if e.args[0] == errno.WSAEADDRNOTAVAIL:
                 self._commState.state = CommState.NO_CONN
@@ -189,7 +190,7 @@ class UdpInterface(HardwareInterface):
         self._commState.play = False
 
         self._socket.close()
-        self._commState.state = CommState.COMM_PAUSED
+        self._commState.state = CommState.PAUSE
 
     def send(self, commandList):
         if len(commandList.changedCommands) > 0 and self._commState.play is True:
@@ -369,7 +370,8 @@ class SerialInterface(HardwareInterface):
 
         try:
             self.ser.open()
-            self._commState.state = CommState.COMM_ESTABLISHED
+            if self._commState.state != CommState.DEBUG:
+                self._commState.state = CommState.COMM_OK
         except serial.SerialException:
             self._commState.state = CommState.NO_CONN
             if self._connectionPollTimer.isActive() is False:
@@ -385,7 +387,7 @@ class SerialInterface(HardwareInterface):
         self._commState.play = False
 
         self.ser.close()
-        self._commState.state = CommState.COMM_PAUSED
+        self._commState.state = CommState.PAUSE
 
     def send(self, commandList):
         if not self.ser.is_open:

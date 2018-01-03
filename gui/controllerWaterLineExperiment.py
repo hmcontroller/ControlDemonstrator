@@ -87,14 +87,14 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         nodeControllerIn.setPos(300, 200)
 
 
-        proportionalGainCommand = self.commands.getCommandByName("SLOW_PWM_PERCENT")
+        proportionalGainCommand = self.commands.getCommandByName("PID1_KP_VALUE")
 
         proportionalGain = Gain(proportionalGainCommand)
         self.scene.addItem(proportionalGain)
         proportionalGain.setPos(350, 70)
 
 
-        proportionalSwitchCommand = self.commands.getCommandByName("SLOW_PWM_ON")
+        proportionalSwitchCommand = self.commands.getCommandByName("PID1_KP_SWITCH")
 
         proportionalSwitch = Switch(proportionalSwitchCommand)
         self.scene.addItem(proportionalSwitch)
@@ -183,10 +183,10 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
 
         gauges = list()
 
-        tankGaugeChannel1 = self.channels.getChannelByName("ANALOG_IN_3")
+        tankGaugeChannel1 = self.channels.getChannelByName("SP_GEN_1_OUTPUT")
         tankGauge1 = TankGauge()
-        tankGauge1.lowerLimit = 0
-        tankGauge1.upperLimit = 65536
+        tankGauge1.lowerLimit = 0.1
+        tankGauge1.upperLimit = 0.9
         tankGauge1.isRelativeScale = True
         tankGauge1.setColor(tankGaugeChannel1.colorRgbTuple)
         tankGaugeChannel1.newValueArrived.connect(tankGauge1.newValueArrived)
@@ -195,7 +195,7 @@ class ControllerWaterLineExperiment(QtGui.QGraphicsView):
         tankGaugeChannel2 = self.channels.getChannelByName("ANALOG_IN_2")
         tankGauge2 = TankGauge()
         tankGauge2.lowerLimit = 0
-        tankGauge2.upperLimit = 65536
+        tankGauge2.upperLimit = 1
         tankGauge2.isRelativeScale = True
         tankGauge2.setColor(tankGaugeChannel2.colorRgbTuple)
         tankGaugeChannel2.newValueArrived.connect(tankGauge2.newValueArrived)

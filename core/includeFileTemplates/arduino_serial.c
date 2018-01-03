@@ -20,6 +20,7 @@ void extractMessage(int messageStartPosition);
 
 int serialBufferSize = 0;
 void microRayInit() {
+    messageOutBuffer.statusFlags = 0;
     Serial.begin(BAUD_RATE);
     serialBufferSize = Serial.availableForWrite();
 }
@@ -34,6 +35,7 @@ void sendMessage() {
     #ifdef SERIAL_TX_BUFFER_SIZE
         int bytesStillInBuffer = SERIAL_TX_BUFFER_SIZE - Serial.availableForWrite();
         if (bytesStillInBuffer > 1) {
+            messageOutBuffer.statusFlags |= (1 << STATUS_SKIPPED);
             serialTransmissionLag = bytesStillInBuffer;
         }
     #endif

@@ -18,8 +18,9 @@ typedef struct MessageIn
 typedef struct MessageOut
 {
     uint32_t loopStartTime;
+    uint16_t statusFlags;
+    uint16_t parameterNumber;
 #if !defined(SUPPRESS_PARAM_CONFIRMATION)
-    uint32_t parameterNumber;
     union {
         int32_t parameterValueInt;
         float parameterValueFloat;
@@ -52,3 +53,7 @@ extern float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
 #define RECORD_TRANSMISSION_MODE 1
 #define LIVE_MODE 2
 #define RECORD_WAIT_MODE 3
+#define WAIT_MODE 4
+
+#define STATUS_BAD_DATA 0
+#define STATUS_SKIPPED 1

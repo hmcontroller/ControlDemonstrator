@@ -9,7 +9,7 @@ void recordMessage();
 void transmitRecordings();
 
 unsigned long lastTime = 0;
-volatile bool lastMessageSendComplete = false;
+volatile bool lastMessageSendComplete = true;
 
 int sendMode = LIVE_MODE;
 int recordingCounter = 0;
@@ -109,6 +109,8 @@ void microRayCommunicate()
         case LIVE_MODE:
             sendMessage();
             break;
+        case WAIT_MODE:
+            break;
         default:
             break;
     }
@@ -133,10 +135,11 @@ void transmitRecordings() {
         }
         messageOutBuffer = recordBuffer[nextMessageIndex];
         sendMessage();
-        while (!lastMessageSendComplete) {
+        receiveMessage();
+        // while (lastMessageSendComplete == false) {
             // wait
-        }
+        // }
     }
     recordingCounter = 0;
-    sendMode = LIVE_MODE;
+    sendMode = WAIT_MODE;
 }

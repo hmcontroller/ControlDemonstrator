@@ -46,8 +46,8 @@ class MessageBoardWidget(QtGui.QWidget):
         self.scene.addItem(self.boardItem)
         self.graphicsView.setScene(self.scene)
 
-        self.mainWindow.skippedData.connect(self.boardItem.skipped)
-        self.mainWindow.badData.connect(self.boardItem.badData)
+        # self.mainWindow.skippedData.connect(self.boardItem.skipped)
+        # self.mainWindow.badData.connect(self.boardItem.badData)
 
         # if i open a window here to let the user edit some properties, it needs to be updated to show
         #  warnings, if some are active.
@@ -56,7 +56,8 @@ class MessageBoardWidget(QtGui.QWidget):
         self.updateTimer.timeout.connect(self.update)
         self.updateTimer.start(100)
 
-        self.resize(303, 80)
+        # self.resize(300, 81)
+        # self.setGeometry(0, 0, 250, 75)
 
     def resetOnceTriggeredFlags(self):
         self.boardItem.resetOnceTriggeredFlags()
@@ -74,6 +75,12 @@ class MessageBoardWidget(QtGui.QWidget):
     #     self.lastTriggerOfBadData = datetime.datetime.now()
     #     self.update()
 
+    def skipped(self):
+        self.boardItem.skipped()
+
+    def badData(self):
+        self.boardItem.badData()
+
     def setComStateMessage(self, boardMessage):
         self.boardItem.setComStateMessage(boardMessage)
         # self.update()
@@ -82,7 +89,7 @@ class MessageBoardWidget(QtGui.QWidget):
         self.boardItem.setComInfo(text)
 
     def update(self):
-        self.scene.setSceneRect(0, -10, 303, 80)
+        self.scene.setSceneRect(0, -10, 301, 81)
         self.scene.update()
         # self.resize(302, 79)
         super(MessageBoardWidget, self).update()
@@ -128,6 +135,9 @@ class MessageBoard(QtGui.QGraphicsObject):
     TIME_OUT = BoardMessage("Timeout,\nwaiting...", QtGui.QPen(QtCore.Qt.red))
     UNKNOWN = BoardMessage("Unknown\nstate", QtGui.QPen(QtGui.QColor(255, 140, 0)))
     PAUSE = BoardMessage("Com paused", QtGui.QPen(QtGui.QColor(255, 140, 0)))
+    DEBUG = BoardMessage("Debug mode", QtGui.QPen(QtGui.QColor(255, 140, 0)))
+    RECORD = BoardMessage("recording...", QtGui.QPen(QtGui.QColor(255, 140, 0)))
+
 
     BAD_DATA = BoardMessage("Bad data", QtGui.QPen(QtCore.Qt.red))
     SKIPPED = BoardMessage("Skipped", QtGui.QPen(QtGui.QColor(255, 140, 0)))
@@ -197,8 +207,8 @@ class MessageBoard(QtGui.QGraphicsObject):
         self.skippedTriggeredOnce = False
         self.badDataTriggeredOnce = False
 
-    @QtCore.pyqtSlot(object)
-    def skipped(self, count):
+    @QtCore.pyqtSlot()
+    def skipped(self):
         self.skippedTriggeredOnce = True
         if datetime.datetime.now() - self.timeOfLastSkippedTriggerBlinkStart > datetime.timedelta(milliseconds=self.blinkInterval * 2):
             self.skippedShowInverted = True

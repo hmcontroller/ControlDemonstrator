@@ -13,7 +13,6 @@ import tempfile
 from PyQt4 import QtCore, QtGui
 
 from core.hardwareInterfaces import UdpInterface, UsbHidInterface, SerialInterface
-from core.model.commState import CommState
 from core.messageInterpreter import MessageInterpreter
 from core.configFileManager import ConfigFileManager
 from core.applicationSettingsManager import ApplicationSettingsManager
@@ -42,8 +41,6 @@ from gui.serialMonitor import SerialMonitor
 class MicroRayMainWindow(QtGui.QMainWindow):
 
     displayMessage = QtCore.pyqtSignal(object, object)
-    skippedData = QtCore.pyqtSignal(object)
-    badData = QtCore.pyqtSignal()
 
     def __init__(self, exceptionMagnet, logger, rootFolder, tempFolder, settingsFolder, splashScreen):
         QtGui.QMainWindow.__init__(self)
@@ -62,18 +59,6 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
         # pipe stdout
         self.myPrinter = MyPrinter(self)
-
-        # dialog = QtGui.QMessageBox(self)
-        # dialog.setText(u"{}\n"
-        #                u"{}\n"
-        #                u"{}\n".format(
-        #                self.programRootFolder,
-        #                self.microRayTempFolder,
-        #                self.programSettingsFolder))
-        #
-        # userResponse = dialog.exec_()
-        #
-        # print "dududu"
 
         self.lastDutyCycleTimeExceededWarning = u""
         self.lastTransmissionLagWarning = u""
@@ -900,7 +885,11 @@ class MicroRayMainWindow(QtGui.QMainWindow):
 
     def handleNewData(self, message):
         MessageInterpreter.mapUserChannels(self.channels, message)
-        returnedCommand = MessageInterpreter.getMicroControllerCommandReturned(message, self.commands)
+        MessageInterpreter.checkStatusFlags(self.communicator.microcontrollerStatus, message)
+        try:
+            returnedCommand = MessageInterpreter.getMicroControllerCommandReturned(message, self.commands)
+        except:
+            self.communicator.microcontrollerStatus.badData = True
 
         try:
             command = self.commands.getCommandById(returnedCommand.id)
@@ -910,7 +899,8 @@ class MicroRayMainWindow(QtGui.QMainWindow):
                 command = self.commands.getSpecialCommandById(returnedCommand.id)
                 command.checkSpecialCommandReturnValue(returnedCommand)
             except:
-                self.communicator.commState.state = CommState.WRONG_CONFIG
+                self.communicator.microcontrollerStatus.badData = True
+                # self.communicator.commState.state = CommState.WRONG_CONFIG
 
     def sendRawCommand(self, command):
         self.communicator.sendRawCommand(command)
@@ -972,7 +962,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
         if command.id == -2:
             # print command.valueOfLastResponse
             if command.valueOfLastResponse > 0.2:
-                self.skippedData.emit(int(command.valueOfLastResponse))
+                # self.skippedData.emit(int(command.valueOfLastResponse))
                 warning = "Transmission lag. {} bytes from last loop. Deactivate some channels or increase your loop time.".format(int(command.valueOfLastResponse))
                 if warning != self.lastTransmissionLagWarning:
                     # self.displayMessage.emit(warning, "warning")

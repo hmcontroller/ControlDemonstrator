@@ -25,6 +25,7 @@ Serial mRserial(USBTX, USBRX);
 
 
 void microRayInit() {
+    messageOutBuffer.statusFlags = 0;
     // Bring up the network interface
 
     // laut Dokumentation Initialisierung mit static IP eigentlich möglich bei mbed OS, geht aber nicht

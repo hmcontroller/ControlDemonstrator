@@ -11,20 +11,33 @@ class CommState(QtCore.QObject):
     changed = QtCore.pyqtSignal(object)
 
     UNKNOWN = 0
-    COMM_ESTABLISHED = 1
-    COMM_PAUSED = 2
-    COMM_TIMEOUT = 3
-    WRONG_CONFIG = 4
-    NO_CONN = 5
-    DEBUG = 6
+    COMM_OK = 1
+    WRONG_CONFIG = 2
+    NO_CONN = 3
+    COMM_TIMEOUT = 4
 
-    def __init__(self):
+    PLAY = 10
+    PAUSE = 11
+    DEBUG = 12
+    RECORD = 13
+
+    def __init__(self, projectSettings):
         super(CommState, self).__init__()
+        self.projectSettings = projectSettings
         self._play = True
         self._state = self.UNKNOWN
         self._interfaceDescription = u""
         self.timeOfLastReceive = datetime.datetime.now() - datetime.timedelta(hours=1000)
         self._specialFailures = u""
+
+        self.projectSettings.changed.connect(self.debugModeChanged)
+        self.debugModeChanged(self.projectSettings)
+
+    def debugModeChanged(self, projectSettings):
+        if self.projectSettings.debugMode is True:
+            self.state = self.DEBUG
+        else:
+            self.state = self.UNKNOWN
 
     @property
     def play(self):

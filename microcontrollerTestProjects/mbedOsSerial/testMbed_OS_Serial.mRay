@@ -5,9 +5,9 @@
             "name": "mR_testChannel", 
             "show": true, 
             "color": [
-                0, 
-                170, 
-                0
+                85, 
+                232, 
+                98
             ], 
             "isRequested": true, 
             "id": 0
@@ -17,9 +17,9 @@
             "name": "mR_incChannel", 
             "show": true, 
             "color": [
-                0, 
-                0, 
-                255
+                146, 
+                195, 
+                33
             ], 
             "isRequested": true, 
             "id": 1
@@ -27,23 +27,23 @@
     ], 
     "commands": [
         {
-            "initialValue": 3.0, 
-            "displayName": "", 
-            "name": "mR_testParamInt", 
-            "min": 0.0, 
-            "max": 1.0, 
-            "valueType": 1, 
-            "pendingMode": false, 
-            "inputMethod": 2, 
-            "id": 0
-        }, 
-        {
-            "initialValue": 2.0, 
+            "initialValue": 1.0, 
             "displayName": "", 
             "name": "mR_testParamFloat", 
             "min": -100000.0, 
             "max": 100000.0, 
             "valueType": 2, 
+            "pendingMode": false, 
+            "inputMethod": 1, 
+            "id": 0
+        }, 
+        {
+            "initialValue": 1.0, 
+            "displayName": "", 
+            "name": "mR_testParamInt", 
+            "min": -100000.0, 
+            "max": 100000.0, 
+            "valueType": 1, 
             "pendingMode": false, 
             "inputMethod": 1, 
             "id": 1
@@ -58,7 +58,7 @@
                 "displayName": "Generische Ansicht"
             }
         ], 
-        "comPortBaudRate": 115200, 
+        "comPortBaudRate": 9600, 
         "recordMode": false, 
         "comPortDescription": "STMicroelectronics STLink Virtual COM Port (COM13)", 
         "pauseAfterRecord": false, 
@@ -68,7 +68,7 @@
         "debugMode": false, 
         "pathToControllerCodeFolder": "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\microRay\\microcontrollerTestProjects\\mbedOsSerial\\src", 
         "suppressParameterConfirmation": false, 
-        "controllerLoopCycleTimeInUs": 3000, 
+        "controllerLoopCycleTimeInUs": 50000, 
         "controllerIP": "192.168.0.15"
     }
 }

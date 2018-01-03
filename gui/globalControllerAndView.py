@@ -8,7 +8,7 @@ from gui.designerfiles.globalControllerAndView import Ui_GlobalControllerAndView
 from gui.resources import *
 from gui.messageBoard import MessageBoardWidget, MessageBoard
 
-from core.communicator import CommState
+from core.model.commState import CommState
 
 class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
 
@@ -23,8 +23,8 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
 
         self.channels = channels
 
-        self.setMinimumHeight(72)
-        self.setMaximumHeight(72)
+        self.setMinimumHeight(73)
+        self.setMaximumHeight(73)
 
         self.commStateBlinkTimer = QtCore.QTimer()
         self.commStateBlinkTimer.setSingleShot(True)
@@ -36,6 +36,7 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.communicator = communicator
         self.communicator.commStateChanged.connect(self.commStateChanged)
         self.communicator.commandSend.connect(self.reportCommandSend)
+        self.communicator.microcontrollerStatus.changed.connect(self.statusFlagsChanged)
 
         self.serialMonitor = serialMonitor
 
@@ -200,7 +201,7 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         else:
             self.toolButtonPlay.setIcon(self.playIcon)
 
-        if commState.state == CommState.COMM_ESTABLISHED:
+        if commState.state == CommState.COMM_OK:
             self.messageBoard.setComStateMessage(MessageBoard.COM_OK)
             self.messageBoard.resetOnceTriggeredFlags()
         elif commState.state == CommState.COMM_TIMEOUT:
@@ -211,8 +212,12 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
             self.messageBoard.setComStateMessage(MessageBoard.WAITING)
         elif commState.state == CommState.UNKNOWN:
             self.messageBoard.setComStateMessage(MessageBoard.UNKNOWN)
-        elif commState.state == CommState.COMM_PAUSED:
+        elif commState.state == CommState.PAUSE:
             self.messageBoard.setComStateMessage(MessageBoard.PAUSE)
+        elif commState.state == CommState.DEBUG:
+            self.messageBoard.setComStateMessage(MessageBoard.DEBUG)
+        elif commState.state == CommState.RECORD:
+            self.messageBoard.setComStateMessage(MessageBoard.RECORD)
 
         self.messageBoard.setComInfo(commState.interfaceDescription)
 
@@ -230,6 +235,11 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
     #     # self.singleLineTextEdit.setAutoFillBackground(True)
     #     # self.singleLineTextEdit.setPalette(pal)
 
+    def statusFlagsChanged(self, status):
+        if status.badData is True:
+            self.messageBoard.badData()
+        if status.skippedTransmission is True:
+            self.messageBoard.skipped()
 
     def reportCommandSend(self, command):
 

@@ -11,9 +11,8 @@ import datetime
 
 from PyQt4 import QtCore
 
-from core.messageData import MessageData
-from core.model.commState import CommState
 from core.hardwareInterfaces import UdpInterface, UsbHidInterface, SerialInterface
+from core.model.microcontrollerStatus import MicrocontrollerStatus
 
 from gui.constants import AVAILABLE_FRAMEWORKS
 
@@ -31,6 +30,8 @@ class Communicator(QtCore.QObject):
         self._commands = commands
         self._messageSize = None
         self._messageMap = None
+
+        self.microcontrollerStatus = MicrocontrollerStatus()
 
         self.interface = SerialInterface(applicationSettings, projectSettings, commands)
         self.setInterface(messageMap)
@@ -61,6 +62,7 @@ class Communicator(QtCore.QObject):
 
     def setInterface(self, messageMap):
         self.disconnectFromController()
+        self.microcontrollerStatus.clear()
         for availableFramework in AVAILABLE_FRAMEWORKS:
             if self._projectSettings.controllerFrameworkAndInterface == availableFramework["macroName"]:
                 if availableFramework["interface"] == "UDP":

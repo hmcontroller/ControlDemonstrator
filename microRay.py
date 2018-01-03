@@ -41,7 +41,7 @@ def getLogger():
 
     logFile = os.path.join(SETTINGS_FOLDER, 'mRay.log')
 
-    my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=100*1024,
+    my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=1*1024,
                                      backupCount=0, encoding=None, delay=0)
     my_handler.setFormatter(logFormatter)
     my_handler.setLevel(logging.INFO)

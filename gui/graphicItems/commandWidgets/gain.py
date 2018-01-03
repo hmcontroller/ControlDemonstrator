@@ -55,6 +55,14 @@ class Gain(BaseCommand):
         self.path.lineTo(70, 30)
         self.path.closeSubpath()
 
+
+        # timer needed to stop a started userInputWarning
+        self.clearUserInputWarningTimer = QtCore.QTimer()
+        self.clearUserInputWarningTimer.setSingleShot(True)
+        self.clearUserInputWarningTimer.timeout.connect(self.clearUserInputWarning)
+        self.userInputWarningDuration = 1000
+
+
     def editFinished(self):
         self.lineEditProxy.clearFocus()
 
@@ -79,8 +87,14 @@ class Gain(BaseCommand):
                 self.command.setValue(self.command.getUpperLimit(), self)
                 self.activateUserInputWarning()
             else:
+                # self.clearUserInputWarning()
                 self.command.setValue(number, self)
         self.update()
+
+    def activateUserInputWarning(self):
+        super(Gain, self).activateUserInputWarning()
+        self.clearUserInputWarningTimer.start(self.userInputWarningDuration)
+
 
     def valueChangedPerWidget(self, widgetInstance):
         if widgetInstance is self:

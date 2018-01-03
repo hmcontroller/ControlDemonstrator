@@ -24,7 +24,7 @@ class SignalGenerator(BaseCommand):
         self.signalSymbols = list()
 
         # the command to set the function number of the generator is used as main command here
-        # TODO rewrite documentation one line above
+        # TODO refactor comment one line above
         super(SignalGenerator, self).__init__(self.commands.functionNumberCommand)
 
 

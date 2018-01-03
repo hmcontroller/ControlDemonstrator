@@ -8,6 +8,7 @@ class ProjectSettings(QtCore.QObject):
 
     changed = QtCore.pyqtSignal(object)
     frameworkAndInterfaceChanged = QtCore.pyqtSignal(object)
+    debugModeChanged = QtCore.pyqtSignal(object)
 
     def __init__(self):
         super(ProjectSettings, self).__init__()
@@ -27,6 +28,8 @@ class ProjectSettings(QtCore.QObject):
         self._recordMode = False
         self._recordBufferLength = 1
         self._pauseAfterRecord = False
+
+        # self.debugModeChanged.emit(self)
 
     def somethingChanged(self):
         self._unsavedChanges = True
@@ -141,6 +144,7 @@ class ProjectSettings(QtCore.QObject):
     def debugMode(self, value):
         self._debugMode = value
         self.somethingChanged()
+        self.debugModeChanged.emit(self)
 
     @property
     def recordMode(self):

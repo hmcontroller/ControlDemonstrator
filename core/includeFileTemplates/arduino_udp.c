@@ -12,6 +12,7 @@ EthernetUDP Udp;
 
 void microRayInit()
 {
+    messageOutBuffer.statusFlags = 0;
     // Bring up the network interface
     Ethernet.begin(macAddress, ownIp);
     Udp.begin(port);
@@ -25,7 +26,7 @@ void sendMessage()
     if (!transmitRecordBuffer) {
         prepareOutMessage(micros());
     }
-    
+
     lastTime = micros();
     lastMessageSendComplete = false;
     Udp.beginPacket(remoteIp, port);

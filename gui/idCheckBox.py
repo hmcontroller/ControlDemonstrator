@@ -181,7 +181,7 @@ class OverlayDrawing(QtGui.QWidget):
     def __init__(self, parent=None):
         super(OverlayDrawing, self).__init__(parent)
         self.parent = parent
-        self.color = QtGui.QColor(200, 200, 200, 220)
+        self.color = QtGui.QColor(200, 200, 200, 150)
         # self.color = QtGui.QColor(QtCore.Qt.red)
         self.brush = QtGui.QBrush(self.color)
         self.brush.setStyle(QtCore.Qt.SolidPattern)
