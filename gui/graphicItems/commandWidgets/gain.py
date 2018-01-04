@@ -62,6 +62,8 @@ class Gain(BaseCommand):
         self.clearUserInputWarningTimer.timeout.connect(self.clearUserInputWarning)
         self.userInputWarningDuration = 1000
 
+        # self.differentValueReceived()
+        self.lineEdit.setText(str(self.command.getValue()))
 
     def editFinished(self):
         self.lineEditProxy.clearFocus()

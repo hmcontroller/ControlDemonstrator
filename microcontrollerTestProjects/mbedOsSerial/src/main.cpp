@@ -2,9 +2,12 @@
 #include "microRay.h"
 
 Timer loopTimer;
+Timer dutyTimer;
 //DigitalOut greenLed(LED1);
 DigitalOut blueLed(LED2);
 //DigitalOut redLed(LED3);
+AnalogIn aIn(A1);
+
 
 int debugCounter = 0;
 
@@ -28,6 +31,7 @@ int main()
 
 void init() {
     microRayInit();
+    dutyTimer.start();
 }
 
 void loop()
@@ -44,10 +48,12 @@ void loop()
 
     mR_testChannel = mR_testParamFloat;
     if (mR_testParamInt) {
-        mR_incChannel += 1;
-        if (mR_incChannel > 1000) {
+        mR_incChannel += 0.01;
+        if (mR_incChannel > 1.0) {
             mR_incChannel = 0;
         }
     }
+    mR_analog_in = aIn.read();
+    mR_sin_test = 0.2 * (float)sin(5 * dutyTimer.read()) + 0.4;
     microRayCommunicate();
 }

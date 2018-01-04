@@ -11,6 +11,7 @@ from gui.resources import *
 class SerialMonitor(QtGui.QWidget, Ui_SerialMonitor):
 
     commandInput = QtCore.pyqtSignal(object)
+    signalTogglePlayPause = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
@@ -39,6 +40,18 @@ class SerialMonitor(QtGui.QWidget, Ui_SerialMonitor):
         self.checkBoxAutoScroll.stateChanged.connect(self.setAutoscrollMode)
 
         self.pushButtonSend.clicked.connect(self.sendCommand)
+
+        self.playPixmap = QtGui.QPixmap(playPath)
+        self.playIcon = QtGui.QIcon(self.playPixmap)
+
+        self.pausePixmap = QtGui.QPixmap(pausePath)
+        self.pauseIcon = QtGui.QIcon(self.pausePixmap)
+
+        self.toolButtonPlay.setIcon(self.pauseIcon)
+        self.toolButtonPlay.clicked.connect(self.togglePlayPause)
+        self.toolButtonPlay.setFixedSize(QtCore.QSize(23, 23))
+        self.toolButtonPlay.setIconSize(QtCore.QSize(30, 30))
+
 
 
     def showMessage(self, message, green=False):
@@ -87,9 +100,19 @@ class SerialMonitor(QtGui.QWidget, Ui_SerialMonitor):
 
         self.lineEditCommand.clear()
 
+    def togglePlayPause(self):
+        self.signalTogglePlayPause.emit()
+
+    def setPlayButton(self, newState):
+        if newState is True:
+            self.toolButtonPlay.setIcon(self.playIcon)
+        else:
+            self.toolButtonPlay.setIcon(self.pauseIcon)
 
     def keyPressEvent(self, QKeyEvent):
 
         if QKeyEvent.key() == QtCore.Qt.Key_Enter or QKeyEvent.key() == QtCore.Qt.Key_Return:
             self.sendCommand()
 
+        if QKeyEvent.key() == QtCore.Qt.Key_Space:
+            self.togglePlayPause()

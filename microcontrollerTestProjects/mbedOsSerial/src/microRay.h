@@ -4,9 +4,9 @@
 #define MBED_OS_SERIAL
 
 // must have parameters
-#define loopCycleTimeUs                           50000
-#define CHANNELS_AVAILABLE_COUNT                      2
-#define CHANNELS_REQUESTED_COUNT                      2
+#define loopCycleTimeUs                            5000
+#define CHANNELS_AVAILABLE_COUNT                      4
+#define CHANNELS_REQUESTED_COUNT                      4
 #define CHANNELS_UNREQUESTED_COUNT                    0
 #define PARAMETER_COUNT                               2
 #define SPECIAL_COMMANDS_COUNT                        3
@@ -15,11 +15,12 @@
 #define FLOAT_TYPE                                    2
 #define RECORD_BUFFER_LENGTH                          1
 #define PAUSE_AFTER_RECORD                            0
-#define mrDEBUG                                        
 
 // All requested channels
 #define mR_testChannel                           (messageOutBuffer.channels[0])
 #define mR_incChannel                            (messageOutBuffer.channels[1])
+#define mR_analog_in                             (messageOutBuffer.channels[2])
+#define mR_sin_test                              (messageOutBuffer.channels[3])
 
 // All unrequested channels
 

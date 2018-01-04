@@ -161,6 +161,8 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         self.commInterfaceChanged(self.communicator.commStateMachine.state)
         self.projectSettingsChanged(self.projectSettings)
 
+        self.serialMonitor.signalTogglePlayPause.connect(self.togglePlayPauseFromSerialMonitor)
+
     def projectSettingsChanged(self, settings):
         if settings.debugMode is True:
             self.toolButtonDebugMode.setIcon(self.debugIcon)
@@ -179,6 +181,13 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         else:
             self.communicator.connectToController()
             self.communicator.commStateMachine.doTransit(CommStateMachine.PLAY_MODE_ENABLED)
+
+    def togglePlayPauseFromSerialMonitor(self):
+        self.togglePlayPause()
+        if self.communicator.commStateMachine.state.play is True:
+            self.serialMonitor.setPlayButton(False)
+        else:
+            self.serialMonitor.setPlayButton(True)
 
     def toggleRecordMode(self):
         cmd = self.commandList.getSpecialCommandById(-3)

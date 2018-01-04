@@ -132,7 +132,7 @@ class CommStateMachine(QtCore.QObject):
                 self.state.state = CommState.COMM_OK
 
             elif transition == self.CONNECTION_TIMED_OUT:
-                self.state.state = CommState.COMM_TIMEOUT
+                pass
 
             elif transition == self.RECORDING_TRANSMISSION_COMPLETE:
                 pass
@@ -360,10 +360,10 @@ class CommStateMachine(QtCore.QObject):
                 pass
 
             elif transition == self.PLAY_MODE_ENABLED:
-                self.state.state = CommState.PLAY
+                pass
 
             elif transition == self.PLAY_MODE_DISABLED:
-                self.state.state = CommState.PAUSE
+                pass
 
             elif transition == self.DEBUG_MODE_ENABLED:
                 pass
@@ -372,10 +372,10 @@ class CommStateMachine(QtCore.QObject):
                 self.state.state = CommState.PLAY
 
             elif transition == self.RECORD_MODE_ENABLED:
-                self.state.state = CommState.RECORD
+                pass
 
             elif transition == self.RECORD_MODE_DISABLED:
-                self.state.state = CommState.PLAY
+                pass
 
 
 

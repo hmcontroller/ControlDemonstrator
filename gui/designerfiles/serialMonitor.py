@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'serialMonitor.ui'
 #
-# Created: Mon Nov 20 16:38:44 2017
+# Created: Thu Jan 04 13:34:30 2018
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -47,6 +47,9 @@ class Ui_SerialMonitor(object):
         self.pushButtonSend = QtGui.QPushButton(SerialMonitor)
         self.pushButtonSend.setObjectName(_fromUtf8("pushButtonSend"))
         self.horizontalLayout.addWidget(self.pushButtonSend)
+        self.toolButtonPlay = QtGui.QToolButton(SerialMonitor)
+        self.toolButtonPlay.setObjectName(_fromUtf8("toolButtonPlay"))
+        self.horizontalLayout.addWidget(self.toolButtonPlay)
         self.checkBoxAutoScroll = QtGui.QCheckBox(SerialMonitor)
         self.checkBoxAutoScroll.setObjectName(_fromUtf8("checkBoxAutoScroll"))
         self.horizontalLayout.addWidget(self.checkBoxAutoScroll)
@@ -59,5 +62,6 @@ class Ui_SerialMonitor(object):
     def retranslateUi(self, SerialMonitor):
         SerialMonitor.setWindowTitle(_translate("SerialMonitor", "Kanaleinstellungen", None))
         self.pushButtonSend.setText(_translate("SerialMonitor", "Send", None))
+        self.toolButtonPlay.setText(_translate("SerialMonitor", "...", None))
         self.checkBoxAutoScroll.setText(_translate("SerialMonitor", "Autoscroll", None))
 

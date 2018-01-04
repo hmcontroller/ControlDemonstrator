@@ -38,6 +38,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QToolButton" name="toolButtonPlay">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="checkBoxAutoScroll">
          <property name="text">
           <string>Autoscroll</string>
