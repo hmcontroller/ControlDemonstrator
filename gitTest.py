@@ -20,5 +20,7 @@ def run():
     for dinddong in ding:
         print dinddong
 
+    # hello
+
 if __name__ == "__main__":
     run()
