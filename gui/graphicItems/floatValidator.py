@@ -17,6 +17,8 @@ class FloatValidator(QtGui.QDoubleValidator):
     def validate(self, qString, p_int):
         text = unicode(qString)
 
+
+
         if text == u"":
             return QtGui.QValidator.Acceptable, p_int
 

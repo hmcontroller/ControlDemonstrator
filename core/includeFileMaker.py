@@ -142,6 +142,13 @@ class IncludeFileMaker(object):
                 "mrDEBUG", "",
                 nameWidth=self.nameWidth, valueWidth=self.valueWidth)
 
+        messageSkipMode = 0
+        if self.projectSettings.messageSkipMode is True:
+            messageSkipMode = 1
+        self.headerFileString += "#define {:{nameWidth}} {:>{valueWidth}}\n".format(
+            "MESSAGE_SKIP_MODE", messageSkipMode,
+            nameWidth=self.nameWidth, valueWidth=self.valueWidth)
+
 
 
         self.headerFileString += "\n"

@@ -5,6 +5,7 @@ from PyQt4 import QtGui, QtCore
 class LineEditDoubleClickSpecial(QtGui.QLineEdit):
 
     lostFocus = QtCore.pyqtSignal()
+    downArrowPressed = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         super(LineEditDoubleClickSpecial, self).__init__(parent)
@@ -12,6 +13,13 @@ class LineEditDoubleClickSpecial(QtGui.QLineEdit):
 
     def mouseDoubleClickEvent(self, QMouseEvent):
         self.selectAll()
+
+    def keyPressEvent(self, QKeyEvent):
+
+        if QKeyEvent.key() == QtCore.Qt.Key_Down:
+            self.downArrowPressed.emit()
+
+        super(LineEditDoubleClickSpecial, self).keyPressEvent(QKeyEvent)
 
     # def focusInEvent(self, QFocusEvent):
     #     print "focus in in LineEditClass"

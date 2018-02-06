@@ -77,7 +77,7 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
 
         dialog.checkBoxDebugMode.setChecked(dialog.settings.debugMode)
 
-        dialog.checkBoxRecordMode.setChecked(dialog.settings.recordMode)
+        dialog.checkBoxMessageSkipMode.setChecked(dialog.settings.messageSkipMode)
         dialog.lineEditRecordBufferLength.setText(str(dialog.settings.recordBufferLength))
         dialog.checkBoxPauseAfterRecord.setChecked(dialog.settings.pauseAfterRecord)
 
@@ -119,7 +119,7 @@ class ProjectMiscSettingsDialog(QtGui.QDialog, Ui_ProjectMiscSettingsDialog):
 
             dialog.settings.debugMode = dialog.checkBoxDebugMode.isChecked()
 
-            dialog.settings.recordMode = dialog.checkBoxRecordMode.isChecked()
+            dialog.settings.messageSkipMode = dialog.checkBoxMessageSkipMode.isChecked()
             try:
                 dialog.settings.recordBufferLength = int(dialog.lineEditRecordBufferLength.text())
             except:

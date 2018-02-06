@@ -214,6 +214,8 @@ class Command(QtCore.QObject):
         self.initialValue = 0.0
         self.rawArgumentString = None
 
+        self.history = deque(maxlen=20)
+
         self._inputMethod = Command.VALUE_INPUT
 
         # This is needed to handle the inaccuracy of float types.
@@ -238,8 +240,10 @@ class Command(QtCore.QObject):
     def setValue(self, value, widgetInstance=None):
         if self._pendingSendMode is True:
             self._setPendingValue(value)
+            self.history.append(value)
         else:
             self._setDirectValue(value)
+            self.history.appendleft(value)
 
         self.valueChanged.emit(self)
 

@@ -25,7 +25,7 @@ class ProjectSettings(QtCore.QObject):
         self._unsavedChanges = False
         self._suppressParameterConfirmation = False
         self._debugMode = False
-        self._recordMode = False
+        self._messageSkipMode = False
         self._recordBufferLength = 1
         self._pauseAfterRecord = False
 
@@ -147,12 +147,12 @@ class ProjectSettings(QtCore.QObject):
         self.debugModeChanged.emit(self)
 
     @property
-    def recordMode(self):
-        return self._recordMode
+    def messageSkipMode(self):
+        return self._messageSkipMode
 
-    @recordMode.setter
-    def recordMode(self, value):
-        self._recordMode = value
+    @messageSkipMode.setter
+    def messageSkipMode(self, value):
+        self._messageSkipMode = value
         self.somethingChanged()
 
     @property

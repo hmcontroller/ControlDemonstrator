@@ -15,7 +15,10 @@ class PlotWidget(QtGui.QWidget):
         self.channels = channels
         self.channels.channelChanged.connect(self.updateCurve)
         self.channels.changed.connect(self.createCurves)
-        self.channels.channelConfigChanged.connect(self.createCurves)
+
+        # self.channels.channelConfigChanged.connect(self.createCurves)
+        self.channels.channelConfigChanged.connect(self.updateCurve)
+
         self.channels.bufferLengthChanged.connect(self.adjustScaleToBufferLength)
 
         self.applicationSettings = applicationSettings
@@ -259,17 +262,26 @@ class PlotWidget(QtGui.QWidget):
 
 
     def updateCurve(self, timeValues, channel):
+        curve = self.channelControllers[channel.id]["plotCurve"]
         if self.movePlot is True: # and self.isVisible() is True:
 
             valuesCount = len(self.channels.timeValues)
             biggestTime = timeValues[valuesCount - 1]
             # biggestTime = timeValues[self.settings.bufferLength - 1]
 
-            curve = self.channelControllers[channel.id]["plotCurve"]
 
+            colorTuple = channel.colorRgbTuple
+            color = QtGui.QColor(colorTuple[0], colorTuple[1], colorTuple[2])
+            curve.pen = color
             curve.setData(timeValues, channel)
             curve.setPos(0, 0)
             # curve.setPos(-biggestTime, 0)
+
+        else:
+            colorTuple = channel.colorRgbTuple
+            color = QtGui.QColor(colorTuple[0], colorTuple[1], colorTuple[2])
+            curve.pen = color
+
 
     def togglePlayPause(self):
         self.movePlot = not self.movePlot

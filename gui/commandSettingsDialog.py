@@ -148,7 +148,7 @@ class CommandSettingsDialog(QtGui.QDialog, Ui_CommandSettingsDialog):
                     command.setUpperLimit(upperLimit)
                     command.initialValue = (initialValue)
 
-                self.commands.cmdList.append(command)
+                self.commands.append(command)
 
             self.commands.changed.emit(self.commands)
             return self.commands

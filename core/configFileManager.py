@@ -3,7 +3,6 @@
 import json
 from core.valueChannel import ValueChannel
 from core.command import Command
-from core.model.applicationSettings import ApplicationSettings
 from core.model.tabDescription import TabDescription
 from core.measurementData import MeasurementData
 from core.model.projectSettings import ProjectSettings
@@ -42,6 +41,7 @@ class ConfigFileManager(object):
             commandDict["pendingMode"] = command._pendingSendMode
             commandDict["inputMethod"] = command._inputMethod
             commandDict["valueType"] = command._valueType
+            commandDict["history"] = list(command.history)
             commandDescriptions.append(commandDict)
 
 
@@ -58,7 +58,7 @@ class ConfigFileManager(object):
         projectSettingsDescriptions["comPortBaudRate"] = projectSettings.comPortBaudRate
         projectSettingsDescriptions["suppressParameterConfirmation"] = projectSettings.suppressParameterConfirmation
         projectSettingsDescriptions["debugMode"] = projectSettings.debugMode
-        projectSettingsDescriptions["recordMode"] = projectSettings.recordMode
+        projectSettingsDescriptions["messageSkipMode"] = projectSettings.messageSkipMode
         projectSettingsDescriptions["recordBufferLength"] = projectSettings.recordBufferLength
         projectSettingsDescriptions["pauseAfterRecord"] = projectSettings.pauseAfterRecord
 
@@ -200,6 +200,10 @@ class ConfigFileManager(object):
             if "valueType" in commandDescription:
                 command.setValueType(commandDescription["valueType"])
 
+            if "history" in commandDescription:
+                for aValue in commandDescription["history"]:
+                    command.history.appendleft(aValue)
+
         return commandList
 
     def makeProjectMiscSettings(self, settingsDescriptions):
@@ -238,8 +242,8 @@ class ConfigFileManager(object):
         if "debugMode" in settingsDescriptions:
             projectMiscSettings.debugMode = settingsDescriptions["debugMode"]
 
-        if "recordMode" in settingsDescriptions:
-            projectMiscSettings.recordMode = settingsDescriptions["recordMode"]
+        if "messageSkipMode" in settingsDescriptions:
+            projectMiscSettings.messageSkipMode = settingsDescriptions["messageSkipMode"]
 
         if "recordBufferLength" in settingsDescriptions:
             projectMiscSettings.recordBufferLength = settingsDescriptions["recordBufferLength"]

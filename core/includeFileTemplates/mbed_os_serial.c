@@ -65,27 +65,33 @@ void serialSendCompleteThree(int events) {
 int serialTransmissionLagCounter = 0;
 void sendMessage() {
 
-    // if(timeOfLastCompletedMessage == timeOfLastSend) {
-    if(lastMessageSendComplete) {
-        if (sendMode == LIVE_MODE) {
-            prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
-        }
-        // timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
-        lastMessageSendComplete = false;
-        mrSerial.write((uint8_t *)&startOut, 1, serialEventWriteCompleteOne, SERIAL_EVENT_TX_COMPLETE);
-    }
-    else {
+    // decide wether to send in blocking mode or not
+    if(lastMessageSendComplete == false) {
         if (sendMode == RECORD_TRANSMISSION_MODE) {
             while(lastMessageSendComplete == false) {
                 // wait
             }
         }
-        else {
-            messageOutBuffer.statusFlags |= (1 << STATUS_SKIPPED);
-            serialTransmissionLagCounter++;
-            serialTransmissionLag = (float)serialTransmissionLagCounter;
-            // timeOfLastSend = (unsigned long)messageOutBuffer.loopStartTime;
+        // flag lastMessageSendComplete will never be set to true, don't know why
+        // if ((sendMode == LIVE_MODE) && (MESSAGE_SKIP_MODE == 0)) {
+        //     while(lastMessageSendComplete == false) {
+        //         // wait
+        //     }
+        // }
+    }
+
+
+    if(lastMessageSendComplete == true) {
+        if (sendMode == LIVE_MODE) {
+            prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
         }
+        lastMessageSendComplete = false;
+        mrSerial.write((uint8_t *)&startOut, 1, serialEventWriteCompleteOne, SERIAL_EVENT_TX_COMPLETE);
+    }
+    else {
+        messageOutBuffer.statusFlags |= (1 << STATUS_SKIPPED);
+        serialTransmissionLagCounter++;
+        serialTransmissionLag = (float)serialTransmissionLagCounter;
     }
 }
 

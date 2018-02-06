@@ -169,10 +169,10 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
         else:
             self.toolButtonDebugMode.setIcon(self.debugDisabledIcon)
 
-        if settings.recordMode is True:
-            self.toolButtonRecordMode.setIcon(self.recordIcon)
-        else:
-            self.toolButtonRecordMode.setIcon(self.recordDisabledIcon)
+        # if settings.recordMode is True:
+        #     self.toolButtonRecordMode.setIcon(self.recordIcon)
+        # else:
+        #     self.toolButtonRecordMode.setIcon(self.recordDisabledIcon)
 
     def togglePlayPause(self):
         if self.communicator.commStateMachine.state.play is True:
@@ -190,17 +190,18 @@ class GlobalControllerAndView(QtGui.QWidget, Ui_GlobalControllerAndView):
             self.serialMonitor.setPlayButton(True)
 
     def toggleRecordMode(self):
-        cmd = self.commandList.getSpecialCommandById(-3)
-        if self.projectSettings.recordMode is True:
-            self.projectSettings.recordMode = False
-            cmd.setValue(0)
-            self.channels.clearWithActualTime()
-            self.communicator.commStateMachine.doTransit(CommStateMachine.RECORD_MODE_DISABLED)
-        else:
-            self.projectSettings.recordMode = True
-            cmd.setValue(1)
-            self.channels.clearWithActualTime()
-            self.communicator.commStateMachine.doTransit(CommStateMachine.RECORD_MODE_ENABLED)
+        pass
+        # cmd = self.commandList.getSpecialCommandById(-3)
+        # if self.projectSettings.recordMode is True:
+        #     self.projectSettings.recordMode = False
+        #     cmd.setValue(0)
+        #     self.channels.clearWithActualTime()
+        #     self.communicator.commStateMachine.doTransit(CommStateMachine.RECORD_MODE_DISABLED)
+        # else:
+        #     self.projectSettings.recordMode = True
+        #     cmd.setValue(1)
+        #     self.channels.clearWithActualTime()
+        #     self.communicator.commStateMachine.doTransit(CommStateMachine.RECORD_MODE_ENABLED)
 
     def toggleDebugMode(self):
         if self.projectSettings.debugMode is True:

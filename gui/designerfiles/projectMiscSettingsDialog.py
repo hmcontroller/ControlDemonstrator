@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'projectMiscSettingsDialog.ui'
 #
-# Created: Wed Nov 29 08:49:40 2017
+# Created: Tue Feb 06 09:40:43 2018
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -77,10 +77,10 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.label_11 = QtGui.QLabel(ProjectMiscSettingsDialog)
         self.label_11.setObjectName(_fromUtf8("label_11"))
         self.formLayout.setWidget(5, QtGui.QFormLayout.LabelRole, self.label_11)
-        self.checkBoxRecordMode = QtGui.QCheckBox(ProjectMiscSettingsDialog)
-        self.checkBoxRecordMode.setText(_fromUtf8(""))
-        self.checkBoxRecordMode.setObjectName(_fromUtf8("checkBoxRecordMode"))
-        self.formLayout.setWidget(5, QtGui.QFormLayout.FieldRole, self.checkBoxRecordMode)
+        self.checkBoxMessageSkipMode = QtGui.QCheckBox(ProjectMiscSettingsDialog)
+        self.checkBoxMessageSkipMode.setText(_fromUtf8(""))
+        self.checkBoxMessageSkipMode.setObjectName(_fromUtf8("checkBoxMessageSkipMode"))
+        self.formLayout.setWidget(5, QtGui.QFormLayout.FieldRole, self.checkBoxMessageSkipMode)
         self.label_12 = QtGui.QLabel(ProjectMiscSettingsDialog)
         self.label_12.setObjectName(_fromUtf8("label_12"))
         self.formLayout.setWidget(6, QtGui.QFormLayout.LabelRole, self.label_12)
@@ -171,7 +171,7 @@ class Ui_ProjectMiscSettingsDialog(object):
         self.label_9.setText(_translate("ProjectMiscSettingsDialog", "Suppress parameter confirmation", None))
         self.label_4.setText(_translate("ProjectMiscSettingsDialog", "Framework and interface", None))
         self.label_10.setText(_translate("ProjectMiscSettingsDialog", "DEBUG mode", None))
-        self.label_11.setText(_translate("ProjectMiscSettingsDialog", "record mode", None))
+        self.label_11.setText(_translate("ProjectMiscSettingsDialog", "message skip mode", None))
         self.label_12.setText(_translate("ProjectMiscSettingsDialog", "record Buffer Length", None))
         self.label_13.setText(_translate("ProjectMiscSettingsDialog", "pause after recording", None))
         self.portChangedLabel.setText(_translate("ProjectMiscSettingsDialog", "original port lost, alternatives are available", None))

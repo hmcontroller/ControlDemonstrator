@@ -21,6 +21,8 @@ class GenericCommand(BaseCommand):
         self.minLineEdit = self._addLineEdit(LineEditDoubleClickSpecial())
         self.maxLineEdit = self._addLineEdit(LineEditDoubleClickSpecial())
         self.valueLineEdit = self._addLineEdit(LineEditDoubleClickSpecial())
+        self.valueLineEdit.downArrowPressed.connect(self.showHistory)
+
         self.pendingStateCheckbox = QtGui.QCheckBox()
         self.pendingStateCheckbox.setText("Guggu")
         self.pendingStateCheckbox.setFont(self.otherFont)
@@ -134,6 +136,9 @@ class GenericCommand(BaseCommand):
     #
     # def triggerNoChangeWarning(self):
     #     pass
+
+    def showHistory(self):
+        print self.command.history
 
     def _addLineEdit(self, lineEdit):
         lineEdit.setAttribute(QtCore.Qt.WA_TranslucentBackground)

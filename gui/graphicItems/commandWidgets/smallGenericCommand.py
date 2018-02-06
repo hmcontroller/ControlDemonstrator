@@ -118,6 +118,7 @@ class SmallGenericCommand(BaseCommand):
         # self.valueLineEdit.setText(str(self.command.getValue()))
         self.valueLineEdit.editingFinished.connect(self.valueEditingFinished)
         self.valueLineEdit.returnPressed.connect(self.valueEditingReturnPressed)
+        self.valueLineEdit.downArrowPressed.connect(self.showHistory)
         self.valueLineEdit.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
 
@@ -195,6 +196,9 @@ class SmallGenericCommand(BaseCommand):
 
         self.actualizeInputMethod()
 
+
+    def showHistory(self):
+        print self.command.history
 
     def _layoutLineEdit(self, lineEdit):
 

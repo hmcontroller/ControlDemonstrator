@@ -813,7 +813,7 @@ class MicroRayMainWindow(QtGui.QMainWindow):
                 dialog.updateSettings()
                 break
             except:
-                pass
+                break
 
     def appSettingsChanged(self, settings):
         self.refreshRecentProjectsMenu()

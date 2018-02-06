@@ -41,8 +41,8 @@ def getLogger():
 
     logFile = os.path.join(SETTINGS_FOLDER, 'mRay.log')
 
-    my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=1*1024,
-                                     backupCount=0, encoding=None, delay=0)
+    my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=50*1024,
+                                     backupCount=1, encoding=None, delay=0)
     my_handler.setFormatter(logFormatter)
     my_handler.setLevel(logging.INFO)
 
@@ -80,7 +80,7 @@ class MicroRay(QtGui.QApplication):
     """
     def __init__(self, sysArgs, exceptionMagnet):
 
-        self.logger = getLogger()
+        self.logger = exceptionMagnet.logger
         self.logger.info("starting application")
         QtGui.QApplication.__init__(self, sysArgs)
 
