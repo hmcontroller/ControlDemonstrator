@@ -17,6 +17,7 @@ def run():
     # repo.git.checkout('devel')
     ding = repo.iter_commits('saveChecker..saveChecker@{u}')
 
+    # print len(ding)
     for dinddong in ding:
         print dinddong
 
