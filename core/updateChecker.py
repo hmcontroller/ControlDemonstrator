@@ -33,4 +33,17 @@ class UpdateChecker(QtCore.QObject):
 
 
         elapsed = timeit.default_timer() - startTime
+
+
+        # try:
+        #     import git
+        # except ImportError:
+        #     print traceback.format_exc()
+        # else:
+        #     repo = git.Repo("D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\microRay")
+        #     branch = repo.active_branch
+        #     print branch.name
+
+
+
         self.workDone.emit(response)
