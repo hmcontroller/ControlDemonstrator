@@ -14,8 +14,11 @@ def run():
     repo = Repo("D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\microRay")
     branch = repo.active_branch
     print branch.name
-    repo.git.checkout('devel')
-    print branch.name
+    # repo.git.checkout('devel')
+    ding = repo.iter_commits('saveChecker..saveChecker@{u}')
+
+    for dinddong in ding:
+        print dinddong
 
 if __name__ == "__main__":
     run()
