@@ -15,6 +15,7 @@
 #define FLOAT_TYPE                                    2
 #define RECORD_BUFFER_LENGTH                          1
 #define PAUSE_AFTER_RECORD                            0
+#define MESSAGE_SKIP_MODE                             0
 
 // All requested channels
 #define mR_testChannel                           (messageOutBuffer.channels[0])

@@ -59,7 +59,26 @@
             "valueType": 2, 
             "pendingMode": false, 
             "inputMethod": 1, 
-            "id": 0
+            "id": 0, 
+            "history": [
+                2.0, 
+                2.0, 
+                4.0, 
+                5.0, 
+                2.0, 
+                1.0, 
+                2.0, 
+                2.0, 
+                1.0, 
+                2.0, 
+                1.0, 
+                4.0, 
+                5.0, 
+                0.0, 
+                2.0, 
+                2.0, 
+                2.0
+            ]
         }, 
         {
             "initialValue": 1.0, 
@@ -70,7 +89,8 @@
             "valueType": 1, 
             "pendingMode": false, 
             "inputMethod": 1, 
-            "id": 1
+            "id": 1, 
+            "history": []
         }
     ], 
     "miscSettings": {
@@ -82,9 +102,9 @@
                 "displayName": "Generische Ansicht"
             }
         ], 
+        "messageSkipMode": false, 
         "comPortBaudRate": 9600, 
-        "recordMode": false, 
-        "comPortDescription": "STMicroelectronics STLink Virtual COM Port (COM13)", 
+        "comPortDescription": "STMicroelectronics STLink Virtual COM Port (COM11)", 
         "pauseAfterRecord": false, 
         "computerIP": "192.168.0.133", 
         "udpPort": 10000, 

@@ -345,8 +345,8 @@ class SmallGenericCommand(BaseCommand):
 
         # if nothing is in the textBox, the lower limit of the command will be set to the text box but not send
         if len(text) is 0:
-            self.valueLineEdit.setText(str(self.command.getLowerLimit()))
-            self.valueLineEdit.setCursorPosition(len(self.valueLineEdit.text()))
+            # self.valueLineEdit.setText(str(self.command.getLowerLimit()))
+            # self.valueLineEdit.setCursorPosition(len(self.valueLineEdit.text()))
             # self.valueLineEdit.selectAll()
             self.activateUserInputWarning()
         else:

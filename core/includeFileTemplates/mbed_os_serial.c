@@ -38,6 +38,7 @@ void microRayInit() {
     messageOutBuffer.statusFlags = 0;
     dutyCycleTimer.start();
     serialReceiver.attach(&readIncomingBytesIntoBuffer, 0.00001f);
+    // mrSerial.attach(&readIncomingBytesIntoBuffer);
 }
 
 
@@ -115,7 +116,7 @@ void recordMessage() {
 void readIncomingBytesIntoBuffer() {
     int i = 0;
     for (i = 0; i < IN_MESSAGE_SIZE; i++) {
-        if (mrSerial.readable ()) {
+        if (mrSerial.readable()) {
             appendByteToBuffer(mrSerial.getc());
         }
         else {

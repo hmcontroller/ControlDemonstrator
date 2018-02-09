@@ -3,7 +3,7 @@
 
 Timer loopTimer;
 Timer dutyTimer;
-//DigitalOut greenLed(LED1);
+DigitalOut greenLed(LED1);
 DigitalOut blueLed(LED2);
 //DigitalOut redLed(LED3);
 AnalogIn aIn(A1);
@@ -14,8 +14,14 @@ int debugCounter = 0;
 void init();
 void loop();
 
+
+// void duda() {
+//     greenLed = !greenLed;
+// }
+
 int main()
 {
+    // mrSerial.attach(&duda);
     init();
     while(1)
     {
