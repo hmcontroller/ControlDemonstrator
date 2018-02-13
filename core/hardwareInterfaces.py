@@ -167,7 +167,9 @@ class UdpInterface(HardwareInterface):
 
 
     def connectToController(self):
-        self.commStateMachine.status.interfaceDescription = u"{}\n{}".format(self._projectSettings.computerIP, self._projectSettings.udpPort)
+        self.commStateMachine.state.interfaceDescription = u"{}\n{}".format(self._projectSettings.controllerIP, self._projectSettings.udpPort)
+
+        self.commStateMachine.state.play = True
 
         try:
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -182,6 +184,7 @@ class UdpInterface(HardwareInterface):
                     self._connectionPollTimer.start(1000)
 
     def disconnectFromController(self):
+        self.commStateMachine.state.play = False
         self._socket.close()
 
     def send(self, commandList):
@@ -201,8 +204,8 @@ class UdpInterface(HardwareInterface):
         receivedData = ReceivedData()
         packets = list()
 
-        if self.commStateMachine.status.play is False:
-            return packets
+        if self.commStateMachine.state.play is False:
+            return receivedData
 
         while True:
             try:
@@ -224,7 +227,7 @@ class UdpInterface(HardwareInterface):
                     if self._connectionPollTimer.isActive() is False:
                         self._connectionPollTimer.start(1000)
                 elif e.args[0] == errno.EBADF:
-                    return packets
+                    return receivedData
                 else:
                     raise
                 break

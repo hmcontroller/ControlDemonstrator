@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 
-from PyQt4 import QtCore
+from PyQt4 import QtCore, QtGui
 import pyqtgraph
 
 from gui.idCheckBox import IdColorLabelCheckbox
@@ -49,6 +49,10 @@ class PlotWidget(QtGui.QWidget):
         # folgendes funktioniert nicht
         self.verticalLine.setCursor(QtCore.Qt.SizeHorCursor)
 
+        self.verticalLine1 = self.plotWidget.addLine(x=-10, movable=True, label="{value}")
+        # folgendes funktioniert nicht
+        self.verticalLine1.setCursor(QtCore.Qt.SizeHorCursor)
+
         self.listLayout = QtGui.QVBoxLayout()
         self.listLayout.setMargin(0)
 
@@ -64,11 +68,52 @@ class PlotWidget(QtGui.QWidget):
         self.toggleMovePlotButton.setIconSize(QtCore.QSize(25, 25))
 
         self.toggleMovePlotButton.clicked.connect(self.togglePlayPause)
-        self.listLayout.addWidget(self.toggleMovePlotButton)
+
+        self.topHorizontalLayout = QtGui.QHBoxLayout()
+        self.topHorizontalLayout.setMargin(0)
+        self.topHorizontalLayout.setAlignment(QtCore.Qt.AlignTop)
+
+
+        self.topVerticalLayoutLeft = QtGui.QVBoxLayout()
+        self.topVerticalLayoutLeft.addWidget(self.toggleMovePlotButton)
+        self.topVerticalLayoutLeft.setAlignment(QtCore.Qt.AlignTop)
+
+        self.time0Label = QtGui.QLabel()
+        self.time1Label = QtGui.QLabel()
+        self.deltaTLabel = QtGui.QLabel()
+        self.frequencyLabel = QtGui.QLabel()
+
+        self.topVerticalLayoutRight = QtGui.QVBoxLayout()
+        self.topHorizontalLayout.setMargin(0)
+        self.topVerticalLayoutRight.addWidget(self.time0Label)
+        self.topVerticalLayoutRight.addWidget(self.time1Label)
+        self.topVerticalLayoutRight.addWidget(self.deltaTLabel)
+        self.topVerticalLayoutRight.addWidget(self.frequencyLabel)
+        self.topVerticalLayoutRight.setAlignment(QtCore.Qt.AlignTop)
+        # policy = QtGui.QSizePolicy()
+        # policy.setVerticalPolicy(QtGui.QSizePolicy.Minimum)
+        # self.topVerticalLayoutRight.setSizePolicy(policy)
+
+        self.topHorizontalLayout.insertLayout(0, self.topVerticalLayoutLeft, 0)
+        self.topHorizontalLayout.insertLayout(1, self.topVerticalLayoutRight, 0)
+        self.listLayout.insertLayout(0, self.topHorizontalLayout, 0)
+
+
+
+
+        self.time0Label.setText(u"t1 0 s")
+        self.time1Label.setText(u"t1 0 s")
+        self.deltaTLabel.setText(u"Δt 0 s")
+        self.frequencyLabel.setText(u"f 0 Hz")
 
         self.listWidget = QtGui.QListWidget()
         self.listWidget.setAlternatingRowColors(True)
+        policy = QtGui.QSizePolicy()
+        policy.setVerticalPolicy(QtGui.QSizePolicy.Expanding)
+        self.listWidget.setSizePolicy(policy)
+
         self.listLayout.addWidget(self.listWidget)
+
 
         self.horizontalLayoutPlotArea.insertLayout(1, self.listLayout, 0)
 
@@ -105,11 +150,21 @@ class PlotWidget(QtGui.QWidget):
 
         self.verticalLine = self.plotWidget.addLine(x=0,
                                                     movable=True,
-                                                    label="{value} <-->",
+                                                    label="{value} <0>",
                                                     pen=QtGui.QPen(QtCore.Qt.lightGray),
                                                     hoverPen=QtGui.QPen(QtCore.Qt.darkGray))
-        self.verticalLine.label.setPosition(0.9)
+        self.verticalLine.label.setPosition(0.95)
         self.verticalLine.sigPositionChanged.connect(self.verticalLineMoved)
+
+
+        leftestTime = -(self.projectSettings.controllerLoopCycleTimeInUs * self.applicationSettings.bufferLength) / 1000000.0
+        self.verticalLine1 = self.plotWidget.addLine(x=leftestTime,
+                                                    movable=True,
+                                                    label="{value} <1>",
+                                                    pen=QtGui.QPen(QtCore.Qt.lightGray),
+                                                    hoverPen=QtGui.QPen(QtCore.Qt.darkGray))
+        self.verticalLine1.label.setPosition(0.9)
+        self.verticalLine1.sigPositionChanged.connect(self.verticalLine1Moved)
 
 
         self.channelControllers = dict()
@@ -192,8 +247,30 @@ class PlotWidget(QtGui.QWidget):
             self.verticalLine.setPos(0)
 
     @QtCore.pyqtSlot()
+    def verticalLine1Moved(self):
+        if self.movePlot is False:
+            self.updateValueLabels()
+        if self.verticalLine1.getXPos() > 0:
+            self.verticalLine1.setPos(0)
+
+    @QtCore.pyqtSlot()
     def curveClicked(self, curve):
         print "curve clicked"
+
+    def refreshTimeLabels(self, time0, time1):
+        deltaT = time1 - time0
+        if deltaT < 0.0:
+            deltaT *= -1
+        if deltaT == 0.0:
+            frequency = 0
+        else:
+            frequency = 1.0 / deltaT
+
+        self.time0Label.setText(u"t0 {} s".format(time0))
+        self.time1Label.setText(u"t1 {} s".format(time1))
+        self.deltaTLabel.setText(u"Δt {} s".format(deltaT))
+        self.frequencyLabel.setText(u"f {} Hz".format(frequency))
+
 
     def showOrHideCurve(self, channel):
         pass
@@ -224,6 +301,7 @@ class PlotWidget(QtGui.QWidget):
 
     def updateValueLabels(self):
         timeOfVerticalLine = self.verticalLine.getXPos()
+        relativeTime = timeOfVerticalLine
 
         if timeOfVerticalLine == 0:
             indexAtVerticalLine = -1
@@ -251,6 +329,34 @@ class PlotWidget(QtGui.QWidget):
 
 
 
+
+
+
+        timeOfVerticalLine1 = self.verticalLine1.getXPos()
+        relativeTimeOne = timeOfVerticalLine1
+
+        if timeOfVerticalLine1 == 0:
+            indexAtVerticalLine1 = -1
+        else:
+            # timeOfVerticalLine1Us = timeOfVerticalLine1 * 1000000
+
+            firstCurve = None
+            for key, something in self.channelControllers.iteritems():
+                firstCurve = something["plotCurve"]
+
+            xData, yData = firstCurve.getData()
+            highestTime = xData[-1]
+            timeOfVerticalLine1 += highestTime
+
+            # search for index
+            indexAtVerticalLine1 = 0
+            for i in range(len(xData)):
+                if xData[i] > timeOfVerticalLine1:
+                    indexAtVerticalLine1 = i - 1
+                    break
+
+
+
         for key, something in self.channelControllers.iteritems():
             xData, yData = something["plotCurve"].getData()
             # if 0 <= indexAtVerticalLine < self.applicationSettings.bufferLength:
@@ -260,6 +366,17 @@ class PlotWidget(QtGui.QWidget):
             else:
                 something["controllerBox"].setValue(str(0.0))
 
+
+        # for key, something in self.channelControllers.iteritems():
+        #     xData, yData = something["plotCurve"].getData()
+        #     # if 0 <= indexAtVerticalLine < self.applicationSettings.bufferLength:
+        #     if -1 <= indexAtVerticalLine1 < valuesCount:
+        #         yDataAtIndex = yData[indexAtVerticalLine1]
+        #         something["controllerBox"].setValue(str(yDataAtIndex))
+        #     else:
+        #         something["controllerBox"].setValue(str(0.0))
+
+        self.refreshTimeLabels(relativeTime, relativeTimeOne)
 
     def updateCurve(self, timeValues, channel):
         curve = self.channelControllers[channel.id]["plotCurve"]

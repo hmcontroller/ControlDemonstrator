@@ -62,7 +62,7 @@ void sendMessage() {
     lastMessageSendComplete = false;
     sendBytesCount = socket.sendto(udp_server_address, (char *)&messageOutBuffer, sizeof(messageOutBuffer));
     lastMessageSendComplete = true;
-    SEND_TIMER = (float)debugTimer.read_us();
+//    SEND_TIMER = (float)debugTimer.read_us();
 
     // #ifdef DEBUG
     // mRserial.printf("SEND: %d %d %f\n", sendBytesCount, messageOutBuffer.parameterNumber, messageOutBuffer.parameterValue);
@@ -76,7 +76,7 @@ void receiveMessage() {
     debugTimer.reset();
     debugTimer.start();
     int receivedBytesCount = (float)socket.recvfrom(&dump_address, (char *)&messageInBuffer, sizeof(messageInBuffer));
-    RECEIVE_TIMER = (float)debugTimer.read_us();
+//    RECEIVE_TIMER = (float)debugTimer.read_us();
 
     if (receivedBytesCount > 0) {
         prepareInMessage();
@@ -107,4 +107,8 @@ void receiveMessage() {
     // #ifdef DEBUG
     // mRserial.printf("RECV: %f %d %f\n", RECEIVED_BYTES_COUNT, messageInBuffer.parameterNumber, messageInBuffer.value);
     // #endif
+}
+
+void recordMessage() {
+    prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
 }

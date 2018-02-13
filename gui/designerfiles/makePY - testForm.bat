@@ -1,0 +1,1 @@
+pyuic4 -o testForm.py testForm.ui

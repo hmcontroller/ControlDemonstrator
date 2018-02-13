@@ -161,6 +161,7 @@ int specialCommands[] = {
 void serialSendCompleteOne(int events);
 void serialSendCompleteTwo(int events);
 void serialSendCompleteThree(int events);
+void serialEventHandler();
 
 void receiveMessage();
 void readIncomingBytesIntoBuffer();
@@ -190,18 +191,23 @@ unsigned long timeOfLastCompletedMessage = 0;
 unsigned char startOut = 7;
 unsigned char endOut = 8;
 
-
+int duda;
 void microRayInit() {
     messageOutBuffer.statusFlags = 0;
     dutyCycleTimer.start();
-    serialReceiver.attach(&readIncomingBytesIntoBuffer, 0.00001f);
-    // mrSerial.attach(&readIncomingBytesIntoBuffer);
+    // serialReceiver.attach(&readIncomingBytesIntoBuffer, 0.00001f);
+    mrSerial.attach(&serialEventHandler, Serial::RxIrq);
 }
 
 
 event_callback_t serialEventWriteCompleteOne = serialSendCompleteOne;
 event_callback_t serialEventWriteCompleteTwo = serialSendCompleteTwo;
 event_callback_t serialEventWriteCompleteThree = serialSendCompleteThree;
+// event_callback_t serialEventHandlerCallback = serialEventHandler;
+
+void serialEventHandler() {
+    // mrSerial.printf("eventNumber:");
+}
 
 
 int debugCounterSend = 0;
@@ -244,7 +250,7 @@ void sendMessage() {
             prepareOutMessage((unsigned long)dutyCycleTimer.read_high_resolution_us());
         }
         lastMessageSendComplete = false;
-        mrSerial.write((uint8_t *)&startOut, 1, serialEventWriteCompleteOne, SERIAL_EVENT_TX_COMPLETE);
+        // mrSerial.write((uint8_t *)&startOut, 1, serialEventWriteCompleteOne, SERIAL_EVENT_TX_COMPLETE);
     }
     else {
         messageOutBuffer.statusFlags |= (1 << STATUS_SKIPPED);
