@@ -12,6 +12,10 @@ class PlotWidget(QtGui.QWidget):
     def __init__(self, channels, applicationSettings, projectSettings, parent=None):
         QtGui.QWidget.__init__(self, parent)
 
+        self.mousePositionInPlotCoordinatesX = 0
+        self.mousePositionInPlotCoordinatesY = 0
+
+
         self.channels = channels
         self.channels.channelChanged.connect(self.updateCurve)
         self.channels.changed.connect(self.createCurves)
@@ -28,8 +32,6 @@ class PlotWidget(QtGui.QWidget):
 
         self.movePlot = True
 
-        self.horizontalLayoutPlotArea = QtGui.QHBoxLayout(self)
-        self.horizontalLayoutPlotArea.setMargin(0)
 
         # Enable antialiasing for prettier plots or not
         pyqtgraph.setConfigOptions(antialias=False)
@@ -38,23 +40,18 @@ class PlotWidget(QtGui.QWidget):
         self.plotWidget.setXRange(-float(self.applicationSettings.bufferLength)*(self.projectSettings.controllerLoopCycleTimeInUs / float(1000000)), 0)
         self.plotWidget.setYRange(-1, 1)
         self.plotWidget.showGrid(x=True, y=True)
-        self.horizontalLayoutPlotArea.addWidget(self.plotWidget)
 
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        self.plotWidget.setSizePolicy(sizePolicy)
+        # for catching the mouse position in plot coordinates
+        self.proxy = pyqtgraph.SignalProxy(self.plotWidget.scene().sigMouseMoved, rateLimit=60, slot=self.mouseMoved)
 
         self.verticalLine = self.plotWidget.addLine(x=-10, movable=True, label="{value}")
-        # folgendes funktioniert nicht
+        # folgendes funktioniert nicht (Mauszeiger als quer liegenden Pfeil darstellen)
         self.verticalLine.setCursor(QtCore.Qt.SizeHorCursor)
 
         self.verticalLine1 = self.plotWidget.addLine(x=-10, movable=True, label="{value}")
-        # folgendes funktioniert nicht
+        # folgendes funktioniert nicht (Mauszeiger als quer liegenden Pfeil darstellen)
         self.verticalLine1.setCursor(QtCore.Qt.SizeHorCursor)
 
-        self.listLayout = QtGui.QVBoxLayout()
-        self.listLayout.setMargin(0)
 
         self.toggleMovePlotButton = QtGui.QToolButton()
 
@@ -66,40 +63,15 @@ class PlotWidget(QtGui.QWidget):
 
         self.toggleMovePlotButton.setIcon(self.pauseIcon)
         self.toggleMovePlotButton.setIconSize(QtCore.QSize(25, 25))
-
         self.toggleMovePlotButton.clicked.connect(self.togglePlayPause)
 
-        self.topHorizontalLayout = QtGui.QHBoxLayout()
-        self.topHorizontalLayout.setMargin(0)
-        self.topHorizontalLayout.setAlignment(QtCore.Qt.AlignTop)
 
 
-        self.topVerticalLayoutLeft = QtGui.QVBoxLayout()
-        self.topVerticalLayoutLeft.addWidget(self.toggleMovePlotButton)
-        self.topVerticalLayoutLeft.setAlignment(QtCore.Qt.AlignTop)
 
         self.time0Label = QtGui.QLabel()
         self.time1Label = QtGui.QLabel()
         self.deltaTLabel = QtGui.QLabel()
         self.frequencyLabel = QtGui.QLabel()
-
-        self.topVerticalLayoutRight = QtGui.QVBoxLayout()
-        self.topHorizontalLayout.setMargin(0)
-        self.topVerticalLayoutRight.addWidget(self.time0Label)
-        self.topVerticalLayoutRight.addWidget(self.time1Label)
-        self.topVerticalLayoutRight.addWidget(self.deltaTLabel)
-        self.topVerticalLayoutRight.addWidget(self.frequencyLabel)
-        self.topVerticalLayoutRight.setAlignment(QtCore.Qt.AlignTop)
-        # policy = QtGui.QSizePolicy()
-        # policy.setVerticalPolicy(QtGui.QSizePolicy.Minimum)
-        # self.topVerticalLayoutRight.setSizePolicy(policy)
-
-        self.topHorizontalLayout.insertLayout(0, self.topVerticalLayoutLeft, 0)
-        self.topHorizontalLayout.insertLayout(1, self.topVerticalLayoutRight, 0)
-        self.listLayout.insertLayout(0, self.topHorizontalLayout, 0)
-
-
-
 
         self.time0Label.setText(u"t1 0 s")
         self.time1Label.setText(u"t1 0 s")
@@ -108,27 +80,64 @@ class PlotWidget(QtGui.QWidget):
 
         self.listWidget = QtGui.QListWidget()
         self.listWidget.setAlternatingRowColors(True)
-        policy = QtGui.QSizePolicy()
-        policy.setVerticalPolicy(QtGui.QSizePolicy.Expanding)
-        self.listWidget.setSizePolicy(policy)
 
+
+        ####################################################
+
+        self.topVerticalLayoutRight = QtGui.QVBoxLayout()
+        self.topVerticalLayoutRight.setMargin(0)
+        self.topVerticalLayoutRight.addWidget(self.time0Label)
+        self.topVerticalLayoutRight.addWidget(self.time1Label)
+        self.topVerticalLayoutRight.addWidget(self.deltaTLabel)
+        self.topVerticalLayoutRight.addWidget(self.frequencyLabel)
+
+        self.topHorizontalLayout = QtGui.QHBoxLayout()
+        self.topHorizontalLayout.setMargin(0)
+        self.topHorizontalLayout.addWidget(self.toggleMovePlotButton)
+        self.topHorizontalLayout.addLayout(self.topVerticalLayoutRight)
+        self.topHorizontalLayout.setAlignment(self.toggleMovePlotButton, QtCore.Qt.AlignTop)
+
+
+        self.listLayout = QtGui.QVBoxLayout()
+        self.listLayout.setMargin(0)
+        self.listLayout.addLayout(self.topHorizontalLayout)
         self.listLayout.addWidget(self.listWidget)
 
+        self.horizontalLayoutPlotArea = QtGui.QHBoxLayout(self)
+        self.horizontalLayoutPlotArea.setMargin(0)
+        self.horizontalLayoutPlotArea.addWidget(self.plotWidget)
+        self.horizontalLayoutPlotArea.addLayout(self.listLayout)
 
-        self.horizontalLayoutPlotArea.insertLayout(1, self.listLayout, 0)
 
-        self.createCurves()
-
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+        # muchas importante:
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         self.listWidget.setSizePolicy(sizePolicy)
+
+
+
+
+
+
+
+        ####################################################
+
+        self.createCurves()
+
 
 
         self.plotUpdateTimer = QtCore.QTimer()
         self.plotUpdateTimer.setSingleShot(False)
         self.plotUpdateTimer.timeout.connect(self.updatePlots)
         self.plotUpdateTimer.start(self.applicationSettings.guiUpdateIntervalLengthInMs)
+
+
+    def mouseMoved(self, event):
+        # get the plot coordinates from pyqtgraph and store them for reference
+        plotItem = self.plotWidget.plotItem
+        self.mousePositionInPlotCoordinatesX = plotItem.vb.mapSceneToView(event[0]).x()
+        self.mousePositionInPlotCoordinatesY = plotItem.vb.mapSceneToView(event[0]).y()
 
     def adjustScaleToBufferLength(self, newBufferLength):
         self.plotWidget.setXRange(-float(newBufferLength)*(self.projectSettings.controllerLoopCycleTimeInUs / float(1000000)), 0)
@@ -150,7 +159,7 @@ class PlotWidget(QtGui.QWidget):
 
         self.verticalLine = self.plotWidget.addLine(x=0,
                                                     movable=True,
-                                                    label="{value} <0>",
+                                                    label="{value} <1>",
                                                     pen=QtGui.QPen(QtCore.Qt.lightGray),
                                                     hoverPen=QtGui.QPen(QtCore.Qt.darkGray))
         self.verticalLine.label.setPosition(0.95)
@@ -160,7 +169,7 @@ class PlotWidget(QtGui.QWidget):
         leftestTime = -(self.projectSettings.controllerLoopCycleTimeInUs * self.applicationSettings.bufferLength) / 1000000.0
         self.verticalLine1 = self.plotWidget.addLine(x=leftestTime,
                                                     movable=True,
-                                                    label="{value} <1>",
+                                                    label="{value} <2>",
                                                     pen=QtGui.QPen(QtCore.Qt.lightGray),
                                                     hoverPen=QtGui.QPen(QtCore.Qt.darkGray))
         self.verticalLine1.label.setPosition(0.9)
@@ -266,8 +275,8 @@ class PlotWidget(QtGui.QWidget):
         else:
             frequency = 1.0 / deltaT
 
-        self.time0Label.setText(u"t0 {} s".format(time0))
-        self.time1Label.setText(u"t1 {} s".format(time1))
+        self.time0Label.setText(u"t1 {} s".format(time0))
+        self.time1Label.setText(u"t2 {} s".format(time1))
         self.deltaTLabel.setText(u"Δt {} s".format(deltaT))
         self.frequencyLabel.setText(u"f {} Hz".format(frequency))
 
@@ -416,7 +425,12 @@ class PlotWidget(QtGui.QWidget):
         if QKeyEvent.key() == QtCore.Qt.Key_Space:
             self.togglePlayPause()
 
+        if QKeyEvent.key() == QtCore.Qt.Key_1:
+            # print "pos = {}, {}".format(self.mousePositionInPlotCoordinatesX, self.mousePositionInPlotCoordinatesY)
+            self.verticalLine.setPos(self.mousePositionInPlotCoordinatesX)
 
+        if QKeyEvent.key() == QtCore.Qt.Key_2:
+            self.verticalLine1.setPos(self.mousePositionInPlotCoordinatesX)
 
 class ChannelControllerList(QtGui.QWidget):
     def __init__(self, parent=None):

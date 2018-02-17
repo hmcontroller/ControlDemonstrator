@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'testForm.ui'
 #
-# Created: Sat Feb 10 18:06:01 2018
+# Created: Sat Feb 17 17:48:09 2018
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -27,36 +27,35 @@ class Ui_testForm(object):
     def setupUi(self, testForm):
         testForm.setObjectName(_fromUtf8("testForm"))
         testForm.resize(692, 579)
-        self.widget = QtGui.QWidget(testForm)
-        self.widget.setGeometry(QtCore.QRect(260, 60, 258, 481))
-        self.widget.setObjectName(_fromUtf8("widget"))
-        self.verticalLayout_2 = QtGui.QVBoxLayout(self.widget)
-        self.verticalLayout_2.setMargin(0)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout(testForm)
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.verticalLayout_2 = QtGui.QVBoxLayout()
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        self.toolButton = QtGui.QToolButton(self.widget)
+        self.toolButton = QtGui.QToolButton(testForm)
         self.toolButton.setObjectName(_fromUtf8("toolButton"))
         self.horizontalLayout.addWidget(self.toolButton)
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.label = QtGui.QLabel(self.widget)
+        self.label = QtGui.QLabel(testForm)
         self.label.setObjectName(_fromUtf8("label"))
         self.verticalLayout.addWidget(self.label)
-        self.label_2 = QtGui.QLabel(self.widget)
+        self.label_2 = QtGui.QLabel(testForm)
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.verticalLayout.addWidget(self.label_2)
-        self.label_3 = QtGui.QLabel(self.widget)
+        self.label_3 = QtGui.QLabel(testForm)
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.verticalLayout.addWidget(self.label_3)
-        self.label_4 = QtGui.QLabel(self.widget)
+        self.label_4 = QtGui.QLabel(testForm)
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.verticalLayout.addWidget(self.label_4)
         self.horizontalLayout.addLayout(self.verticalLayout)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
-        self.listWidget = QtGui.QListWidget(self.widget)
+        self.listWidget = QtGui.QListWidget(testForm)
         self.listWidget.setObjectName(_fromUtf8("listWidget"))
         self.verticalLayout_2.addWidget(self.listWidget)
+        self.horizontalLayout_2.addLayout(self.verticalLayout_2)
 
         self.retranslateUi(testForm)
         QtCore.QMetaObject.connectSlotsByName(testForm)
