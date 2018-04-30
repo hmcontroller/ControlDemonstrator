@@ -1,24 +1,35 @@
 #include "microRay.h"
 
 void prepareOutMessage();
+void prepareInMessage();
 void sendMessage();
 void receiveMessage();
+void record();
+void recordMessage();
+void transmitRecordings();
 
 unsigned long lastTime = 0;
+volatile bool lastMessageSendComplete = true;
+
+int sendMode = LIVE_MODE;
+int recordingCounter = 0;
+int recordingSendCounter = 0;
+
 
 // storage for unrequested channels
 float unrequestedChannels[CHANNELS_UNREQUESTED_COUNT];
 
-// storage for parameters, that could be set from the pc
-float parameters[PARAMETER_COUNT] = {0.0f};
-float specialCommands[SPECIAL_COMMANDS_COUNT] = {0.0f};
-
+#if !defined(SUPPRESS_PARAM_CONFIRMATION)
 int parameterSendCounter = 0;
+#endif
+
 int receivedBytesCount = 0;
 int sendBytesCount = 0;
 
 MessageOut messageOutBuffer;
 MessageIn messageInBuffer;
+
+MessageOut recordBuffer[RECORD_BUFFER_LENGTH];
 
 void prepareOutMessage(unsigned long loopStartTime)
 {
@@ -27,15 +38,22 @@ void prepareOutMessage(unsigned long loopStartTime)
 
     messageOutBuffer.loopStartTime = loopStartTime;
 
+    #if !defined(SUPPRESS_PARAM_CONFIRMATION)
+    messageOutBuffer.parameterNumber = parameterSendCounter;
     if (parameterSendCounter < 0) {
-        messageOutBuffer.parameterNumber = parameterSendCounter;
-        //messageOutBuffer.parameterValue = parameters[requestedControlledParameters[parameterSendCounter]];
-        messageOutBuffer.parameterValue = specialCommands[(parameterSendCounter + 1) * -1];
+        messageOutBuffer.parameterValueInt = specialCommands[(parameterSendCounter + 1) * -1];
     }
     else {
-        messageOutBuffer.parameterNumber = parameterSendCounter;
-        //messageOutBuffer.parameterValue = parameters[requestedControlledParameters[parameterSendCounter]];
-        messageOutBuffer.parameterValue = parameters[parameterSendCounter];
+        switch (parameters[parameterSendCounter].dataType) {
+            case INT_TYPE:
+                messageOutBuffer.parameterValueInt = parameters[parameterSendCounter].valueInt;
+                break;
+            case FLOAT_TYPE:
+                messageOutBuffer.parameterValueFloat = parameters[parameterSendCounter].valueFloat;
+                break;
+            default:
+                break;
+        }
     }
 
     // increment the counter for sending the "slow parameters"
@@ -44,18 +62,97 @@ void prepareOutMessage(unsigned long loopStartTime)
     {
         parameterSendCounter = SPECIAL_COMMANDS_COUNT * -1;
     }
+#endif
+}
+
+void prepareInMessage() {
+    if (messageInBuffer.parameterNumber >= 0) {
+        switch (parameters[messageInBuffer.parameterNumber].dataType) {
+            case INT_TYPE:
+                parameters[messageInBuffer.parameterNumber].valueInt = messageInBuffer.parameterValueInt;
+                break;
+            case FLOAT_TYPE:
+                parameters[messageInBuffer.parameterNumber].valueFloat = messageInBuffer.parameterValueFloat;
+                break;
+            default:
+                break;
+        }
+    }
+    else {
+        // toggle recording mode
+        if (messageInBuffer.parameterNumber == -3) {
+            if (messageInBuffer.parameterValueInt != specialCommands[(messageInBuffer.parameterNumber + 1) * -1]) {
+                if (messageInBuffer.parameterValueInt == 1) {
+                    sendMode = RECORD_MODE;
+                }
+                else if (messageInBuffer.parameterValueInt == 0) {
+                    sendMode = RECORD_TRANSMISSION_MODE;
+                }
+            }
+        }
+        specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.parameterValueInt;
+    }
 }
 
 void microRayCommunicate()
 {
-    sendMessage();
     receiveMessage();
+
+#ifndef mrDEBUG
+    switch (sendMode) {
+        case RECORD_MODE:
+            record();
+            break;
+        case RECORD_TRANSMISSION_MODE:
+            transmitRecordings();
+            break;
+        case LIVE_MODE:
+            sendMessage();
+            break;
+        case WAIT_MODE:
+            break;
+        default:
+            break;
+    }
+#endif
 }
-void setInitialValues() {
-    mR_testParam = 3.0f;
-    loopCycleTimeExceededByUs = 0.0f;
-    serialTransmissionLag = 0.0f;
+
+void record() {
+    recordMessage();
+    recordBuffer[recordingCounter] = messageOutBuffer;
+    recordingCounter += 1;
+    if (recordingCounter > RECORD_BUFFER_LENGTH) {
+        recordingCounter = 0;
+    }
 }
+
+void transmitRecordings() {
+    // blocks until finished
+    for (recordingSendCounter = 0; recordingSendCounter < RECORD_BUFFER_LENGTH; recordingSendCounter++) {
+        int nextMessageIndex = recordingSendCounter + recordingCounter;
+        if (nextMessageIndex > RECORD_BUFFER_LENGTH){
+            nextMessageIndex -= RECORD_BUFFER_LENGTH;
+        }
+        messageOutBuffer = recordBuffer[nextMessageIndex];
+        sendMessage();
+        receiveMessage();
+        // while (lastMessageSendComplete == false) {
+            // wait
+        // }
+    }
+    recordingCounter = 0;
+    sendMode = WAIT_MODE;
+}
+
+Parameter parameters[] = {
+    { 2, { .valueFloat = 3.0f} }
+};
+
+int specialCommands[] = {
+    0,
+    0,
+    0
+};
 
 
 #include <arduino.h>
@@ -66,7 +163,7 @@ void appendByteToBuffer(uint8_t inByte);
 void shiftGivenPositionToBufferStart(int position);
 int seekForFullMessage();
 void extractMessage(int messageStartPosition);
-void applyExtractedInMessage();
+
 
 #define OUT_START_BYTE (char)7
 #define OUT_STOP_BYTE (char)8
@@ -77,29 +174,46 @@ void applyExtractedInMessage();
 #define IN_START_BYTE (char)7
 #define IN_STOP_BYTE (char)8
 
+int serialBufferSize = 0;
 void microRayInit() {
-    setInitialValues();
+    messageOutBuffer.statusFlags = 0;
     Serial.begin(BAUD_RATE);
+    serialBufferSize = Serial.availableForWrite();
 }
 
 
 void sendMessage() {
-    prepareOutMessage(micros());
+    if (sendMode == LIVE_MODE) {
+        prepareOutMessage(micros());
+    }
+
     // check, if there is still data not send from the previous loop
     #ifdef SERIAL_TX_BUFFER_SIZE
         int bytesStillInBuffer = SERIAL_TX_BUFFER_SIZE - Serial.availableForWrite();
         if (bytesStillInBuffer > 1) {
+            messageOutBuffer.statusFlags |= (1 << STATUS_SKIPPED);
             serialTransmissionLag = bytesStillInBuffer;
         }
     #endif
+
+    lastMessageSendComplete = false;
     Serial.write(7);
     Serial.write((byte *)&messageOutBuffer, sizeof(messageOutBuffer));
     Serial.write(8);
+
+    // wait for message to complete during recording transfer
+    if (sendMode == RECORD_TRANSMISSION_MODE) {
+        while (Serial.availableForWrite() < serialBufferSize) {
+            // wait
+        }
+        lastMessageSendComplete = true;
+    }
 }
 
 
-
-
+void recordMessage() {
+    prepareOutMessage(micros());
+}
 
 
 
@@ -112,41 +226,17 @@ void receiveMessage() {
     readIncomingBytesIntoBuffer();
     int foundMessageStartPosition = seekForFullMessage();
 
-    // Serial.print("found message at ");
-    // Serial.print(foundMessageStartPosition);
-    // Serial.println();
-
     if(foundMessageStartPosition > -1) {
         extractMessage(foundMessageStartPosition);
-        applyExtractedInMessage();
+        prepareInMessage();
     }
 }
-
 
 void readIncomingBytesIntoBuffer() {
     while (Serial.available()) {
-        char inChar = Serial.read();
-        appendByteToBuffer(inChar);
-
-        // mR_testChannel = (float)inChar;
-        // mR_incChannel = bufferPosition;
+        appendByteToBuffer(Serial.read());
     }
-
-    // Serial.print("[");
-    // int i = 0;
-    // for(i=0; i< IN_BUFFER_SIZE; i++) {
-    //     Serial.print(rawMessageInBuffer[i]);
-    //     Serial.print(", ");
-    // }
-    // Serial.print("] ");
-    // Serial.println(bufferPosition);
 }
-
-// void readIncomingBytesIntoBuffer() {
-//     while (Serial.available()) {
-//         appendByteToBuffer(Serial.read());
-//     }
-// }
 
 void appendByteToBuffer(uint8_t inByte) {
     // prevent buffer from overfilling
@@ -189,23 +279,6 @@ int seekForFullMessage() {
 
 void extractMessage(int messageStartPosition) {
     memcpy(&messageInBuffer.parameterNumber, &rawMessageInBuffer[messageStartPosition + 1], 4);
-    memcpy(&messageInBuffer.value, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
+    memcpy(&messageInBuffer.parameterValueInt, &rawMessageInBuffer[messageStartPosition + 1 + 4], 4);
     shiftGivenPositionToBufferStart(messageStartPosition + IN_MESSAGE_SIZE + 2);
-
-    // Serial.print("P_num ");
-    // Serial.print(messageInBuffer.parameterNumber);
-    // Serial.print(" P_val ");
-    // Serial.println(messageInBuffer.value);
-}
-
-void applyExtractedInMessage() {
-    if (messageInBuffer.parameterNumber >= 0) {
-        parameters[messageInBuffer.parameterNumber] = messageInBuffer.value;
-    }
-    else {
-        specialCommands[(messageInBuffer.parameterNumber + 1) * -1] = messageInBuffer.value;
-    }
-
-    // Serial.print("P_val_saved ");
-    // Serial.println(parameters[messageInBuffer.parameterNumber]);
 }

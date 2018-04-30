@@ -482,7 +482,8 @@ class SmallGenericCommand(BaseCommand):
         #     numberToShow = u"{}".format(self.command.valueOfLastResponse)
         QPainter.drawText(self.returnValueRect,
                          QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-                         QtCore.QString(str(self.command.valueOfLastResponse)))
+                         QtCore.QString(str(self.command.getValue())))
+                         # QtCore.QString(str(self.command.valueOfLastResponse)))
                          # QtCore.QString(u"{:0.2e}".format(self.command.valueOfLastResponse)))
                          # QtCore.QString(numberToShow))
 

@@ -113,10 +113,33 @@ class IdColorLabelCheckbox(QtGui.QWidget):
 
 
     def mousePressEvent(self, QMouseEvent):
-        self.changeState()
+        if QMouseEvent.button() == QtCore.Qt.LeftButton:
+            self.changeState()
+
+        if QMouseEvent.button() == QtCore.Qt.RightButton:
+            menu = QtGui.QMenu()
+            colorChangeAction = menu.addAction(u"change color")
+            scaleChangeAction = menu.addAction(u"change scale")
+
+            colorChangeAction.triggered.connect(self.changeChannelColor)
+            scaleChangeAction.triggered.connect(self.changeChannelDisplayScale)
+            menu.exec_(QMouseEvent.globalPos())
+
 
     def size(self):
         return QtCore.QSize(200, 50)
+
+    def changeChannelColor(self):
+        colorDialog = QtGui.QColorDialog()
+        answer = colorDialog.exec_()
+        if answer == QtGui.QDialog.Accepted:
+            color = colorDialog.selectedColor()
+            colorTuple = (color.red(), color.green(), color.blue())
+            self.channel.colorRgbTuple = colorTuple
+            self.colorBox.brush = QtGui.QBrush(color)
+
+    def changeChannelDisplayScale(self):
+        pass
 
 class ColouredRectangle(QtGui.QWidget):
 

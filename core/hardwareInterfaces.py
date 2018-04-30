@@ -280,6 +280,29 @@ class UsbHidInterface(HardwareInterface):
 
 
 
+#
+# class ODriveInterface(HardwareInterface):
+#     def __init__(self, applicationSettings, projectSettings, commands, commState):
+#         super(ODriveInterface, self).__init__(applicationSettings, projectSettings, commands, commState)
+#
+#     def connectToController(self):
+#         import core.oDriveLib.core as odrive
+#
+#         my_drive = odrive.find_any(consider_usb=True, consider_serial=False)
+#         print(dir(my_drive.motor0))
+#
+#     def disconnectFromController(self):
+#         pass
+#
+#     def send(self, commandList):
+#         pass
+#
+#     def receive(self):
+#         pass
+#
+#
+#
+#
 
 
 

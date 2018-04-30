@@ -20,6 +20,7 @@ class PlotWidget(QtGui.QWidget):
         self.channels.channelChanged.connect(self.updateCurve)
         self.channels.changed.connect(self.createCurves)
 
+
         # self.channels.channelConfigChanged.connect(self.createCurves)
         self.channels.channelConfigChanged.connect(self.updateCurve)
 
@@ -182,6 +183,7 @@ class PlotWidget(QtGui.QWidget):
         for i, channel in enumerate(self.channels.channels):
 
             channel.showChanged.connect(self.showOrHideCurve)
+            channel.colorChanged.connect(self.channelColorChanged)
 
             # create a plot curve
             colorTuple = channel.colorRgbTuple
@@ -228,8 +230,9 @@ class PlotWidget(QtGui.QWidget):
             listWidgetItem.setSizeHint(box.size())
 
             # listWidgetItem.setBackgroundColor(QtCore.Qt.red)
-            self.listWidget.addItem(listWidgetItem)
-            self.listWidget.setItemWidget(listWidgetItem, box)
+            if channel.isRequested is True:
+                self.listWidget.addItem(listWidgetItem)
+                self.listWidget.setItemWidget(listWidgetItem, box)
 
         # self.channelControllerList.addSpacer()
         # spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
@@ -406,8 +409,14 @@ class PlotWidget(QtGui.QWidget):
         else:
             colorTuple = channel.colorRgbTuple
             color = QtGui.QColor(colorTuple[0], colorTuple[1], colorTuple[2])
-            curve.pen = color
+            curve.setPen(color)
 
+    def channelColorChanged(self, channel):
+        curve = self.channelControllers[channel.id]["plotCurve"]
+        colorTuple = channel.colorRgbTuple
+        color = QtGui.QColor(colorTuple[0], colorTuple[1], colorTuple[2])
+        curve.setPen(color)
+        # self.channelControllers[channel.id]["controllerBox"].
 
     def togglePlayPause(self):
         self.movePlot = not self.movePlot

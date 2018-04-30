@@ -12,6 +12,7 @@ class ValueChannel(QtCore.QObject):
     changed = QtCore.pyqtSignal(object)
     showChanged = QtCore.pyqtSignal(object)
     requestedChanged = QtCore.pyqtSignal(object)
+    colorChanged = QtCore.pyqtSignal(object)
 
     def __init__(self, bufferLength):
         super(ValueChannel, self).__init__()
@@ -86,7 +87,7 @@ class ValueChannel(QtCore.QObject):
     @colorRgbTuple.setter
     def colorRgbTuple(self, value):
         self._colorRgbTuple = value
-        self.changed.emit(self)
+        self.colorChanged.emit(self)
 
     @property
     def isRequested(self):

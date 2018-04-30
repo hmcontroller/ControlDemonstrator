@@ -32,9 +32,11 @@
             "name": "mR_testParam", 
             "min": -100000.0, 
             "max": 100000.0, 
+            "valueType": 2, 
             "pendingMode": false, 
             "inputMethod": 1, 
-            "id": 0
+            "id": 0, 
+            "history": []
         }
     ], 
     "miscSettings": {
@@ -46,11 +48,16 @@
                 "displayName": "Generische Ansicht"
             }
         ], 
+        "messageSkipMode": false, 
         "comPortBaudRate": 115200, 
-        "comPortDescription": "Arduino Uno (COM5)", 
+        "comPortDescription": "Serielles USB-Ger\u00e4t (COM3)", 
+        "pauseAfterRecord": false, 
         "computerIP": "192.168.0.133", 
         "udpPort": 10000, 
+        "recordBufferLength": 1, 
+        "debugMode": false, 
         "pathToControllerCodeFolder": "D:\\00 eigene Daten\\000 FH\\S 4\\Regelungstechnik\\Regelungsversuch\\microRay\\microcontrollerTestProjects\\arduinoSerial\\src", 
+        "suppressParameterConfirmation": false, 
         "controllerLoopCycleTimeInUs": 1000000, 
         "controllerIP": "192.168.0.15"
     }

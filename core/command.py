@@ -176,6 +176,8 @@ class Command(QtCore.QObject):
     inputMethodChanged = QtCore.pyqtSignal(object)
     valueTypeChanged = QtCore.pyqtSignal(object)
 
+    scaleFactorChanged = QtCore.pyqtSignal(object)
+
     commTimeOut = QtCore.pyqtSignal(object)
     """
     These signals allow the gui elements to signalize the user an uncommanded value change.
@@ -213,6 +215,7 @@ class Command(QtCore.QObject):
         self._valueType = self.FLOAT_TYPE
         self.initialValue = 0.0
         self.rawArgumentString = None
+        self._displayScaleFactor = 1.0
 
         self.history = deque(maxlen=20)
 
@@ -333,6 +336,13 @@ class Command(QtCore.QObject):
         self._valueType = valueType
         self.valueTypeChanged.emit(self)
 
+    def getDisplayScaleFactor(self):
+        return self._displayScaleFactor
+
+    def setDisplayScaleFactor(self, value):
+        self._displayScaleFactor = value
+        self.scaleFactorChanged.emit(self)
+
     def getIsSelectedAsActive(self):
         return self._isSelectedAsActive
 
@@ -344,7 +354,7 @@ class Command(QtCore.QObject):
         self.valueOfLastResponse = commandConfirmation.returnValue
 
         # check if the returned value equals the own value
-        if abs(commandConfirmation.returnValue - self._value) < self.smallNumber:
+        if abs(commandConfirmation.returnValue - self._value) < self._value * 0.00001:
             self.sameValueReceived.emit(self)
         else:
             if datetime.datetime.now() - self.timeOfSend < self.differentValueSuppressionDuration:
