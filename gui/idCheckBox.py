@@ -49,12 +49,18 @@ class IdColorLabelCheckbox(QtGui.QWidget):
         horizontalLayout.addWidget(self.colorBox)
         horizontalLayout.addWidget(self.label)
 
+        self.lowerHorizontalLayout = QtGui.QHBoxLayout()
+        verticalLayout.addLayout(self.lowerHorizontalLayout)
+
+        self.scaleLabel = QtGui.QLabel("Scale 1.2")
+        self.lowerHorizontalLayout.addWidget(self.scaleLabel)
+        self.scaleLabel.setStyleSheet("QLabel { color : red; }")
+
         self.valueLabel = QtGui.QLabel("---")
         self.valueLabel.setSizePolicy(sizePolicy)
 
-
-        verticalLayout.addWidget(self.valueLabel)
-        verticalLayout.setAlignment(QtCore.Qt.AlignTop)
+        self.lowerHorizontalLayout.addWidget(self.valueLabel)
+        self.lowerHorizontalLayout.setAlignment(QtCore.Qt.AlignTop)
 
 
         # spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
@@ -86,6 +92,13 @@ class IdColorLabelCheckbox(QtGui.QWidget):
 
     def setValue(self, value):
         self.valueLabel.setText(value)
+
+    def setScale(self, scale):
+        self.scaleLabel.setText("Scale {}".format(scale))
+        if scale == 1.0:
+            self.scaleLabel.hide()
+        else:
+            self.scaleLabel.show()
 
     def changeState(self):
         if self.channel.isRequested is False:

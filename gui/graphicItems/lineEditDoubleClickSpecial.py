@@ -6,13 +6,16 @@ class LineEditDoubleClickSpecial(QtGui.QLineEdit):
 
     lostFocus = QtCore.pyqtSignal()
     downArrowPressed = QtCore.pyqtSignal()
+    doubleClick = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         super(LineEditDoubleClickSpecial, self).__init__(parent)
         self.oldValueText = None
 
+
     def mouseDoubleClickEvent(self, QMouseEvent):
         self.selectAll()
+        self.doubleClick.emit()
 
     def keyPressEvent(self, QKeyEvent):
 

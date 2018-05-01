@@ -26,6 +26,8 @@ class ConfigFileManager(object):
             channelDict["id"] = channel.id
             channelDict["name"] = channel.name
             channelDict["displayName"] = channel.displayName
+            channelDict["displayScaleFactor"] = channel.displayScaleFactor
+
             channelDict["isRequested"] = channel.isRequested
             channelDescriptions.append(channelDict)
 
@@ -139,6 +141,7 @@ class ConfigFileManager(object):
                 channel.id = oldChannel.id
                 channel.name = oldChannel.name
                 channel.displayName = oldChannel.displayName
+                channel.displayScaleFactor =  oldChannel.displayScaleFactor
                 channel.isRequested = oldChannel.isRequested
 
                 model.addChannel(channel)
@@ -155,6 +158,8 @@ class ConfigFileManager(object):
                     channel.name = channelDescription["name"]
                 if "displayName" in channelDescription:
                     channel.displayName = channelDescription["displayName"]
+                if "displayScaleFactor" in channelDescription:
+                    channel.displayScaleFactor = channelDescription["displayScaleFactor"]
                 if "isRequested" in channelDescription:
                     channel.isRequested = channelDescription["isRequested"]
 

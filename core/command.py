@@ -176,7 +176,7 @@ class Command(QtCore.QObject):
     inputMethodChanged = QtCore.pyqtSignal(object)
     valueTypeChanged = QtCore.pyqtSignal(object)
 
-    scaleFactorChanged = QtCore.pyqtSignal(object)
+
 
     commTimeOut = QtCore.pyqtSignal(object)
     """
@@ -215,7 +215,6 @@ class Command(QtCore.QObject):
         self._valueType = self.FLOAT_TYPE
         self.initialValue = 0.0
         self.rawArgumentString = None
-        self._displayScaleFactor = 1.0
 
         self.history = deque(maxlen=20)
 
@@ -335,13 +334,6 @@ class Command(QtCore.QObject):
     def setValueType(self, valueType):
         self._valueType = valueType
         self.valueTypeChanged.emit(self)
-
-    def getDisplayScaleFactor(self):
-        return self._displayScaleFactor
-
-    def setDisplayScaleFactor(self, value):
-        self._displayScaleFactor = value
-        self.scaleFactorChanged.emit(self)
 
     def getIsSelectedAsActive(self):
         return self._isSelectedAsActive

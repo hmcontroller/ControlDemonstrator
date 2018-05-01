@@ -10,6 +10,7 @@ from core.engineeringNotation.engineeringNotation import EngNumber
 from baseCommand import BaseCommand
 from gui.graphicItems.floatValidator import FloatValidator
 from gui.graphicItems.lineEditDoubleClickSpecial import LineEditDoubleClickSpecial
+from gui.graphicItems.listWidgetSpecial import ListWidgetSpecial
 from gui.graphicItems.button import SymbolButton
 from gui.graphicItems.commandWidgets.smallGenericCommandSettingsWindow import SmallGenericCommandSettingsWindow
 
@@ -48,6 +49,13 @@ class SmallGenericCommand(BaseCommand):
 
 
         self.valueLineEdit = self._layoutLineEdit(LineEditDoubleClickSpecial())
+
+        self.historyListWidget = ListWidgetSpecial()
+        listWidgetProxy = QtGui.QGraphicsProxyWidget(self)
+        listWidgetProxy.setWidget(self.historyListWidget)
+        self.historyListWidget.closeMe.connect(self.closeHistory)
+        self.historyListWidget.valueSelected.connect(self.setFromHistory)
+        self.historyListWidget.hide()
 
         self.pendingButton = SymbolButton(SymbolButton.TEXT, parent=self)
         self.pendingButton.setPos(55, self.editAreaHCenter - 0.5 * self.pendingButton.boundingRect().height())
@@ -120,6 +128,7 @@ class SmallGenericCommand(BaseCommand):
         self.valueLineEdit.returnPressed.connect(self.valueEditingReturnPressed)
         self.valueLineEdit.downArrowPressed.connect(self.showHistory)
         self.valueLineEdit.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.valueLineEdit.doubleClick.connect(self.showHistory)
 
 
 
@@ -199,6 +208,21 @@ class SmallGenericCommand(BaseCommand):
 
     def showHistory(self):
         print self.command.history
+
+        self.historyListWidget.clear()
+        for aValueString in self.command.history:
+            self.historyListWidget.addItem(str(aValueString))
+        self.historyListWidget.show()
+        self.historyListWidget.move(self.valueLineEdit.pos().x() + 0, self.valueLineEdit.pos().y() + self.valueLineEdit.height())
+        self.historyListWidget.setFocus(QtCore.Qt.PopupFocusReason)
+        self.historyListWidget.setCurrentRow(0)
+
+    def closeHistory(self):
+        self.historyListWidget.hide()
+
+    def setFromHistory(self, value):
+        self.command.setValue(value)
+        self.historyListWidget.hide()
 
     def _layoutLineEdit(self, lineEdit):
 

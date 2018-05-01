@@ -13,6 +13,7 @@ class ValueChannel(QtCore.QObject):
     showChanged = QtCore.pyqtSignal(object)
     requestedChanged = QtCore.pyqtSignal(object)
     colorChanged = QtCore.pyqtSignal(object)
+    scaleFactorChanged = QtCore.pyqtSignal(object)
 
     def __init__(self, bufferLength):
         super(ValueChannel, self).__init__()
@@ -21,6 +22,7 @@ class ValueChannel(QtCore.QObject):
         self._name = "new"
         self._displayName = u""
         self._values = deque(maxlen=bufferLength)
+        self._displayScaleFactor = 1.0
         self._show = True
         self._colorRgbTuple = (random.randint(0, 254), random.randint(0, 254), random.randint(0, 254))
         self._isRequested = True
@@ -70,6 +72,15 @@ class ValueChannel(QtCore.QObject):
     def displayName(self, value):
         self._displayName = value
         self.changed.emit(self)
+
+    @property
+    def displayScaleFactor(self):
+        return self._displayScaleFactor
+
+    @displayScaleFactor.setter
+    def displayScaleFactor(self, value):
+        self._displayScaleFactor = value
+        self.scaleFactorChanged.emit(self)
 
     @property
     def show(self):
