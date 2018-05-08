@@ -22,7 +22,7 @@ class PlotWidget(QtGui.QWidget):
 
 
         # self.channels.channelConfigChanged.connect(self.createCurves)
-        self.channels.channelConfigChanged.connect(self.updateCurve)
+        # self.channels.channelConfigChanged.connect(self.updateCurve)
 
         self.channels.bufferLengthChanged.connect(self.adjustScaleToBufferLength)
 
@@ -194,6 +194,8 @@ class PlotWidget(QtGui.QWidget):
 
             # add a check box to show/hide the curve next to the plot window
             box = IdColorLabelCheckbox(channel=channel, id=channel.id, color=color)
+            # channel.scaleFactorChanged.connect(box.setScale)
+            box.setScale(channel)
             box.setFont(CHECK_BOX_FONT)
             box.setObjectName("checkBox{}".format(channel.id))
 

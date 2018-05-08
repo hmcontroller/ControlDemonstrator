@@ -28,7 +28,7 @@ class MessageInterpreter():
         for i in range(0, len(message)):
             if message[i].isUserChannel is True:
                 userChannelId = message[i].userChannelId
-                measurementDataModel.channels[userChannelId].append(message[i].value)
+                measurementDataModel.channels[userChannelId].append(message[i].value * measurementDataModel.channels[userChannelId].displayScaleFactor)
             elif message[i].name == "loopStartTime":
                 measurementDataModel.timeValues.append(float(message[i].value) / 1000000.0)
 

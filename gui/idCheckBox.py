@@ -3,6 +3,8 @@
 from PyQt4 import QtGui, QtCore
 
 
+from gui.singleChannelSettingsConfig import SingleChannelSettingsConfig
+
 class IdColorLabelCheckbox(QtGui.QWidget):
 
     changed = QtCore.pyqtSignal(int, int)
@@ -14,8 +16,12 @@ class IdColorLabelCheckbox(QtGui.QWidget):
         self.color = color
 
         self.channel = channel
+        self.channel.changed.connect(self.channelChanged)
+        self.channel.showChanged.connect(self.channelChanged)
+        self.channel.requestedChanged.connect(self.channelChanged)
+        self.channel.colorChanged.connect(self.channelChanged)
+        self.channel.scaleFactorChanged.connect(self.channelChanged)
 
-        # self.setStyleSheet("background-color:green;")
 
         verticalLayout = QtGui.QVBoxLayout(self)
 
@@ -93,9 +99,10 @@ class IdColorLabelCheckbox(QtGui.QWidget):
     def setValue(self, value):
         self.valueLabel.setText(value)
 
-    def setScale(self, scale):
-        self.scaleLabel.setText("Scale {}".format(scale))
-        if scale == 1.0:
+    @QtCore.pyqtSlot(object)
+    def setScale(self, valueChannel):
+        self.scaleLabel.setText("Scale {}".format(valueChannel.displayScaleFactor))
+        if valueChannel.displayScaleFactor == 1.0:
             self.scaleLabel.hide()
         else:
             self.scaleLabel.show()
@@ -130,29 +137,45 @@ class IdColorLabelCheckbox(QtGui.QWidget):
             self.changeState()
 
         if QMouseEvent.button() == QtCore.Qt.RightButton:
-            menu = QtGui.QMenu()
-            colorChangeAction = menu.addAction(u"change color")
-            scaleChangeAction = menu.addAction(u"change scale")
-
-            colorChangeAction.triggered.connect(self.changeChannelColor)
-            scaleChangeAction.triggered.connect(self.changeChannelDisplayScale)
-            menu.exec_(QMouseEvent.globalPos())
-
+            # menu = QtGui.QMenu()
+            # colorChangeAction = menu.addAction(u"change color")
+            # scaleChangeAction = menu.addAction(u"change scale")
+            # channelConfigAction = menu.addAction(u"configure")
+            #
+            # colorChangeAction.triggered.connect(self.changeChannelColor)
+            # scaleChangeAction.triggered.connect(self.changeChannelDisplayScale)
+            # channelConfigAction.triggered.connect(self.changeChannelConfig)
+            # menu.exec_(QMouseEvent.globalPos())
+            self.changeChannelConfig()
 
     def size(self):
         return QtCore.QSize(200, 50)
 
-    def changeChannelColor(self):
-        colorDialog = QtGui.QColorDialog()
-        answer = colorDialog.exec_()
-        if answer == QtGui.QDialog.Accepted:
-            color = colorDialog.selectedColor()
-            colorTuple = (color.red(), color.green(), color.blue())
-            self.channel.colorRgbTuple = colorTuple
-            self.colorBox.brush = QtGui.QBrush(color)
+    # def changeChannelColor(self):
+    #     colorDialog = QtGui.QColorDialog()
+    #     answer = colorDialog.exec_()
+    #     if answer == QtGui.QDialog.Accepted:
+    #         color = colorDialog.selectedColor()
+    #         colorTuple = (color.red(), color.green(), color.blue())
+    #         self.channel.colorRgbTuple = colorTuple
+    #         self.colorBox.brush = QtGui.QBrush(color)
 
     def changeChannelDisplayScale(self):
         pass
+
+    @QtCore.pyqtSlot(object)
+    def channelChanged(self, channel):
+        if len(channel.displayName) > 0:
+            self.setText(channel.displayName)
+        else:
+            self.setText(channel.name)
+
+        self.setScale(channel)
+        self.colorBox.brush = QtGui.QBrush(QtGui.QColor(channel.colorRgbTuple[0], channel.colorRgbTuple[1], channel.colorRgbTuple[2]))
+
+    def changeChannelConfig(self):
+        SingleChannelSettingsConfig.updateSettings(self.channel)
+
 
 class ColouredRectangle(QtGui.QWidget):
 

@@ -50,8 +50,9 @@ class SmallGenericCommand(BaseCommand):
 
         self.valueLineEdit = self._layoutLineEdit(LineEditDoubleClickSpecial())
 
+
         self.historyListWidget = ListWidgetSpecial()
-        listWidgetProxy = QtGui.QGraphicsProxyWidget(self)
+        listWidgetProxy = QtGui.QGraphicsProxyWidget()
         listWidgetProxy.setWidget(self.historyListWidget)
         self.historyListWidget.closeMe.connect(self.closeHistory)
         self.historyListWidget.valueSelected.connect(self.setFromHistory)
@@ -207,7 +208,7 @@ class SmallGenericCommand(BaseCommand):
 
 
     def showHistory(self):
-        print self.command.history
+        # print self.command.history
 
         self.historyListWidget.clear()
         for aValueString in self.command.history:

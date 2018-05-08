@@ -18,13 +18,13 @@
             "name": "mR_incChannel", 
             "show": true, 
             "color": [
+                255, 
                 0, 
-                0, 
-                255
+                0
             ], 
             "isRequested": true, 
             "id": 1, 
-            "displayScaleFactor": 1.0
+            "displayScaleFactor": 3.0
         }
     ], 
     "commands": [
