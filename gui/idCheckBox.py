@@ -37,9 +37,9 @@ class IdColorLabelCheckbox(QtGui.QWidget):
         self.checkBox = CheckBoxWithoutKeyPress()
         self.checkBox.keyPressed.connect(self.keyPressed)
         self.colorBox = ColouredRectangle(self.color)
-        self.colorBox.clicked.connect(self.changeState)
+        self.colorBox.clicked.connect(self.mousePressEvent)
         self.label = ClickableLabel()
-        self.label.clicked.connect(self.changeState)
+        self.label.clicked.connect(self.mousePressEvent)
 
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         # sizePolicy.setHorizontalStretch(0)
@@ -137,15 +137,6 @@ class IdColorLabelCheckbox(QtGui.QWidget):
             self.changeState()
 
         if QMouseEvent.button() == QtCore.Qt.RightButton:
-            # menu = QtGui.QMenu()
-            # colorChangeAction = menu.addAction(u"change color")
-            # scaleChangeAction = menu.addAction(u"change scale")
-            # channelConfigAction = menu.addAction(u"configure")
-            #
-            # colorChangeAction.triggered.connect(self.changeChannelColor)
-            # scaleChangeAction.triggered.connect(self.changeChannelDisplayScale)
-            # channelConfigAction.triggered.connect(self.changeChannelConfig)
-            # menu.exec_(QMouseEvent.globalPos())
             self.changeChannelConfig()
 
     def size(self):
@@ -179,7 +170,7 @@ class IdColorLabelCheckbox(QtGui.QWidget):
 
 class ColouredRectangle(QtGui.QWidget):
 
-    clicked = QtCore.pyqtSignal()
+    clicked = QtCore.pyqtSignal(object)
 
     def __init__(self, color, parent=None):
         super(ColouredRectangle, self).__init__(parent)
@@ -208,8 +199,7 @@ class ColouredRectangle(QtGui.QWidget):
         return QtCore.QRectF(0, 0, self.widthInPixels, self.heightInPixels)
 
     def mousePressEvent(self, QMouseEvent):
-        self.clicked.emit()
-
+        self.clicked.emit(QMouseEvent)
 
 
 class CheckBoxWithoutKeyPress(QtGui.QCheckBox):
@@ -226,13 +216,13 @@ class CheckBoxWithoutKeyPress(QtGui.QCheckBox):
 
 class ClickableLabel(QtGui.QLabel):
 
-    clicked = QtCore.pyqtSignal()
+    clicked = QtCore.pyqtSignal(object)
 
     def __init__(self):
         super(ClickableLabel, self).__init__()
 
     def mousePressEvent(self, QMouseEvent):
-        self.clicked.emit()
+        self.clicked.emit(QMouseEvent)
 
 
 
